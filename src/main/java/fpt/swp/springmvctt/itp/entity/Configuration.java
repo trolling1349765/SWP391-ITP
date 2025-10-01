@@ -1,0 +1,25 @@
+package fpt.swp.springmvctt.itp.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "configurations")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Configuration extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "config_key", length = 100, nullable = false)
+    private String configKey;
+
+    @Column(name = "config_value", length = 255)
+    private String configValue;
+}
+

@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "Users")
 @Data
@@ -34,5 +36,25 @@ public class User extends BaseEntity {
     @Column()
     private String  status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")   // khóa ngoại role_id trong bảng users
+    private Role role;
 
+    @OneToOne
+    private Shop shop;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Order> orders;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<ChatMessage> chatMessages;
+
+    @OneToOne
+    private UserRestriction userRestriction;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Account> accounts;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private  List<PaymentTransaction> paymentTransactions;
 }
