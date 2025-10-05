@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "payment_transactions")
 @Data
@@ -19,10 +21,10 @@ public class PaymentTransaction extends BaseEntity {
     @Column(length = 50)
     private String type;
 
-    @Column(precision = 15, scale = 2)
-    private Double amount;
+    @Column(precision = 15, scale = 2, nullable = false)
+    private BigDecimal  amount;
 
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String status;
 
     @OneToOne

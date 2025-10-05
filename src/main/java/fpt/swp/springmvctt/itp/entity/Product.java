@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -25,7 +26,7 @@ public class Product extends BaseEntity {
     private String description;
 
     @Column(precision = 15, scale = 2)
-    private Double price;
+    private BigDecimal price;
 
     @Column(name = "available_stock")
     private Integer availableStock;

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -21,18 +22,18 @@ public class Order extends BaseEntity {
     @Column
     private Integer quantity;
 
-    @Column(name = "unit_price", precision = 15, scale = 2)
-    private Double unitPrice;
+    @Column(name = "unit_price", precision = 15, scale = 2, nullable = false)
+    private BigDecimal unitPrice;
 
-    @Column(name = "total_amount", precision = 15, scale = 2)
-    private Double totalAmount;
+    @Column(name = "total_amount", precision = 15, scale = 2, nullable = false)
+    private BigDecimal totalAmount;
 
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String status;
 
     // Many orders -> one product
     @ManyToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id" )
     private Product product;
 
     // Many orders -> one user

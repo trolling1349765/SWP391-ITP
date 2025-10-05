@@ -19,7 +19,7 @@ public class Configuration extends BaseEntity {
     @Column(name = "config_key", length = 100, nullable = false)
     private String configKey;
 
-    @Column(name = "config_value", length = 255)
+    @Column(name = "config_value", length = 255, nullable = false)
     private String configValue;
 }
 
