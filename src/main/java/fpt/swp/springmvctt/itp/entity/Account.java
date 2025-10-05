@@ -19,20 +19,20 @@ public class Account extends BaseEntity {
 
     private Provider provider;
 
-    @Column(length = 100)
+    @Column(length = 100, nullable = false)
     private String email;
 
-    @Column(name = "access_token", length = 255)
+    @Column(name = "access_token", length = 255 , nullable = false)
     private String accessToken;
 
-    @Column(name = "refresh_token", length = 255)
+    @Column(name = "refresh_token", length = 255, nullable = false)
     private String refreshToken;
 
-    @Column(length = 20)
+    @Column(length = 20,  nullable = false)
     private String phone;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id" , nullable = false)
     private User user;
 }
 

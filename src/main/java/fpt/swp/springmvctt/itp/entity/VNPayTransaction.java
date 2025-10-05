@@ -5,6 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import  java.time.LocalDateTime;
+
+
 import java.sql.Date;
 
 @Entity
@@ -24,11 +28,11 @@ public class VNPayTransaction extends BaseEntity {
     @Column(name = "bank_code", length = 50)
     private String bankCode;
 
-    @Column(precision = 15, scale = 2)
-    private Double amount;
+    @Column(precision = 15, scale = 2 , nullable = false )
+    private BigDecimal amount;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date payDate;
+    @Column(name = "pay_date" )
+    private LocalDateTime payDate;
 
     @Column(length = 50)
     private String status;
@@ -37,7 +41,7 @@ public class VNPayTransaction extends BaseEntity {
     private PaymentTransaction paymentTransaction;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id",  nullable = false)
     private User user;
 }
 
