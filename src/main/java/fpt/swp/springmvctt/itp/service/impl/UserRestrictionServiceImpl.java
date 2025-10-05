@@ -16,6 +16,7 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
 
     @Override
     public List<UserRestriction> findAll() {
+
         return userRestrictionRepository.findAll();
     }
 

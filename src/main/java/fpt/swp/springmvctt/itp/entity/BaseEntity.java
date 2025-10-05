@@ -2,12 +2,15 @@ package fpt.swp.springmvctt.itp.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.sql.Date;
 
 @Data
@@ -18,13 +21,11 @@ public abstract class BaseEntity {
     @Column(name = "create_by")
     private String createBy;
 
-    @Column(name = "create_at")
-    @Temporal(TemporalType.TIMESTAMP) // để ánh xạ đúng kiểu DATETIME
-    private Date createAt;
+    @Column(name = "create_at" )
+    private LocalDateTime createAt;
 
     @Column(name = "update_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updateAt;
+    private LocalDateTime updateAt;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;

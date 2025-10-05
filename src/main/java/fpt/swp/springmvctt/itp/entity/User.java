@@ -1,15 +1,13 @@
 package fpt.swp.springmvctt.itp.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Table(name = "Users")
-@Data
+@Table(name = "users") // dùng lowercase cho nhất quán; vẫn OK nếu thích "Users"
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends BaseEntity {
@@ -19,42 +17,56 @@ public class User extends BaseEntity {
     private Long id;
 
     @Column(unique = true, nullable = false, length = 50)
-    private String  username;
+    private String username;
 
     @Column(unique = true, nullable = false, length = 100)
-    private String  email;
+    private String email;
 
     @Column(nullable = false, length = 255)
-    private String  password;
+    private String password;
 
     @Column(length = 20)
-    private String  Phone;
+    private String phone;
 
-    @Column()
-    private double  balance;
+    // Tiền tệ -> BigDecimal + precision/scale
+    @Column(precision = 19, scale = 2, nullable = false)
+    private BigDecimal balance = BigDecimal.ZERO;
 
-    @Column()
-    private String  status;
+    @Column
+    private String status;
 
+    //
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id")   // khóa ngoại role_id trong bảng users
+    @JoinColumn(name = "role_id") // FK role_id
+    @ToString.Exclude @EqualsAndHashCode.Exclude
     private Role role;
 
-    @OneToOne
+    // User là owner của quan hệ OneToOne với Shop:
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", unique = true)
+    @ToString.Exclude @EqualsAndHashCode.Exclude
     private Shop shop;
 
+    //  UserRestriction
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_restriction_id", unique = true)
+    @ToString.Exclude @EqualsAndHashCode.Exclude
+    private UserRestriction userRestriction;
+
+    // Collections
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @ToString.Exclude @EqualsAndHashCode.Exclude
     private List<Order> orders;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @ToString.Exclude @EqualsAndHashCode.Exclude
     private List<ChatMessage> chatMessages;
 
-    @OneToOne
-    private UserRestriction userRestriction;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @ToString.Exclude @EqualsAndHashCode.Exclude
     private List<Account> accounts;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private  List<PaymentTransaction> paymentTransactions;
+    @ToString.Exclude @EqualsAndHashCode.Exclude
+    private List<PaymentTransaction> paymentTransactions;
 }

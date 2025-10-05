@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -25,7 +26,7 @@ public class Shop extends BaseEntity {
     private String description;
 
     @Column(precision = 2, scale = 1)
-    private Double rating;
+    private BigDecimal rating;
 
     @Column(length = 50)
     private String status;
