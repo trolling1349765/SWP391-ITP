@@ -47,6 +47,6 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL)
     private List<Product> products;
 
-    @OneToOne(mappedBy = "shops")
+    @OneToOne(mappedBy = "shop")
     private User user;
 }
