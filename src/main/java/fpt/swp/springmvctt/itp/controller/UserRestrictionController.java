@@ -19,13 +19,13 @@ public class UserRestrictionController {
     @GetMapping
     public String getUserRestrictions(Model model) {
         model.addAttribute("userRestrictions", userRestrictionService.findAll());
-        return "restriction-list";
+        return "admin/restriction-list";
     }
 
     @GetMapping("/{id}")
     public String getUserRestrictionById(@PathVariable("id") Long id, Model model) {
         UserRestriction userRestriction = userRestrictionService.findById(id);
         model.addAttribute("userRestriction", userRestriction);
-        return "restriction-detail";
+        return "admin/restriction-detail";
     }
 }
