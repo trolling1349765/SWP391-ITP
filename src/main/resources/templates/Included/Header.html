@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        header{background:#0f172a;color:#e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;border-bottom:1px solid #1f2937}
+        .brand{font-weight:700;font-size:1.1rem;color:#22c55e}
+        .nav{display:flex;gap:1.25rem}
+        .nav a{color:#cbd5e1;text-decoration:none}
+        .nav a:hover{color:#fff}
+        .search{position:relative}
+        .search input{padding:.4rem .75rem .4rem 2rem;border-radius:.4rem;border:none;background:#1e293b;color:#e2e8f0}
+        .search svg{position:absolute;top:50%;left:6px;transform:translateY(-50%);width:16px;height:16px;color:#94a3b8}
+    </style>
+</head>
+<body>
+<header th:fragment="header">
+    <div class="brand">ITP</div>
+    <nav class="nav">
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/shops}">Shops</a>
+        <a th:href="@{/products}">Products</a>
+        <a th:href="@{/contact}">Contact</a>
+    </nav>
+    <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search items..."/>
+    </div>
+</header>
+</body>
+</html>

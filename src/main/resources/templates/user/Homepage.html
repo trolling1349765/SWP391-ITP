@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage - Item Trading Platform (ITP)</title>
+    <style>
+        body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:#f8fafc;color:#0f172a;display:flex;flex-direction:column;min-height:100vh}
+        main{flex:1;max-width:1200px;margin:2rem auto;padding:0 1rem}
+        h1{font-size:2rem;font-weight:700;margin-bottom:.5rem;color:#111827}
+        .sub{color:#475569;margin-bottom:2rem}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
+        .card{background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:.2s}
+        .card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-2px)}
+        .card img{width:100%;height:180px;object-fit:cover;border-radius:.5rem}
+        .card h3{font-size:1.05rem;margin:.5rem 0 .25rem;color:#111827}
+        .card p{color:#475569;font-size:.9rem;margin:0 0 .5rem}
+        .price{font-weight:600;color:#22c55e}
+        .btn{display:inline-block;background:#22c55e;color:#fff;padding:.4rem .9rem;border-radius:.4rem;text-decoration:none;font-size:.9rem}
+        .btn:hover{background:#16a34a}
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div th:replace="~{/common/Included/Header :: header}"></div>
+
+<!-- Main Content -->
+<main>
+    <h1>Welcome to Item Trading Platform (ITP)</h1>
+    <div class="sub">Discover, trade, and manage your items securely.</div>
+
+    <!-- Featured Products -->
+    <h2>Featured Items</h2>
+    <div class="grid">
+        <div class="card" th:each="product : ${featuredProducts}">
+            <img th:src="@{${product.imageUrl}}" alt="Product image">
+            <h3 th:text="${product.name}">Product Name</h3>
+            <p th:text="${product.description}">Short product description goes here.</p>
+            <div class="price" th:text="${#numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')} + ' VND'">100,000 VND</div>
+            <a th:href="@{'/product/' + ${product.id}}" class="btn">View Details</a>
+        </div>
+    </div>
+
+    <!-- Shop section -->
+    <h2 style="margin-top:3rem;">Top Shops</h2>
+    <div class="grid">
+        <div class="card" th:each="shop : ${topShops}">
+            <img th:src="@{${shop.bannerUrl}}" alt="Shop banner">
+            <h3 th:text="${shop.shopName}">Shop Name</h3>
+            <p th:text="${shop.description}">Best quality products at great prices.</p>
+            <a th:href="@{'/shop/' + ${shop.id}}" class="btn">Visit Shop</a>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<div th:replace="~{/common/Included/Footer :: footer}"></div>
+
+</body>
+</html>
