@@ -30,7 +30,7 @@ public class Shop extends BaseEntity {
     private String image;
 
     @Column(length = 60)
-    private String shopCode; // mã shop hiển thị ở UI
+    private String shopCode; 
 
     @Column(precision = 2, scale = 1)
     private BigDecimal rating;

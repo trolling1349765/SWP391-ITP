@@ -29,7 +29,6 @@ public class ProductStore extends BaseEntity {
                         Boolean isDeleted, String deleteBy,
                         String id, String infomationUnique, String infomation,
                         Product product, Shop shop) {
-        // BaseEntity phải có constructor tương ứng (LocalDateTime)
         super(createBy, createAt, updateAt, isDeleted, deleteBy);
         this.id = product.getId() + "_" + infomationUnique;
         this.infomation = infomation;
