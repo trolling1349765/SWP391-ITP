@@ -1,4 +1,7 @@
 package fpt.swp.springmvctt.itp.service;
 
-public class StorageService {
+import org.springframework.web.multipart.MultipartFile;
+
+public interface StorageService {
+    String uploadImage(MultipartFile file);
 }

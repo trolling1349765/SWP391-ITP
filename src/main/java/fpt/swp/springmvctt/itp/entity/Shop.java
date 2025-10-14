@@ -26,6 +26,9 @@ public class Shop extends BaseEntity {
     @Column(length = 255 )
     private String phone;//
 
+    @Column(name = "image_url", length = 500)
+    private String image;
+
     @Column(length = 60)
     private String shopCode; // mã shop hiển thị ở UI
 
