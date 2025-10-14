@@ -10,4 +10,7 @@ public interface UserRestrictionService {
 
     List<UserRestriction> findAll();
     UserRestriction findById(Long id);
+
+
+
 }
