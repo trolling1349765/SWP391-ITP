@@ -10,4 +10,7 @@ public interface UserRestrictionService {
 
     List<UserRestriction> findAll();
     UserRestriction findById(Long id);
+    UserRestriction save(UserRestriction userRestriction);
+    UserRestriction update(Long id, UserRestriction userRestriction);
+    boolean delete(Long id);
 }
