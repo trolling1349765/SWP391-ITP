@@ -17,23 +17,21 @@ public class ProductStore extends BaseEntity {
     @Column
     private String infomation;
 
+    @Column
+    private String hidenInformation;
+
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne
-    @JoinColumn(name = "shop_id")
-    private Shop shop;
-
     public ProductStore(String createBy, LocalDateTime createAt, LocalDateTime updateAt,
                         Boolean isDeleted, String deleteBy,
-                        String id, String infomationUnique, String infomation,
+                         String hidenInformation, String infomation,
                         Product product, Shop shop) {
         // BaseEntity phải có constructor tương ứng (LocalDateTime)
         super(createBy, createAt, updateAt, isDeleted, deleteBy);
-        this.id = product.getId() + "_" + infomationUnique;
+        this.id = product.getId() + "_" + hidenInformation;
         this.infomation = infomation;
         this.product = product;
-        this.shop = shop;
     }
 }

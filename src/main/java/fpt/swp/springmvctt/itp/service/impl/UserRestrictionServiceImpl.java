@@ -6,6 +6,7 @@ import fpt.swp.springmvctt.itp.service.UserRestrictionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -45,14 +46,20 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
         return userRestrictionRepository.save(entity);
     }
 
-
     @Override
-    public boolean delete(Long id) {
-        if (userRestrictionRepository.existsById(id)) {
-            userRestrictionRepository.deleteById(id);
-            return true;
-        } else {
-            return false;
-        }
+    public void delete(Long id) {
+        UserRestriction entity = userRestrictionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
     }
+    @Override
+    public List<UserRestriction> findByFilter(String username, String status, LocalDate fromDate, LocalDate toDate) {
+        if ((status == null || status.isEmpty())) {
+            if (fromDate == null && toDate == null) return userRestrictionRepository.findAll();
+            if (fromDate != null && toDate != null) return userRestrictionRepository.findByFilter(null, fromDate, toDate);
+        }
+        return userRestrictionRepository.findByFilter(username, status, fromDate, toDate);
+    }
+
+
 }

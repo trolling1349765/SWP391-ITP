@@ -36,6 +36,7 @@ public class Shop extends BaseEntity {
     private List<Product> products;
 
     @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
 }
 

@@ -3,6 +3,7 @@ package fpt.swp.springmvctt.itp.service;
 import fpt.swp.springmvctt.itp.entity.UserRestriction;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -12,5 +13,6 @@ public interface UserRestrictionService {
     UserRestriction findById(Long id);
     UserRestriction save(UserRestriction userRestriction);
     UserRestriction update(Long id, UserRestriction userRestriction);
-    boolean delete(Long id);
+    void delete(Long id);
+    List<UserRestriction> findByFilter(String username, String status, LocalDate fromDate, LocalDate toDate);
 }

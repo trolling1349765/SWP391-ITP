@@ -18,7 +18,9 @@
     <!-- 🔍 Search form -->
     <form class="mb-3" th:action="@{/admin/user-restriction}" method="get">
         <div class="input-group">
-            <input type="text" name="search" class="form-control" placeholder="Search user name" th:value="${search}">
+            <label>
+                <input type="text" name="search" class="form-control" placeholder="Search name" th:value="${search}">
+            </label>
             <button class="btn btn-primary" type="submit">Search</button>
         </div>
     </form>
@@ -35,34 +37,37 @@
                     <th>User</th>
                     <th>Created At</th>
                     <th>Created By</th>
+                    <th>Actions</th>
                 </tr>
                 <!-- 🔽 Filter row -->
                 <tr class="table-secondary">
                     <form th:action="@{/admin/user-restriction}" method="get" class="align-middle">
                         <th></th>
+                        <th></th>
                         <th>
-                            <select class="form-select form-select-sm" name="reason">
-                                <option value="">All</option>
-                                <option th:each="r : ${reasonList}"
-                                        th:value="${r}"
-                                        th:text="${r}"
-                                        th:selected="${r == reason}"></option>
-                            </select>
-                        </th>
-                        <th>
-                            <select class="form-select form-select-sm" name="status">
-                                <option value="">All</option>
-                                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">ACTIVE</option>
-                                <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">INACTIVE</option>
-                            </select>
+                            <label>
+                                <select class="form-select form-select-sm" name="status">
+                                    <option value="">All</option>
+                                    <option value="suspended" th:selected="${status == 'suspended'}">SUSPENDED</option>
+                                    <option value="locked" th:selected="${status == 'locked'}">LOCKED</option>
+                                    <option value="banned" th:selected="${status == 'banned'}">BANNED</option>
+                                </select>
+                            </label>
                         </th>
                         <th></th>
                         <th>
                             <div class="d-flex gap-1">
-                                <input type="date" name="fromDate" class="form-control form-control-sm" th:value="${fromDate}">
-                                <input type="date" name="toDate" class="form-control form-control-sm" th:value="${toDate}">
+                                <label>
+                                    From:
+                                    <input type="date" name="fromDate" class="form-control form-control-sm" th:value="${fromDate}">
+                                </label>
+                                <label>
+                                    To:
+                                    <input type="date" name="toDate" class="form-control form-control-sm" th:value="${toDate}">
+                                </label>
                             </div>
                         </th>
+                        <th></th>
                         <th>
                             <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
                         </th>
@@ -80,6 +85,14 @@
                     <td th:text="${restriction.user != null ? restriction.user.username : 'N/A'}"></td>
                     <td th:text="${#temporals.format(restriction.createAt, 'yyyy-MM-dd HH:mm')}"></td>
                     <td th:text="${restriction.createBy}"></td>
+                    <td>
+                    <td>
+                        <a th:href="@{/admin/restriction(id=${restriction.user != null ? restriction.user.id : 0})}"
+                           class="btn btn-success btn-sm">
+                            <i class="bi bi-plus-circle"></i> Details
+                        </a>
+                    </td>
+                    </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(userRestrictions)}">
                     <td colspan="6" class="text-center text-muted py-3">No restrictions found</td>

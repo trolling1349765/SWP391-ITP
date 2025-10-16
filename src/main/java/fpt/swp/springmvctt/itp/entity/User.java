@@ -41,18 +41,6 @@ public class User extends BaseEntity {
     @ToString.Exclude @EqualsAndHashCode.Exclude
     private Role role;
 
-    // User là owner của quan hệ OneToOne với Shop:
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shop_id", unique = true)
-    @ToString.Exclude @EqualsAndHashCode.Exclude
-    private Shop shop;
-
-    //  UserRestriction
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_restriction_id", unique = true)
-    @ToString.Exclude @EqualsAndHashCode.Exclude
-    private UserRestriction userRestriction;
-
     // Collections
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @ToString.Exclude @EqualsAndHashCode.Exclude
