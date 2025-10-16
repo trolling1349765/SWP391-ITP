@@ -19,7 +19,8 @@
     </style>
 </head>
 <body>
-<aside th:fragment="adminSidebar (currentPath)" class="sidebar" sec:authorize="hasRole('ADMIN')">
+<aside th:fragment="adminSidebar (currentPath)" class="sidebar">
+<!--<aside th:fragment="adminSidebar (currentPath)" class="sidebar" sec:authorize="hasRole('ADMIN')">-->
     <div class="brand">
         <span class="brand-logo"></span>
         <div>
