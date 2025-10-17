@@ -4,6 +4,10 @@ import fpt.swp.springmvctt.itp.entity.UserRestriction;
 import fpt.swp.springmvctt.itp.repository.UserRestrictionRepository;
 import fpt.swp.springmvctt.itp.service.UserRestrictionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -53,12 +57,18 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
 
     }
     @Override
-    public List<UserRestriction> findByFilter(String username, String status, LocalDate fromDate, LocalDate toDate) {
+    public Page<UserRestriction> findByFilter(String username, String status, LocalDate fromDate, LocalDate toDate, String deleted, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
+        if (username == null) username = "";
         if ((status == null || status.isEmpty())) {
-            if (fromDate == null && toDate == null) return userRestrictionRepository.findAll();
-            if (fromDate != null && toDate != null) return userRestrictionRepository.findByFilter(null, fromDate, toDate);
+            if (fromDate == null && toDate == null && deleted.equals("all"))
+                return userRestrictionRepository
+                        .findByFilter(username, null, null, null, pageable);
+            if (fromDate != null && toDate != null && !deleted.equals("all"))
+                return userRestrictionRepository
+                        .findByFilter(username,null, fromDate, toDate, deleted.equals("yes"), pageable);
         }
-        return userRestrictionRepository.findByFilter(username, status, fromDate, toDate);
+        return userRestrictionRepository.findByFilter(username, status, fromDate, toDate, null, pageable);
     }
 
 
