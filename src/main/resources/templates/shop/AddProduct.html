@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Add Product</title>
+    <style>
+        body{background:#0b1220;color:#e5e7eb;font:14px/1.5 ui-sans-serif,system-ui;margin:0}
+        .wrap{max-width:860px;margin:24px auto;background:#0f172a;border:1px solid #1f2937;border-radius:16px;padding:16px}
+        label{display:block;margin:10px 0 6px;color:#9ca3af}
+        input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:#e5e7eb}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .actions{margin-top:14px;display:flex;gap:10px}
+        .btn{padding:10px 14px;border-radius:10px;border:0;background:#2563eb;color:#fff;text-decoration:none;cursor:pointer}
+        a.btn{display:inline-block}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h2 style="margin:0 0 12px">Add Product</h2>
+    <form th:action="@{/shop/products}" th:object="${form}" method="post">
+        <label>Name</label>
+        <input th:field="*{productName}" placeholder="Product name"/>
+
+        <div class="grid">
+            <div>
+                <label>Price</label>
+                <input th:field="*{price}" type="number" step="0.01"/>
+            </div>
+            <div>
+                <label>Stock</label>
+                <input th:field="*{availableStock}" type="number" min="0"/>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div>
+                <label>Category</label>
+                <select th:field="*{categoryId}">
+                    <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.categoryName}">Category</option>
+                </select>
+            </div>
+            <div>
+                <label>Status</label>
+                <select th:field="*{status}">
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="HIDDEN">HIDDEN</option>
+                    <option value="BLOCKED">BLOCKED</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Image path (static)</label>
+        <input th:field="*{img}" placeholder="/assets/img/products/default.jpg"/>
+
+        <label>Description</label>
+        <textarea th:field="*{description}" rows="4"></textarea>
+
+        <div class="actions">
+            <button class="btn" type="submit">Create</button>
+            <a class="btn" th:href="@{/shop/dashboard}" style="background:#334155">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>
