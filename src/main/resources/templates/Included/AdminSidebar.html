@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Sidebar - ITP</title>
+    <style>
+        .sidebar{position:sticky;top:0;height:100dvh;width:280px;background:#0f172a;color:#e2e8f0;display:flex;flex-direction:column;border-right:1px solid #1f2937}
+        .brand{display:flex;align-items:center;gap:.5rem;padding:1rem 1.25rem;border-bottom:1px solid #1f2937}
+        .brand-logo{width:28px;height:28px;border-radius:6px;background:#22c55e}
+        .brand-title{font-weight:700;letter-spacing:.3px}
+        .scroll{flex:1;overflow:auto;padding:.5rem 0}
+        .section{padding:.75rem 1rem .25rem;font-size:.75rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
+        .nav{list-style:none;margin:0;padding:.25rem}
+        .nav a{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-radius:.6rem;color:#cbd5e1;text-decoration:none}
+        .nav a:hover{background:#0b1220;color:#fff}
+        .nav a.active{background:#1f2937;color:#fff}
+        .icon{width:18px;height:18px;opacity:.9}
+        .footer{padding:.75rem 1rem;border-top:1px solid #1f2937;font-size:.8rem;color:#94a3b8}
+    </style>
+</head>
+<body>
+<aside th:fragment="adminSidebar (currentPath)" class="sidebar">
+<!--<aside th:fragment="adminSidebar (currentPath)" class="sidebar" sec:authorize="hasRole('ADMIN')">-->
+    <div class="brand">
+        <span class="brand-logo"></span>
+        <div>
+            <div class="brand-title">ITP Admin</div>
+            <small style="color:#94a3b8">Management Console</small>
+        </div>
+    </div>
+
+    <div class="scroll">
+        <div class="section">Overview</div>
+        <ul class="nav">
+            <li>
+                <a th:href="@{/admin/dashboard}"
+                   th:classappend="${#strings.contains(currentPath,'/admin/dashboard')}? ' active'">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l9-9 9 9"/><path d="M9 22V12h6v10"/></svg>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/admin/analytics}"
+                   th:classappend="${#strings.contains(currentPath,'/admin/analytics')}? ' active'">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M7 15v3M12 11v7M17 7v11"/></svg>
+                    <span>System Analytics</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="section">Management</div>
+        <ul class="nav">
+            <li>
+                <a th:href="@{/admin/users}" th:classappend="${#strings.contains(currentPath,'/admin/users')}? ' active'">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/></svg>
+                    <span>Manage Users</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/admin/shops}" th:classappend="${#strings.contains(currentPath,'/admin/shops')}? ' active'">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-6 9 6"/><path d="M4 10h16v10H4z"/></svg>
+                    <span>Manage Shops</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/admin/disputes}" th:classappend="${#strings.contains(currentPath,'/admin/disputes')}? ' active'">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20l9-16H3z"/></svg>
+                    <span>Handle Disputes</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="section">Finance</div>
+        <ul class="nav">
+            <li>
+                <a th:href="@{/admin/transactions}" th:classappend="${#strings.contains(currentPath,'/admin/transactions')}? ' active'">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18"/><path d="M7 10h14"/><path d="M3 14h18"/><path d="M3 18h14"/></svg>
+                    <span>Transactions</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/admin/wallets}" th:classappend="${#strings.contains(currentPath,'/admin/wallets')}? ' active'">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="20" height="12" rx="2"/><path d="M18 11h2"/></svg>
+                    <span>System Wallet</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <div th:text="${#dates.format(#dates.createNow(),'yyyy')} + ' © Item Trading Platform'"></div>
+        <div>Admin Panel v1.0</div>
+    </div>
+</aside>
+</body>
+</html>

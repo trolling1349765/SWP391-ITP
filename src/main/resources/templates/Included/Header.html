@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- ⚙️ Đảm bảo mã hóa UTF-8 -->
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+
+<body>
+<header th:fragment="header" style="background:#0f172a;color:#e2e8f0;display:flex;
+align-items:center;justify-content:space-between;padding:.75rem 1.5rem;
+border-bottom:1px solid #1f2937;position:sticky;top:0;z-index:1000;">
+
+    <a th:href="@{/}" class="brand" style="font-weight:700;font-size:1.2rem;
+    color:#22c55e;text-decoration:none;">Tạp Hóa MMO</a>
+
+    <nav class="nav" style="display:flex;gap:1.25rem;">
+        <a th:href="@{/}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Trang chủ</a>
+        <a th:href="@{/products}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Sản phẩm</a>
+        <a th:href="@{/services}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Dịch vụ</a>
+        <a th:href="@{/support}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Hỗ trợ</a>
+        <a th:href="@{/login}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Đăng nhập</a>
+    </nav>
+
+    <div class="search" style="position:relative;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             style="position:absolute;top:50%;left:6px;transform:translateY(-50%);
+             width:16px;height:16px;color:#94a3b8;">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Tìm kiếm sản phẩm..."
+               style="padding:.4rem .75rem .4rem 2rem;border-radius:.4rem;
+               border:none;background:#1e293b;color:#e2e8f0;outline:none;">
+    </div>
+</header>
+
+</body>
+</html>
