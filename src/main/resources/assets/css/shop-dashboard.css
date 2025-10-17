@@ -1,0 +1,4 @@
+
+.card { border-radius: 14px; }
+.card .badge { font-weight: 600; }
+.table > :not(caption) > * > * { background-color: transparent; }

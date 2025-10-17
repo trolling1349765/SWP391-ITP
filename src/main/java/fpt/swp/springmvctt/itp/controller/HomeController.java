@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
+
     // 🏠 Trang chủ người dùng
     @GetMapping("/")
     public String homepage() {
@@ -40,4 +41,11 @@ public class HomeController {
         // => src/main/resources/templates/admin/AdminSidebar.html
         return "admin/AdminSidebar";
     }
+
+    @GetMapping("/seller")
+    public String sellerEntry() {
+        return "redirect:/seller/dashboard";
+    }
 }
+
+
