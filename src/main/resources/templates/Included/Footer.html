@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Footer - ITP System</title>
+    <script src="https://kit.fontawesome.com/1e45c1f5e5.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<footer th:fragment="footer"
+        style="background:#0f172a;color:#cbd5e1;padding:2rem 1.5rem;
+        border-top:1px solid #1f2937;font-family:'Segoe UI',sans-serif;">
+
+    <!-- Container -->
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;
+                align-items:flex-start;gap:2rem;max-width:1200px;margin:0 auto;">
+
+        <!-- Brand / Intro -->
+        <div style="flex:1 1 240px;min-width:200px;">
+            <h4 style="color:#22c55e;font-weight:700;margin-bottom:0.5rem;font-size:1.2rem;">
+                <i class="fa-solid fa-store"></i> ITP System
+            </h4>
+            <p style="font-size:0.9rem;opacity:0.9;margin-bottom:1rem;">
+                Nền tảng giao dịch MMO đáng tin cậy — Kết nối người mua và người bán toàn quốc.
+            </p>
+            <div style="display:flex;gap:0.75rem;">
+                <a href="#" style="color:#cbd5e1;font-size:1.1rem;"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" style="color:#cbd5e1;font-size:1.1rem;"><i class="fab fa-discord"></i></a>
+                <a href="#" style="color:#cbd5e1;font-size:1.1rem;"><i class="fab fa-telegram"></i></a>
+            </div>
+        </div>
+
+        <!-- Product Section -->
+        <div style="flex:1 1 180px;min-width:180px;">
+            <h5 style="color:#fff;font-weight:600;margin-bottom:0.8rem;">Sản phẩm</h5>
+            <a th:href="@{/products/accounts}" style="display:block;color:#cbd5e1;text-decoration:none;margin-bottom:0.4rem;">Game Account</a>
+            <a th:href="@{/products/currency}" style="display:block;color:#cbd5e1;text-decoration:none;margin-bottom:0.4rem;">Game Currency</a>
+            <a th:href="@{/products/boost}" style="display:block;color:#cbd5e1;text-decoration:none;margin-bottom:0.4rem;">Boost Service</a>
+            <a th:href="@{/products/tools}" style="display:block;color:#cbd5e1;text-decoration:none;margin-bottom:0.4rem;">Game Tools</a>
+        </div>
+
+        <!-- Support Section -->
+        <div style="flex:1 1 180px;min-width:180px;">
+            <h5 style="color:#fff;font-weight:600;margin-bottom:0.8rem;">Hỗ trợ</h5>
+            <a th:href="@{/contact}" style="display:block;color:#cbd5e1;text-decoration:none;margin-bottom:0.4rem;">Liên hệ</a>
+            <a th:href="@{/help}" style="display:block;color:#cbd5e1;text-decoration:none;margin-bottom:0.4rem;">Hướng dẫn</a>
+            <a th:href="@{/policy}" style="display:block;color:#cbd5e1;text-decoration:none;margin-bottom:0.4rem;">Chính sách</a>
+            <a th:href="@{/warranty}" style="display:block;color:#cbd5e1;text-decoration:none;margin-bottom:0.4rem;">Bảo hành</a>
+        </div>
+
+        <!-- Contact Section -->
+        <div style="flex:1 1 200px;min-width:200px;">
+            <h5 style="color:#fff;font-weight:600;margin-bottom:0.8rem;">Liên hệ</h5>
+            <p style="margin:0.3rem 0;"><i class="fa-solid fa-envelope"></i> support@itpstore.vn</p>
+            <p style="margin:0.3rem 0;"><i class="fa-solid fa-phone"></i> 0123 456 789</p>
+            <p style="margin:0.3rem 0;"><i class="fa-solid fa-location-dot"></i> Hà Nội, Việt Nam</p>
+        </div>
+    </div>
+
+    <!-- Bottom Line -->
+    <div style="border-top:1px solid #1f2937;margin-top:2rem;padding-top:1rem;text-align:center;
+                font-size:0.9rem;opacity:0.8;">
+        © <span th:text="${#dates.format(#dates.createNow(),'yyyy')}">2025</span> ITP System. All rights reserved.
+    </div>
+
+</footer>
+</body>
+</html>
