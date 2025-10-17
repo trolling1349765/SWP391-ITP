@@ -18,6 +18,10 @@
     <!-- 🔍 Search form -->
     <form class="mb-3 d-flex" th:action="@{/admin/user-restriction}" method="get">
         <div class="input-group">
+            <input type="hidden" th:name="status" th:value="${status}">
+            <input type="hidden" th:name="toDate" th:value="${toDate}">
+            <input type="hidden" th:name="fromDate" th:value="${fromDate}">
+            <input type="hidden" th:name="deleted" th:value="${deleted}">
             <input type="text" name="search" class="form-control" placeholder="Search name" th:value="${search}">
             <button class="btn btn-primary" type="submit">Search</button>
         </div>
@@ -43,6 +47,7 @@
                 <!-- 🔽 Filter row -->
                 <tr class="table-secondary">
                     <form th:action="@{/admin/user-restriction}" method="get" class="align-middle">
+                        <input type="hidden" th:name="search" th:value="${search}">
                         <th></th>
                         <th></th>
                         <th>
@@ -64,20 +69,21 @@
                         <th>
                             <select class="form-select form-select-sm" name="deleted">
                                 <option value="all">All</option>
-                                <option value="yes" th:selected="${status == 'yes'}">YES</option>
-                                <option value="no" th:selected="${status == 'no'}">NO</option>
+                                <option value="yes" th:selected="${deleted == 'yes'}">YES</option>
+                                <option value="no" th:selected="${deleted == 'no'}">NO</option>
                             </select>
                         </th>
                         <th></th>
                         <th>
                             <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+                            <button type="reset" class="btn btn-sm btn-outline-secondary">Clear</button>
                         </th>
                     </form>
                 </tr>
                 </thead>
 
                 <tbody>
-                <tr th:each="restriction : ${userRestrictions}">
+                <tr th:each="restriction : ${userRestrictions.content}">
                     <td th:text="${restriction.id}"></td>
                     <td th:text="${restriction.reason}"></td>
                     <td>
@@ -90,7 +96,7 @@
                     <td th:text="${restriction.isDeleted} ? 'Yes' : 'No'"></td>
                     <td th:text="${restriction.isDeleted} ? restriction.deleteBy : ''"></td>
                     <td>
-                        <a th:href="@{/admin/restriction(id=${restriction.user != null ? restriction.user.id : 0})}"
+                        <a th:href="@{'/admin/user-restriction/' + ${restriction.user != null ? restriction.user.id : 0}}"
                            class="btn btn-success btn-sm">
                             <i class="bi bi-plus-circle"></i> Details
                         </a>

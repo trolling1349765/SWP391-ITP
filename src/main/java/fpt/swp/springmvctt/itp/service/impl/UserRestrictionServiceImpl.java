@@ -11,7 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -46,7 +46,7 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
                 .orElseThrow(() -> new RuntimeException("Not found"));
         entity.setReason(updated.getReason());
         entity.setStatus(updated.getStatus());
-        entity.setUpdateAt(LocalDateTime.now());
+        entity.setUpdateAt(LocalDate.now());
         return userRestrictionRepository.save(entity);
     }
 
@@ -59,16 +59,15 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
     @Override
     public Page<UserRestriction> findByFilter(String username, String status, LocalDate fromDate, LocalDate toDate, String deleted, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
+        Boolean delete = null;
         if (username == null) username = "";
-        if ((status == null || status.isEmpty())) {
-            if (fromDate == null && toDate == null && deleted.equals("all"))
-                return userRestrictionRepository
-                        .findByFilter(username, null, null, null, pageable);
-            if (fromDate != null && toDate != null && !deleted.equals("all"))
-                return userRestrictionRepository
-                        .findByFilter(username,null, fromDate, toDate, deleted.equals("yes"), pageable);
+        if ("yes".equals(deleted)) {
+            delete = true;
+        } else if ("no".equals(deleted)) {
+            delete = false;
         }
-        return userRestrictionRepository.findByFilter(username, status, fromDate, toDate, null, pageable);
+        if ((status == null || status.isEmpty())) status = null;
+        return userRestrictionRepository.findByFilter(username, status, fromDate, toDate, delete, pageable);
     }
 
 

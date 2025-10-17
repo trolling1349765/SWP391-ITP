@@ -62,7 +62,7 @@
                 </tr>
                 <tr>
                     <th>Deleted By</th>
-                    <td th:text="${userRestriction.deleteBy}"></td>
+                    <td th:text="${userRestriction.deleteBy.isEmpty() ? 'None' : userRestriction.deleteBy}"></td>
                 </tr>
                 </tbody>
             </table>

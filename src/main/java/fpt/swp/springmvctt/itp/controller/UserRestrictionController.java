@@ -34,8 +34,8 @@ public class UserRestrictionController {
 
         Page<UserRestriction> restrictionPage = userRestrictionService.findByFilter(search, status, fromDate, toDate, deleted, page, size);
 
-        model.addAttribute("userRestrictions", restrictionPage.getContent());
-        model.addAttribute("currentPage", page);
+        model.addAttribute("userRestrictions", restrictionPage); // Page<Restriction> nguyên vẹn
+        model.addAttribute("currentPage", restrictionPage.getNumber());
         model.addAttribute("totalPages", restrictionPage.getTotalPages());
         model.addAttribute("totalItems", restrictionPage.getTotalElements());
 

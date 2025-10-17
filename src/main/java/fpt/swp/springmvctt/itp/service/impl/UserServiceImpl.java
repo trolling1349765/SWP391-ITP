@@ -4,7 +4,7 @@ import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
 import fpt.swp.springmvctt.itp.service.UserService;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 public class UserServiceImpl implements UserService {
@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(updated.getPassword());
         user.setPhone(updated.getPhone());
         user.setStatus(updated.getStatus());
-        user.setUpdateAt(LocalDateTime.now());
+        user.setUpdateAt(LocalDate.now());
         user.setRole(updated.getRole());
         return userRepository.save(user);
     }
