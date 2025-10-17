@@ -34,6 +34,9 @@ public class Shop extends BaseEntity {
     @Column(length = 60)
     private String shopCode; // mã shop hiển thị ở UI
 
+    @Column(length = 60)
+    private String category;
+
     @Column(precision = 2, scale = 1)
     private BigDecimal rating;
 

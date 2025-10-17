@@ -57,4 +57,8 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @ToString.Exclude @EqualsAndHashCode.Exclude
     private List<PaymentTransaction> paymentTransactions;
+
+    @OneToOne
+    @JoinColumn(name = "shop_id") // khóa ngoại
+    private Shop shop;
 }
