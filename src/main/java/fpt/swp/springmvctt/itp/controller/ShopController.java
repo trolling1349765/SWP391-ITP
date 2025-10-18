@@ -1,56 +1,43 @@
 package fpt.swp.springmvctt.itp.controller;
-import fpt.swp.springmvctt.itp.entity.Shop;
-import fpt.swp.springmvctt.itp.repository.ShopRepository;
-import fpt.swp.springmvctt.itp.service.StorageService;
+
+import fpt.swp.springmvctt.itp.dto.request.ProductForm;
+import fpt.swp.springmvctt.itp.repository.CategoryRepository;
+import fpt.swp.springmvctt.itp.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/shop")
+@RequiredArgsConstructor
 public class ShopController {
-    private final ShopRepository shopRepository;
-    private final StorageService storageService;
 
-    public ShopController(ShopRepository shopRepository, StorageService storageService) {
-        this.shopRepository = shopRepository;
-        this.storageService = storageService;
+    private final ProductService productService;
+    private final CategoryRepository categoryRepository;
+
+    // /itp/shop/dashboard
+    @GetMapping("/dashboard")
+    public String dashboard(Model model) {
+        model.addAttribute("products", productService.listMyProducts()); // list theo shop hiện tại
+        return "shop/dashboard"; // Tạo templates/shop/dashboard.html
     }
 
-    @GetMapping
-    public String viewShop(Model model) {
-        Shop shop = new Shop();
-        shop.setShopName("EverGift Store");
-        shop.setShopCode("EV001");
-        shop.setCategory("Gifts & Flowers");
-        shop.setStatus("active");
-        shop.setEmail("evergift@gmail.com");
-        shop.setPhone("0123456789");
-        shop.setDescription("This is a demo shop for testing UI.");
-
-        model.addAttribute("shop", shop);
-        model.addAttribute("totalProducts", 120);
-        model.addAttribute("inStock", 100);
-        model.addAttribute("lowStock", 10);
-        model.addAttribute("outOfStock", 10);
-
-        return "shop/ShopDetails";
+    // Mở form Add Product
+    @GetMapping("/products/new")
+    public String addProductForm(Model model) {
+        model.addAttribute("form", new ProductForm());
+        model.addAttribute("categories", categoryRepository.findAll());
+        return "addProduct"; // đúng tên file bạn đang có
     }
 
-
-
-    @PostMapping("/upload-image")
-    public String uploadShopImage(@RequestParam("file") MultipartFile file,
-                                  @RequestParam("shopId") Long shopId) {
-        String imageUrl = storageService.uploadImage(file);
-        Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> new RuntimeException("Shop not found"));
-        shop.setImage(imageUrl);
-        shopRepository.save(shop);
-        return "redirect:/shop/details/" + shopId;
+    // Submit tạo mới
+    @PostMapping("/products")
+    public String createProduct(@ModelAttribute("form") ProductForm form,
+                                RedirectAttributes ra) {
+        productService.create(form);      // service sẽ ép status = HIDDEN
+        ra.addFlashAttribute("msg", "Created!");
+        return "redirect:/shop/dashboard";
     }
 }
