@@ -55,5 +55,6 @@ public class Shop extends BaseEntity {
     @OneToOne(mappedBy = "shop")
     @JoinColumn(name = "user_id", unique = true)
     private User user;
+
 }
 
