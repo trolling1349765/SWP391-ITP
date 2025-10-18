@@ -18,14 +18,14 @@ public class Category extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "category_name", length = 100, nullable = false)
+    @Column(name = "category_name", length = 100, nullable = false, unique = true)
     private String categoryName;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
     // One category -> many products
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category")
     private List<Product> products;
 }
 

@@ -21,15 +21,27 @@ public abstract class BaseEntity {
     @Column(name = "create_by")
     private String createBy;
 
-    @Column(name = "create_at" )
+    @Column(name = "create_at")
     private LocalDateTime createAt;
 
     @Column(name = "update_at")
     private LocalDateTime updateAt;
+    @Column(name = "update_by")
+    private String updateBy;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
     @Column(name = "delete_by")
     private String deleteBy;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updateAt = LocalDateTime.now();
+    }
 }
