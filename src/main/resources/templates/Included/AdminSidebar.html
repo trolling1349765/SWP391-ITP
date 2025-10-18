@@ -39,13 +39,13 @@
                     <span>Dashboard</span>
                 </a>
             </li>
-            <li>
-                <a th:href="@{/admin/analytics}"
-                   th:classappend="${#strings.contains(currentPath,'/admin/analytics')}? ' active'">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M7 15v3M12 11v7M17 7v11"/></svg>
-                    <span>System Analytics</span>
-                </a>
-            </li>
+<!--            <li>-->
+<!--                <a th:href="@{/admin/analytics}"-->
+<!--                   th:classappend="${#strings.contains(currentPath,'/admin/analytics')}? ' active'">-->
+<!--                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M7 15v3M12 11v7M17 7v11"/></svg>-->
+<!--                    <span>System Analytics</span>-->
+<!--                </a>-->
+<!--            </li>-->
         </ul>
 
         <div class="section">Management</div>
@@ -82,6 +82,15 @@
                 <a th:href="@{/admin/wallets}" th:classappend="${#strings.contains(currentPath,'/admin/wallets')}? ' active'">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="20" height="12" rx="2"/><path d="M18 11h2"/></svg>
                     <span>System Wallet</span>
+                </a>
+            </li>
+        </ul>
+        <div class="section">Setting</div>
+        <ul class="nav">
+            <li>
+                <a th:href="@{/admin/setting}" th:classappend="${#strings.contains(currentPath,'/admin/setting')}? ' active'">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="20" height="12" rx="2"/><path d="M18 11h2"/></svg>
+                    <span>System setting</span>
                 </a>
             </li>
         </ul>
