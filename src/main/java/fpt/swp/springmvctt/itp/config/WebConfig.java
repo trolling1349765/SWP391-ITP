@@ -13,7 +13,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Runtime uploaded images
         String abs = Path.of(uploadDir).toAbsolutePath().normalize().toString().replace("\\","/");
-        registry.addResourceHandler("/assets/img/**").addResourceLocations("file:" + abs + "/");
+        registry.addResourceHandler("/assets/img/**")
+                .addResourceLocations("file:" + abs + "/")
+                .addResourceLocations("classpath:/assets/img/");
     }
 }

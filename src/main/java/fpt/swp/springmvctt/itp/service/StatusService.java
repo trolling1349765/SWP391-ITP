@@ -1,4 +1,5 @@
 package fpt.swp.springmvctt.itp.service;
+import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
 import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.repository.ShopRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,8 @@ public class StatusService {
             throw new IllegalArgumentException("Invalid product status");
         }
         var p = productRepository.findById(productId).orElseThrow();
-        p.setStatus(newStatus);
+        // Convert String to ProductStatus enum
+        p.setStatus(ProductStatus.valueOf(newStatus));
         p.setUpdateBy(actor);
         p.setUpdateAt(LocalDateTime.now());
     }
