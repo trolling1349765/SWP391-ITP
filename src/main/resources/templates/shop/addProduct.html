@@ -1,96 +1,59 @@
-<!-- src/main/resources/templates/shop/addProduct.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>Add Product</title>
-    <style>
-        :root{--bg:#0b1220;--card:#0f172a;--line:#1f2937;--text:#e5e7eb;--muted:#9ca3af;--primary:#2563eb;}
-        *{box-sizing:border-box}
-        body{background:var(--bg);color:var(--text);font:14px/1.5 ui-sans-serif,system-ui;margin:0}
-        .app{display:grid;grid-template-rows:auto 1fr auto;min-height:100vh}
-        .layout{display:grid;grid-template-columns:260px 1fr;gap:0;min-height:0}
-        .content{padding:16px}
-        .wrap{max-width:860px;margin:0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
-        label{display:block;margin:10px 0 6px;color:var(--muted)}
-        input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        .actions{margin-top:14px;display:flex;gap:10px}
-        .btn{padding:10px 14px;border-radius:10px;border:0;background:var(--primary);color:#fff;text-decoration:none;cursor:pointer}
-        a.btn{display:inline-block}
-        .error{color:#fda4af;font-size:12px;margin-top:4px}
-        small.hint{color:var(--muted)}
-    </style>
-</head>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{Included/ShopHeader :: shopHead}"></head>
 <body>
-<div class="app">
+<div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
-    <div th:replace="~{Included/Header :: header}"></div>
-
-    <div class="layout">
-        <aside th:replace="~{Included/ShopSidebar :: shopSidebar(${active})}"></aside>
-
-        <main class="content">
-            <div class="wrap">
-                <h2 style="margin:0 0 12px">Add Product</h2>
-
-                <!-- Add chỉ nhập TÊN / MÔ TẢ / GIÁ (+ ảnh nếu có) -->
-                <form th:action="@{/shop/addProduct}" th:object="${form}" method="post" enctype="multipart/form-data">
-
-                    <label>Name</label>
-                    <input th:field="*{productName}" placeholder="Product name" required/>
-                    <div class="error" th:if="${#fields.hasErrors('productName')}" th:errors="*{productName}"></div>
-
-                    <div class="grid">
-                        <div>
-                            <label>Price</label>
-                            <input th:field="*{price}" type="number" step="0.01" min="0" placeholder="0.00" required/>
-                            <div class="error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
-                        </div>
-                        <div>
-                            <label>Category</label>
-                            <select th:field="*{categoryId}" required>
-                                <option value="" disabled selected>-- Choose category --</option>
-                                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.categoryName}">Category</option>
-                            </select>
-                            <div class="error" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
-                        </div>
-                    </div>
-
-                    <!-- Status mặc định HIDDEN (giữ dropdown để bạn chọn nếu muốn) -->
-                    <label>Status</label>
-                    <select th:field="*{status}">
-                        <option value="HIDDEN" selected>HIDDEN</option>
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="BLOCKED">BLOCKED</option>
-                        <option value="DRAFT">DRAFT</option>
-                    </select>
-                    <div class="error" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
-
-                    <!-- Ảnh: (tùy bạn có dùng upload hay không) -->
-                    <label>Image (JPG/PNG)</label>
-                    <input type="file" th:field="*{file}" accept=".jpg,.jpeg,.png"/>
-                    <small class="hint">Ảnh sẽ hiển thị qua đường dẫn bạn cấu hình /assets/img/...</small>
-                    <div class="error" th:if="${#fields.hasErrors('file')}" th:errors="*{file}"></div>
-
-                    <label>Description</label>
-                    <textarea th:field="*{description}" rows="4" placeholder="Short description..."></textarea>
-                    <div class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
-
-                    <div class="actions">
-                        <button class="btn" type="submit">Create</button>
-                        <a class="btn" th:href="@{/shop/dashboard}" style="background:#334155">Cancel</a>
-                    </div>
-
-                    <small class="hint" style="display:block;margin-top:10px">
-                        * Số lượng KHÔNG nhập ở đây. Vào <b>Inventory → Product Stocks</b> để nhập kho (ProductStore).
-                    </small>
-                </form>
-            </div>
-        </main>
+<div class="row g-3">
+    <div class="col-12 col-lg-3 col-xl-2">
+        <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
     </div>
 
-    <div th:replace="~{Included/Footer :: footer}"></div>
+    <div class="col-12 col-lg-9 col-xl-10">
+        <div class="card">
+            <div class="card-header">Thêm sản phẩm</div>
+            <div class="card-body">
+                <form th:action="@{/shop/addProduct}" th:object="${form}" method="post" enctype="multipart/form-data" class="row g-3">
+
+                    <div class="col-md-8">
+                        <label class="form-label">Tên sản phẩm</label>
+                        <input th:field="*{productName}" class="form-control" placeholder="Nhập tên..." required/>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Giá</label>
+                        <input th:field="*{price}" type="number" min="0" step="0.01" class="form-control" placeholder="0.00" required/>
+                    </div>
+
+                    <div class="col-md-6" th:if="${categories != null}">
+                        <label class="form-label">Danh mục</label>
+                        <select th:field="*{categoryId}" class="form-select">
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.categoryName}">Cat</option>
+                        </select>
+                    </div>
+                    <input th:if="${categories == null}" type="hidden" th:field="*{categoryId}"/>
+
+                    <div class="col-12">
+                        <label class="form-label">Mô tả</label>
+                        <textarea th:field="*{description}" rows="4" class="form-control" placeholder="Mô tả"></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Ảnh (tùy chọn)</label>
+                        <input type="file" th:field="*{file}" accept="image/*" class="form-control"/>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button class="btn btn-primary" type="submit">Tạo</button>
+                        <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div th:replace="~{Included/ShopFooter :: shopFooter}"></div>
 </body>
 </html>

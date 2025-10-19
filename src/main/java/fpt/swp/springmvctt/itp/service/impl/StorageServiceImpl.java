@@ -1,70 +1,46 @@
 package fpt.swp.springmvctt.itp.service.impl;
 
 import fpt.swp.springmvctt.itp.service.StorageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
 
-    private final Path uploadRoot;
+    @Value("${app.upload-dir:uploads/assets/img}")
+    private String uploadDir;
 
-    public StorageServiceImpl(@Value("${app.upload.root:uploads}") String uploadRoot) {
-        this.uploadRoot = Paths.get(uploadRoot).toAbsolutePath().normalize();
-        try {
-            Files.createDirectories(this.uploadRoot);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create upload directory: " + uploadRoot, e);
-        }
-    }
+    @Value("${app.dev-assets-dir:src/main/resources/assets/img}")
+    private String devResourcesDir;
 
     @Override
-    public String uploadImage(MultipartFile file) {
-        return store(file, "products");
-    }
-
-    @Override
-    public String store(MultipartFile file, String subdir) {
+    public String saveProductImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) return null;
         try {
-            if (file == null || file.isEmpty()) {
-                throw new IllegalArgumentException("File rỗng hoặc không tồn tại");
-            }
+            Files.createDirectories(Path.of(uploadDir));
+            String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
+            String filename = "p_" + System.currentTimeMillis() + (ext == null ? "" : "." + ext.toLowerCase());
+            Path runtimeDest = Path.of(uploadDir, filename).toAbsolutePath().normalize();
+            file.transferTo(runtimeDest.toFile());
 
+            // copy sang resources (dev)
+            try {
+                Files.createDirectories(Path.of(devResourcesDir));
+                Path devDest = Path.of(devResourcesDir, filename).toAbsolutePath().normalize();
+                if (!Files.exists(devDest)) Files.copy(runtimeDest, devDest);
+            } catch (IOException ignored) { }
 
-            Path targetDir = uploadRoot;
-            if (subdir != null && !subdir.isBlank()) {
-                targetDir = uploadRoot.resolve(subdir);
-                Files.createDirectories(targetDir);
-            }
-
-            // Tạo tên file unique: UUID + extension
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String filename = UUID.randomUUID().toString() + extension;
-
-
-            Path targetPath = targetDir.resolve(filename);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-
-            String relativePath = uploadRoot.relativize(targetPath).toString().replace("\\", "/");
-            System.out.println("✅ Uploaded image: " + relativePath);
-
-            return relativePath;
-
+            return "/assets/img/" + filename;
         } catch (IOException e) {
-            throw new RuntimeException("❌ Upload failed: " + e.getMessage(), e);
+            throw new RuntimeException("Cannot save file", e);
         }
     }
 }

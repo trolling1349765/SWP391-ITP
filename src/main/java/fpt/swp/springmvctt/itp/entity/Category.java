@@ -1,31 +1,20 @@
 package fpt.swp.springmvctt.itp.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
+import lombok.*;
 
 @Entity
-@Table(name = "categories")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name="categories")
+@Getter @Setter @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Category extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "category_name", length = 100, nullable = false, unique = true)
+    @Column(name="category_name", length=100, nullable=false)
     private String categoryName;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition="TEXT")
     private String description;
-
-    // One category -> many products
-    @OneToMany(mappedBy = "category")
-    private List<Product> products;
 }
-

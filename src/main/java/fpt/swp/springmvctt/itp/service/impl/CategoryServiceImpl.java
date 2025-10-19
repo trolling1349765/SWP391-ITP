@@ -5,7 +5,6 @@ import fpt.swp.springmvctt.itp.repository.CategoryRepository;
 import fpt.swp.springmvctt.itp.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -16,6 +15,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> findAll() {
-        return categoryRepository.findAll();
+        try {
+            return categoryRepository.findAll();
+        } catch (Exception e) {
+            return List.of();
+        }
     }
 }

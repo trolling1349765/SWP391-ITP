@@ -1,102 +1,99 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>Inventory / Stocks</title>
-    <style>
-        body{background:#0b1220;color:#e5e7eb;font:14px/1.5 ui-sans-serif,system-ui;margin:0}
-        .container{max-width:1100px;margin:24px auto;padding:0 12px}
-        .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-        .card{background:#0f172a;border:1px solid #1f2937;border-radius:16px;padding:16px}
-        table{width:100%;border-collapse:collapse}
-        th,td{padding:8px;border-bottom:1px solid #1f2937;text-align:left}
-        label{display:block;margin:10px 0 6px;color:#9ca3af}
-        input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:#e5e7eb}
-        .btn{padding:10px 14px;border-radius:10px;border:0;background:#2563eb;color:#fff;cursor:pointer}
-        .alert{margin-bottom:10px;padding:10px;border-radius:8px}
-        .ok{background:#052e16;color:#86efac;border:1px solid #166534}
-        .err{background:#450a0a;color:#fecaca;border:1px solid #7f1d1d}
-    </style>
-</head>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{Included/ShopHeader :: shopHead}"></head>
 <body>
-<div class="container">
-    <h2 style="margin:0 0 12px">Inventory – Product Stocks</h2>
+<div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
-    <div th:if="${ok}" class="alert ok" th:text="${ok}"></div>
-    <div th:if="${err}" class="alert err" th:text="${err}"></div>
+<div class="row g-3">
+    <!-- Sidebar -->
+    <div class="col-12 col-lg-3 col-xl-2">
+        <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
+    </div>
 
-    <div class="grid">
-        <!-- Bảng sản phẩm -->
-        <div class="card">
-            <h3 style="margin-top:0">Sản phẩm của shop</h3>
-            <table>
-                <thead>
-                <tr>
-                    <th>ID</th><th>Tên</th><th>Giá</th><th>Tồn khả dụng</th><th>Trạng thái</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="p : ${products}">
-                    <td th:text="${p.id}">1</td>
-                    <td th:text="${p.productName}">Name</td>
-                    <td th:text="${#numbers.formatDecimal(p.price,0,'COMMA',2,'POINT')}">0.00</td>
-                    <td th:text="${p.availableStock}">0</td>
-                    <td th:text="${p.status}">HIDDEN</td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(products)}">
-                    <td colspan="5" style="color:#9ca3af">Chưa có sản phẩm nào</td>
-                </tr>
-                </tbody>
-            </table>
+    <!-- Main -->
+    <div class="col-12 col-lg-9 col-xl-10">
+
+        <!-- Alerts -->
+        <div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
+        <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
+        <!-- Products & stock table -->
+        <div class="card mb-3">
+            <div class="card-header">Sản phẩm & Tồn kho</div>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ảnh</th>
+                        <th>Tên SP</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th class="text-nowrap">Serials</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${products}">
+                        <td th:text="${p.id}">1</td>
+                        <td>
+                            <img th:if="${p.image}" th:src="${p.image}" class="img-thumbnail" style="max-height:48px"/>
+                        </td>
+                        <td th:text="${p.productName}">Tên</td>
+                        <td th:text="${stockMap[p.id]}">0</td>
+                        <td><span class="badge text-bg-secondary" th:text="${p.status}">HIDDEN</span></td>
+                        <td>
+                            <a th:href="@{|/shop/products/${p.id}/serials|}" class="btn btn-sm btn-outline-secondary">Xem serial</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Form nhập ProductStore -->
+        <!-- Add / Update stock by serial -->
         <div class="card">
-            <h3 style="margin-top:0">Nhập kho / Cập nhật kho</h3>
+            <div class="card-header">Thêm / Cập nhật serial</div>
+            <div class="card-body">
+                <form th:action="@{/shop/inventory}" th:object="${form}" method="post" class="row g-3">
 
-            <!-- POST đúng tới /shop/inventory -->
-            <form th:action="@{/shop/inventory}" th:object="${form}" method="post">
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label">Sản phẩm</label>
+                        <select th:field="*{productId}" class="form-select" required>
+                            <option value="" disabled selected>-- Chọn --</option>
+                            <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.productName}"></option>
+                        </select>
+                        <div class="form-text">Chọn sản phẩm cần nhập kho theo serial.</div>
+                    </div>
 
-                <label>Chọn sản phẩm</label>
-                <select th:field="*{productId}" required>
-                    <option value="" disabled selected>-- Select product --</option>
-                    <option th:each="p : ${products}" th:value="${p.id}"
-                            th:text="${p.id + ' - ' + p.productName}"></option>
-                </select>
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label">Serial</label>
+                        <input th:field="*{serial}" class="form-control" placeholder="VD: SR-001" required/>
+                        <div class="form-text">Trùng serial + product ⇒ cộng dồn số lượng.</div>
+                    </div>
 
-                <label>Serial code (unique)</label>
-                <input th:field="*{serialCode}" placeholder="ABC-123-XYZ" required/>
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label">Mã (secret_code)</label>
+                        <input th:field="*{code}" class="form-control" placeholder="VD: KEY-ABCD"/>
+                        <div class="form-text">Tùy chọn (nếu có mã đi kèm thẻ).</div>
+                    </div>
 
-                <label>Secret code (đối chiếu)</label>
-                <input th:field="*{secretCode}" placeholder="SECRET-..."/>
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label">Số lượng</label>
+                        <input th:field="*{quantity}" type="number" min="0" class="form-control" required/>
+                    </div>
 
-                <label>Số lượng</label>
-                <input th:field="*{quantity}" type="number" min="1" step="1" placeholder="1"/>
+                    <div class="col-12 d-flex gap-2">
+                        <button class="btn btn-primary" type="submit">Cập nhật kho</button>
+                        <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary">← Dashboard</a>
+                    </div>
 
-                <label>Trạng thái</label>
-                <select th:field="*{status}">
-                    <option value="AVAILABLE">AVAILABLE</option>
-                    <option value="HIDDEN">HIDDEN</option>
-                    <option value="RESERVED">RESERVED</option>
-                    <option value="SOLD">SOLD</option>
-                </select>
-
-                <label>Face Value</label>
-                <input th:field="*{faceValue}" type="number" step="0.01" placeholder="0.00"/>
-
-                <label>Ghi chú</label>
-                <textarea th:field="*{infomation}" rows="3" placeholder="Lô hàng, nhà CC,..."></textarea>
-
-                <div style="margin-top:12px">
-                    <button class="btn" type="submit">Lưu kho</button>
-                </div>
-            </form>
-
-            <p style="color:#9ca3af;margin-top:10px">
-                * Nếu serial đã tồn tại, hệ thống sẽ cập nhật bản ghi; sau đó tự đồng bộ tồn kho của Product.
-            </p>
+                </form>
+            </div>
         </div>
+
     </div>
 </div>
+
+<div th:replace="~{Included/ShopFooter :: shopFooter}"></div>
 </body>
 </html>

@@ -1,16 +1,11 @@
-
 package fpt.swp.springmvctt.itp.dto.request;
 
 import lombok.Data;
-import java.math.BigDecimal;
 
 @Data
 public class StockForm {
     private Long productId;
-    private String serialCode;
-    private String secretCode;
-    private String quantity;
-    private BigDecimal faceValue;
-    private String status;
-    private String infomation;
+    private String serial;   // map -> product_stores.serial_code
+    private String code;     // map -> product_stores.secret_code (mã như id)
+    private Integer quantity; // >= 0 (DB là int)
 }

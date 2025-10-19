@@ -1,65 +1,70 @@
-    <!DOCTYPE html>
-    <html xmlns:th="http://www.thymeleaf.org">
-    <head><meta charset="UTF-8"/><title>Update Product</title>
-        <link rel="stylesheet" th:href="@{/assets/css/normalize.css}" />
-        <style>
-            body{background:#0b1220;color:#e5e7eb;font:14px/1.5 ui-sans-serif,system-ui;margin:0}
-            .wrap{max-width:860px;margin:24px auto;background:#0f172a;border:1px solid #1f2937;border-radius:16px;padding:16px}
-            label{display:block;margin:10px 0 6px;color:#9ca3af}
-            input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:#e5e7eb}
-            .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-            .actions{margin-top:14px;display:flex;gap:10px}
-            .btn{padding:10px 14px;border-radius:10px;border:0;background:#2563eb;color:#fff;text-decoration:none;cursor:pointer}
-            a.btn{display:inline-block}
-        </style>
-    </head>
-    <body>
-    <div class="wrap">
-        <h2 style="margin:0 0 12px">Update Product</h2>
-        <form th:action="@{'/shop/updateProduct/' + ${product.id}}" th:object="${form}" method="post">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{Included/ShopHeader :: shopHead}"></head>
+<body>
+<div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
-        <label>Name</label>
-            <input th:field="*{productName}"/>
-
-            <div class="grid">
-                <div>
-                    <label>Price</label>
-                    <input th:field="*{price}" type="number" step="0.01"/>
-                </div>
-                <div>
-                    <label>Stock</label>
-                    <input th:field="*{availableStock}" type="number" min="0"/>
-                </div>
-            </div>
-
-            <div class="grid">
-                <div>
-                    <label>Category</label>
-                    <select th:field="*{categoryId}">
-                        <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.categoryName}">Category</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Status</label>
-                    <select th:field="*{status}">
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="HIDDEN">HIDDEN</option>
-                        <option value="BLOCKED">BLOCKED</option>
-                    </select>
-                </div>
-            </div>
-
-            <label>Image path (static)</label>
-            <input th:field="*{img}"/>
-
-            <label>Description</label>
-            <textarea th:field="*{description}" rows="4"></textarea>
-
-            <div class="actions">
-                <button class="btn" type="submit">Save changes</button>
-                <a class="btn" th:href="@{/shop/dashboard}" style="background:#334155">Cancel</a>
-            </div>
-        </form>
+<div class="row g-3">
+    <div class="col-12 col-lg-3 col-xl-2">
+        <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
     </div>
-    </body>
-    </html>
+
+    <div class="col-12 col-lg-9 col-xl-10">
+        <div class="card">
+            <div class="card-header" th:text="'Cập nhật sản phẩm #' + ${productId}">Cập nhật</div>
+            <div class="card-body">
+                <form th:action="@{'/shop/updateProduct/' + ${productId}}" th:object="${form}" method="post" enctype="multipart/form-data" class="row g-3">
+
+                    <div class="col-md-8">
+                        <label class="form-label">Tên sản phẩm</label>
+                        <input th:field="*{productName}" class="form-control" required/>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Giá</label>
+                        <input th:field="*{price}" type="number" min="0" step="0.01" class="form-control" required/>
+                    </div>
+
+                    <div class="col-md-6" th:if="${categories != null}">
+                        <label class="form-label">Danh mục</label>
+                        <select th:field="*{categoryId}" class="form-select">
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.categoryName}">Cat</option>
+                        </select>
+                    </div>
+                    <input th:if="${categories == null}" type="hidden" th:field="*{categoryId}"/>
+
+                    <div class="col-12">
+                        <label class="form-label">Mô tả</label>
+                        <textarea th:field="*{description}" rows="4" class="form-control"></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Ảnh hiện tại</label><br/>
+                        <img th:if="${product.image}" th:src="${product.image}" alt="current" class="img-thumbnail" style="max-height:120px"/>
+                        <input type="hidden" th:field="*{img}" th:value="${product.image}"/>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Ảnh mới (tùy chọn)</label>
+                        <input type="file" th:field="*{file}" accept="image/*" class="form-control"/>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Tồn kho hiện tại</label>
+                        <input th:value="${availableStock}" class="form-control" readonly/>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button class="btn btn-primary" type="submit">Cập nhật</button>
+                        <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{Included/ShopFooter :: shopFooter}"></div>
+</body>
+</html>
