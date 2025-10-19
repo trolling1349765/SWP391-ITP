@@ -3,15 +3,15 @@ package fpt.swp.springmvctt.itp.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Table(name = "roles")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class Role extends BaseEntity {
 
     @Id
@@ -24,7 +24,6 @@ public class Role extends BaseEntity {
     @Column(length = 255)
     private String description;
 
-    // Một Role có nhiều User
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<User> users;
+    // Note: User có roleId (Long), không dùng relationship object
+    // Nếu muốn dùng @OneToMany thì User phải có @ManyToOne Role role
 }

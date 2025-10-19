@@ -16,7 +16,7 @@
 <body th:fragment="shopHeader">
 <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" th:href="@{/shop/dashboard}">Shop Admin</a>
+        <a class="navbar-brand fw-bold" th:href="@{/shop/dashboard}">Shop Dashboard</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#shopNav" aria-controls="shopNav"
                 aria-expanded="false" aria-label="Toggle navigation">
@@ -27,15 +27,15 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <a th:href="@{/shop/dashboard}" class="nav-link"
-                       th:classappend="${#strings.contains(#request.requestURI,'/shop/dashboard')}? ' active'">Dashboard</a>
+                       th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/dashboard')}? ' active'">Dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a th:href="@{/shop/addProduct}" class="nav-link"
-                       th:classappend="${#strings.contains(#request.requestURI,'/shop/addProduct')}? ' active'">Thêm sản phẩm</a>
+                       th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/addProduct')}? ' active'">Thêm sản phẩm</a>
                 </li>
                 <li class="nav-item">
                     <a th:href="@{/shop/inventory}" class="nav-link"
-                       th:classappend="${#strings.contains(#request.requestURI,'/shop/inventory')}? ' active'">Kho</a>
+                       th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/inventory')}? ' active'">Kho</a>
                 </li>
             </ul>
         </div>
