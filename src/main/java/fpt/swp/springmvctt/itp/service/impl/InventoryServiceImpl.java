@@ -111,4 +111,12 @@ public class InventoryServiceImpl implements InventoryService {
         }
         return map;
     }
+
+    @Override
+    public void deleteByProductId(Long productId) {
+        // Xóa tất cả serials (ProductStore)
+        List<ProductStore> serials = productStoreRepository.findByProductIdOrderByIdDesc(productId);
+        productStoreRepository.deleteAll(serials);
+        System.out.println("Deleted " + serials.size() + " serials for product ID: " + productId);
+    }
 }

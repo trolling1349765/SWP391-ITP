@@ -6,6 +6,7 @@ import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
 import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.service.ProductService;
 import fpt.swp.springmvctt.itp.service.StorageService;
+import fpt.swp.springmvctt.itp.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final StorageService storageService;
+    private final InventoryService inventoryService;
 
     @Override
     public Product createProduct(Long shopId, ProductForm form) {
@@ -32,9 +34,12 @@ public class ProductServiceImpl implements ProductService {
         p.setAvailableStock(0);
 
         if (form.getFile() != null && !form.getFile().isEmpty()) {
-            p.setImage(storageService.saveProductImage(form.getFile()));
+            String imagePath = storageService.saveProductImage(form.getFile());
+            p.setImage(imagePath);
+            System.out.println("Created product with image: " + imagePath);
         } else if (form.getImg() != null && !form.getImg().isBlank()) {
             p.setImage(form.getImg());
+            System.out.println("Created product with existing image: " + form.getImg());
         }
         return productRepository.save(p);
     }
@@ -50,9 +55,12 @@ public class ProductServiceImpl implements ProductService {
         if (form.getCategoryId() != null) p.setCategoryId(form.getCategoryId());
 
         if (form.getFile() != null && !form.getFile().isEmpty()) {
-            p.setImage(storageService.saveProductImage(form.getFile()));
+            String imagePath = storageService.saveProductImage(form.getFile());
+            p.setImage(imagePath);
+            System.out.println("Updated product with new image: " + imagePath);
         } else if (form.getImg() != null && !form.getImg().isBlank()) {
             p.setImage(form.getImg());
+            System.out.println("Updated product keeping existing image: " + form.getImg());
         }
         return productRepository.save(p);
     }
@@ -74,5 +82,17 @@ public class ProductServiceImpl implements ProductService {
     @Override @Transactional(readOnly = true)
     public List<Product> listByShop(Long shopId) {
         return productRepository.findByShopIdOrderByIdDesc(shopId);
+    }
+
+    @Override
+    public void delete(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
+        
+        // Xóa tất cả serials (product_stores) trước khi xóa sản phẩm
+        inventoryService.deleteByProductId(id);
+        
+        //xóa sản phẩm
+        productRepository.delete(product);
     }
 }

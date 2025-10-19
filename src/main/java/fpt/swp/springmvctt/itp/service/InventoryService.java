@@ -18,4 +18,5 @@ public interface InventoryService {
 
     int availableStockForProduct(Long shopId, Long productId);
     Map<Long, Integer> availableStockByProductForShop(Long shopId);
+    void deleteByProductId(Long productId);
 }
