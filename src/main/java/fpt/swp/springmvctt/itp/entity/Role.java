@@ -24,6 +24,4 @@ public class Role extends BaseEntity {
     @Column(length = 255)
     private String description;
 
-    // Note: User có roleId (Long), không dùng relationship object
-    // Nếu muốn dùng @OneToMany thì User phải có @ManyToOne Role role
 }

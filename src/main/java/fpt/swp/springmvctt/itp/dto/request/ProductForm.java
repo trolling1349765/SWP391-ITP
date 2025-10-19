@@ -10,10 +10,6 @@ public class ProductForm {
     private String description;
     private BigDecimal price;
     private Long categoryId;
-
-    // nếu không upload file mới thì giữ đường dẫn này
     private String img;
-
-    // upload ảnh mới
     private MultipartFile file;
 }

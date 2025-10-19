@@ -15,7 +15,7 @@ public class Shop extends BaseEntity {
     private Long id;
 
     @Column(name="user_id", nullable=false)
-    private Long userId;                       // 1 user ↔ 1 shop
+    private Long userId;
 
     @Column(name="shop_name", length=100, nullable=false)
     private String shopName;

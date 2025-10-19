@@ -12,4 +12,5 @@ public interface ProductService {
     Product changeStatus(Long productId, ProductStatus status);
     Product get(Long id);
     List<Product> listByShop(Long shopId);
+    void delete(Long id);
 }

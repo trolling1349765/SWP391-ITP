@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.ResponseEntity;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -82,7 +83,7 @@ public class ShopController {
                                     RedirectAttributes ra) {
         Product created = productService.createProduct(SHOP_ID, form); // HIDDEN
         
-        // Nếu có serial, tạo stock luôn
+        //  serial
         if (serial != null && !serial.isBlank() && stockQuantity != null && stockQuantity > 0) {
             StockForm stockForm = new StockForm();
             stockForm.setProductId(created.getId());
@@ -97,7 +98,7 @@ public class ShopController {
         return "redirect:/shop/dashboard";
     }
 
-    // Update Product (tên/mô tả/giá/ảnh)
+    // Update Product
     @GetMapping("/updateProduct/{id}")
     public String updateProductForm(@PathVariable Long id, Model model, HttpServletRequest request) {
         putCurrentPath(model, request);
@@ -123,7 +124,7 @@ public class ShopController {
                                       RedirectAttributes ra) {
         productService.updateProduct(id, form);
         
-        // Cập nhật status nếu có
+        // Cập nhật status
         if (status != null) {
             productService.changeStatus(id, status);
             ra.addFlashAttribute("ok", "Đã cập nhật sản phẩm #" + id + " → Status: " + status);
@@ -133,7 +134,7 @@ public class ShopController {
         return "redirect:/shop/dashboard";
     }
 
-    // Đổi trạng thái sản phẩm tay: ACTIVE/HIDDEN/BLOCKED
+    // ACTIVE/HIDDEN/BLOCKED
     @PostMapping("/products/{id}/status")
     public String changeStatus(@PathVariable Long id, @RequestParam ProductStatus status,
                                RedirectAttributes ra) {
@@ -151,12 +152,32 @@ public class ShopController {
         // Sắp xếp theo ID tăng dần (từ bé lên lớn)
         products.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
         
-        // Tạo stockMap để hiển thị tồn kho trong template
+        // Tạo stockMap và tính toán thống kê
         Map<Long, Integer> stockMap = new LinkedHashMap<>();
-        for (Product p : products) stockMap.put(p.getId(), p.getAvailableStock());
+        int totalActiveProducts = 0;
+        int lowStockProducts = 0;
+        int outOfStockProducts = 0;
+        
+        for (Product p : products) {
+            int stock = p.getAvailableStock();
+            stockMap.put(p.getId(), stock);
+            
+            // Calculate statistics
+            if (p.getStatus().name().equals("ACTIVE")) {
+                totalActiveProducts++;
+            }
+            if (stock == 0) {
+                outOfStockProducts++;
+            } else if (stock <= 10) {
+                lowStockProducts++;
+            }
+        }
         
         model.addAttribute("products", products);
         model.addAttribute("stockMap", stockMap);
+        model.addAttribute("totalActiveProducts", totalActiveProducts);
+        model.addAttribute("lowStockProducts", lowStockProducts);
+        model.addAttribute("outOfStockProducts", outOfStockProducts);
         model.addAttribute("form", new StockForm());
         return "shop/inventory";
     }
@@ -182,15 +203,8 @@ public class ShopController {
         return "redirect:/shop/inventory";
     }
 
-    @GetMapping("/products/{id}/serials")
-    public String listSerials(@PathVariable Long id, Model model) {
-        List<ProductStore> serials = inventoryService.listSerials(id);
-        model.addAttribute("product", productService.get(id));
-        model.addAttribute("serials", serials);
-        return "shop/ProductSerialList";
-    }
 
-    // Chi tiết sản phẩm (đủ thuộc tính)
+    // Chi tiết sản phẩm
     @GetMapping("/products/{id}")
     public String productDetail(@PathVariable Long id, Model model) {
         Product p = productService.get(id);
@@ -209,6 +223,48 @@ public class ShopController {
         inventoryService.changeSerialStatus(productStoreId, status);
         ra.addFlashAttribute("ok", "Đã đổi trạng thái serial → " + status);
         return "redirect:/shop/products/" + productId + "/serials";
+    }
+
+    @DeleteMapping("/products/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteProduct(@PathVariable Long id) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        
+        System.out.println("Delete request for product ID: " + id);
+        
+        try {
+            // Kiểm tra sản phẩm
+            Product product = productService.get(id);
+            System.out.println("Found product: " + product.getProductName() + ", Shop ID: " + product.getShopId());
+            
+            // Kiểm tra sản phẩm có thuộc về shop
+            if (!product.getShopId().equals(SHOP_ID)) {
+                System.out.println("Access denied: Product belongs to shop " + product.getShopId() + ", but current shop is " + SHOP_ID);
+                response.put("success", false);
+                response.put("message", "Không có quyền xóa sản phẩm này");
+                return ResponseEntity.status(403).body(response);
+            }
+            
+            // Xóa sản phẩm
+            System.out.println("Deleting product: " + product.getProductName());
+            productService.delete(id);
+            
+            response.put("success", true);
+            response.put("message", "Đã xóa sản phẩm thành công");
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            System.out.println("Product not found: " + e.getMessage());
+            response.put("success", false);
+            response.put("message", "Không tìm thấy sản phẩm");
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            System.out.println("Error deleting product: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
     }
 
 }
