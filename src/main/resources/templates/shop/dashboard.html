@@ -1,23 +1,69 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head th:replace="~{Included/ShopHeader :: shopHead}"></head>
-<body>
+<head th:replace="~{Included/ShopHeader :: shopHead}">
+    <style>
+        body { margin:0 !important; padding:0 !important; overflow-x:hidden; }
+        .row { margin-left:0 !important; margin-right:0 !important; }
+        
+        /* Fix button hover effects */
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Fix sidebar links */
+        .sidebar-link {
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-link:hover {
+            background: #374151 !important;
+            color: #ffffff !important;
+        }
+        
+        /* Fix form controls */
+        .form-select, .form-control {
+            border: 1px solid #d1d5db;
+        }
+        
+        .form-select:focus, .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+    </style>
+</head>
+<body style="margin:0;padding:0;overflow-x:hidden;">
 <div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
-<div class="row g-3">
-    <!-- Sidebar -->
-    <div class="col-12 col-lg-3 col-xl-2">
-        <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
-    </div>
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 p-0" style="position:fixed;top:56px;bottom:0;left:0;z-index:1000;">
+            <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
+        </div>
 
-    <!-- Main -->
-    <div class="col-12 col-lg-9 col-xl-10">
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-3 ms-auto">
         <div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
         <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
 
-        <div class="d-flex gap-2 mb-3">
-            <a th:href="@{/shop/addProduct}" class="btn btn-primary">Thêm Sản Phẩm</a>
-            <a th:href="@{/shop/inventory}" class="btn btn-secondary">Quản Lý Kho</a>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex gap-2">
+                <a th:href="@{/shop/addProduct}" class="btn btn-primary">Thêm Sản Phẩm</a>
+                <a th:href="@{/shop/inventory}" class="btn btn-secondary">Quản Lý Kho</a>
+            </div>
+            
+            <!-- Page size selector -->
+            <div class="d-flex align-items-center gap-2">
+                <label class="mb-0 text-muted small">Hiển thị:</label>
+                <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.href='/itp/shop/dashboard?page=1&size=' + this.value">
+                    <option value="5" th:selected="${pageSize == 5}">5</option>
+                    <option value="10" th:selected="${pageSize == 10}">10</option>
+                    <option value="20" th:selected="${pageSize == 20}">20</option>
+                    <option value="50" th:selected="${pageSize == 50}">50</option>
+                </select>
+                <span class="text-muted small">sản phẩm/trang</span>
+            </div>
         </div>
 
         <div class="card">
@@ -33,15 +79,22 @@
                     <tbody>
                     <tr th:each="p : ${products}">
                         <td th:text="${p.id}">1</td>
-                        <td><img th:if="${p.image}" th:src="${p.image}" class="img-thumbnail" style="max-height:56px"/></td>
+                        <td>
+                            <img th:if="${p.image}" 
+                                 th:src="@{${p.image}}" 
+                                 th:onerror="'this.src=\'/itp/assets/img/products/default.jpg\';this.onerror=null;'"
+                                 class="img-thumbnail" 
+                                 style="max-height:56px;object-fit:cover;"/>
+                            <span th:unless="${p.image}" class="badge bg-secondary">No image</span>
+                        </td>
                         <td th:text="${p.productName}">Tên</td>
                         <td th:text="${p.description}">Mô tả</td>
-                        <td th:text="${#numbers.formatCurrency(p.price)}">0</td>
+                        <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0</td>
                         <td th:text="${stockMap[p.id]}">0</td>
                         <td><span class="badge text-bg-dark" th:text="${p.status}">HIDDEN</span></td>
                         <td class="text-nowrap">
                             <a th:href="@{|/shop/updateProduct/${p.id}|}" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <a th:href="@{|/shop/products/${p.id}/serials|}" class="btn btn-sm btn-outline-secondary">Serials</a>
+                            <a th:href="@{|/shop/products/${p.id}|}" class="btn btn-sm btn-outline-dark">Chi tiết</a>
 
                             <!-- Đổi trạng thái: ACTIVE/HIDDEN/BLOCKED -->
                             <form th:action="@{|/shop/products/${p.id}/status|}" method="post" class="d-inline-flex align-items-center ms-1">
@@ -59,9 +112,118 @@
             </div>
         </div>
 
+        <!-- Pagination -->
+        <div th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+            <!-- Pagination info -->
+            <div class="text-muted small">
+                Hiển thị <strong th:text="${products.size()}">10</strong> / <strong th:text="${totalProducts}">100</strong> sản phẩm
+            </div>
+
+            <!-- Pagination controls -->
+            <nav aria-label="Product pagination">
+                <ul class="pagination mb-0">
+                    <!-- Previous -->
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/shop/dashboard(page=${currentPage - 1}, size=${pageSize})}" tabindex="-1">
+                            &laquo;
+                        </a>
+                    </li>
+
+                    <!-- Luôn hiển thị trang 1 -->
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'active'">
+                        <a class="page-link" th:href="@{/shop/dashboard(page=1, size=${pageSize})}">1</a>
+                    </li>
+
+                    <!-- Dấu ... nếu currentPage > 3 -->
+                    <li class="page-item disabled" th:if="${currentPage > 3}">
+                        <span class="page-link">...</span>
+                    </li>
+
+                    <!-- Các trang xung quanh currentPage (giới hạn 2-9) -->
+                    <th:block th:if="${totalPages > 2}">
+                        <th:block th:each="i : ${#numbers.sequence(2, totalPages - 1)}">
+                            <li class="page-item" 
+                                th:if="${i >= currentPage - 1 && i <= currentPage + 1 && i != 1 && i != totalPages}"
+                                th:classappend="${i == currentPage} ? 'active'">
+                                <a class="page-link" th:href="@{/shop/dashboard(page=${i}, size=${pageSize})}" th:text="${i}">2</a>
+                            </li>
+                        </th:block>
+                    </th:block>
+
+                    <!-- Dấu ... nếu currentPage < totalPages - 2 -->
+                    <li class="page-item disabled" th:if="${currentPage < totalPages - 2 && totalPages > 2}">
+                        <span class="page-link">...</span>
+                    </li>
+
+                    <!-- Luôn hiển thị trang cuối (nếu totalPages > 1) -->
+                    <li class="page-item" th:if="${totalPages > 1}" th:classappend="${currentPage == totalPages} ? 'active'">
+                        <a class="page-link" th:href="@{/shop/dashboard(page=${totalPages}, size=${pageSize})}" th:text="${totalPages}">10</a>
+                    </li>
+
+                    <!-- Next -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/shop/dashboard(page=${currentPage + 1}, size=${pageSize})}">
+                            &raquo;
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        </div>
     </div>
 </div>
 
-<div th:replace="~{Included/ShopFooter :: shopFooter}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Fix button functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fix warehouse management button
+        const warehouseBtn = document.querySelector('a[href="/shop/inventory"]');
+        if (warehouseBtn) {
+            warehouseBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = '/itp/shop/inventory';
+            });
+        }
+        
+        // Fix sidebar links
+        const sidebarLinks = document.querySelectorAll('aside a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Remove active class from all links
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                // Add active class to clicked link
+                this.classList.add('active');
+            });
+        });
+        
+        // Fix form submissions
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Add loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = 'Đang xử lý...';
+                }
+            });
+        });
+        
+        // Fix pagination
+        const pageLinks = document.querySelectorAll('.pagination a');
+        pageLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Add loading indicator
+                const pagination = this.closest('.pagination');
+                if (pagination) {
+                    pagination.style.opacity = '0.6';
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

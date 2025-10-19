@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head th:replace="~{Included/ShopHeader :: shopHead}"></head>
-<body>
+<body style="margin:0;padding:0;overflow-x:hidden;">
 <div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
-<div class="row g-3">
-    <div class="col-12 col-lg-3 col-xl-2">
-        <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
-    </div>
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <div class="col-md-3 col-lg-2 p-0" style="position:fixed;top:56px;bottom:0;left:0;z-index:1000;">
+            <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
+        </div>
 
-    <div class="col-12 col-lg-9 col-xl-10">
+        <div class="col-md-9 col-lg-10 p-3 ms-auto">
         <div class="card">
             <div class="card-header">Thêm sản phẩm</div>
             <div class="card-body">
@@ -43,17 +44,42 @@
                         <input type="file" th:field="*{file}" accept="image/*" class="form-control"/>
                     </div>
 
+                    <div class="col-12">
+                        <hr class="my-4"/>
+                        <h5 class="mb-3">Thông tin đầy đủ</h5>
+                        <p class="text-muted small">Yêu cầu điền đúng theo quy định</p>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Serial Code</label>
+                        <input name="serial" class="form-control" placeholder="VD: SR-001"/>
+                        <small class="text-muted">Mã serial của sản phẩm</small>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Secret Code (tùy chọn)</label>
+                        <input name="secretCode" class="form-control" placeholder="VD: KEY-ABCD"/>
+                        <small class="text-muted">Mã bí mật đi kèm</small>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Số lượng</label>
+                        <input name="stockQuantity" type="number" min="0" class="form-control" placeholder="0"/>
+                        <small class="text-muted">Số lượng nhập kho</small>
+                    </div>
+
                     <div class="col-12 d-flex gap-2">
-                        <button class="btn btn-primary" type="submit">Tạo</button>
+                        <button class="btn btn-primary" type="submit">Tạo Sản Phẩm</button>
                         <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary">Hủy</a>
                     </div>
 
                 </form>
             </div>
         </div>
+        </div>
     </div>
 </div>
 
-<div th:replace="~{Included/ShopFooter :: shopFooter}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

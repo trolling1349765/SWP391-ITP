@@ -9,7 +9,8 @@ public class HomeController {
 
     // 🏠 Trang chủ người dùng
     @GetMapping("/")
-    public String homepage() {
+    public String homepage(org.springframework.ui.Model model) {
+        model.addAttribute("currentPath", "/");
         // => src/main/resources/templates/user/Homepage.html
         return "user/Homepage";
     }
