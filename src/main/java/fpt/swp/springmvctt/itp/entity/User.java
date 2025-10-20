@@ -58,7 +58,6 @@ public class User extends BaseEntity {
     @ToString.Exclude @EqualsAndHashCode.Exclude
     private List<PaymentTransaction> paymentTransactions;
 
-    @OneToOne
-    @JoinColumn(name = "shop_id") // khóa ngoại
+    @OneToOne(mappedBy = "user")
     private Shop shop;
 }

@@ -52,8 +52,8 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL)
     private List<Product> products;
 
-    @OneToOne(mappedBy = "shop")
-    @JoinColumn(name = "user_id", unique = true)
+    @OneToOne()
+    @JoinColumn(name = "user_id")
     private User user;
 }
 

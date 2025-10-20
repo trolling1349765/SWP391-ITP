@@ -33,6 +33,12 @@ public class AuthController {
         User user = userService.Login(username, password);
         if (user != null) {
             session.setAttribute("user", user);
+            if (user.getRole().getName().equalsIgnoreCase("ADMIN")) {
+                return "redirect:/admin/dashboard";
+            }
+            if (user.getRole().getName().equalsIgnoreCase("SELLER")) {
+                return  "redirect:/seller/dashboard";
+            }
             return "redirect:/home";
         }
             model.addAttribute("error", "invalid username or password");
