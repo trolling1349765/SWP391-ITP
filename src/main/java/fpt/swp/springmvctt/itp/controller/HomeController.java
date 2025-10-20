@@ -34,10 +34,4 @@ public class HomeController {
         return "Included/ShopSidebar";
     }
 
-    // 🧩 Admin Sidebar (nếu bạn muốn kiểm tra riêng)
-    @GetMapping("/admin-sidebar")
-    public String adminSidebar() {
-        // => src/main/resources/templates/admin/AdminSidebar.html
-        return "admin/AdminSidebar";
-    }
 }
