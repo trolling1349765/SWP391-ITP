@@ -9,4 +9,5 @@ public interface UserService {
     User findById(Long id);
     User save(User userRestriction);
     User update(Long id, User userRestriction);
+    User Login(String emailOrUsername, String password);
 }
