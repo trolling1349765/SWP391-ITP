@@ -16,7 +16,7 @@
             <div class="d-flex gap-2">
                 <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
                 <a th:href="@{|/shop/updateProduct/${product.id}|}" class="btn btn-primary btn-sm">Sửa</a>
-                <a th:href="@{|/shop/updateProduct/${product.id}|}" class="btn btn-sm btn-outline-primary">Sửa</a>
+                <button th:onclick="'deleteProduct(' + ${product.id} + ')'" class="btn btn-sm btn-outline-danger">Xóa</button>
             </div>
         </div>
 
@@ -51,7 +51,104 @@
     </div>
 </div>
 
+<!-- Modal xác nhận xóa sản phẩm -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa sản phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa sản phẩm <strong th:text="${product.productName}">Tên sản phẩm</strong> không?</p>
+                <p class="text-danger">Hành động này không thể hoàn tác!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xóa sản phẩm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let productIdToDelete = null;
+
+function deleteProduct(id) {
+    console.log('Delete request for product ID:', id);
+    productIdToDelete = id;
+    
+    // Hiển thị modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Xử lý khi nhấn nút xác nhận xóa
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (productIdToDelete) {
+        confirmDelete(productIdToDelete);
+    }
+});
+
+function confirmDelete(productId) {
+    console.log('Confirming delete for product ID:', productId);
+    
+    fetch(`/itp/shop/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        
+        if (data.success) {
+            showAlert('success', data.message);
+            
+            // Đóng modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+            modal.hide();
+            
+            // Redirect về dashboard sau 1.5 giây后就
+            setTimeout(() => {
+                window.location.href = '/itp/shop/dashboard';
+            }, 1500);
+        } else {
+            showAlert('danger', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'Có lỗi xảy ra khi xóa sản phẩm');
+    });
+}
+
+function showAlert(type, message) {
+    // Tạo alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Thêm vào đầu trang
+    const container = document.querySelector('.container-fluid .col-md-9');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Tự động ẩn sau 5 giây
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
 </body>
 </html>
 
