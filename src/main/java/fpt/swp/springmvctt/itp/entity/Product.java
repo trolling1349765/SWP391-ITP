@@ -1,6 +1,7 @@
 package fpt.swp.springmvctt.itp.entity;
 
 import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
+import fpt.swp.springmvctt.itp.entity.enums.ProductType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -21,13 +22,18 @@ public class Product extends BaseEntity {
     private String productName;
 
     @Column(columnDefinition="TEXT")
-    private String description;
-
+    private String description;                // Mô tả ngắn
+    @Column(name="detailed_description", columnDefinition="TEXT")
+    private String detailedDescription;        // Mô tả chi tiết
     @Column(precision=15, scale=2, nullable=false)
     private BigDecimal price;
 
     @Column(name="category_id")
     private Long categoryId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="product_type", nullable=false, length=20)
+    private ProductType productType = ProductType.OTHER;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable=false, length=20)
