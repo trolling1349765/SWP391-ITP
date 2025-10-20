@@ -35,14 +35,12 @@
             <li>
                 <a th:href="@{/admin/dashboard}"
                    th:classappend="${#strings.contains(currentPath,'/admin/dashboard')}? ' active'">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l9-9 9 9"/><path d="M9 22V12h6v10"/></svg>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li>
                 <a th:href="@{/admin/analytics}"
                    th:classappend="${#strings.contains(currentPath,'/admin/analytics')}? ' active'">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M7 15v3M12 11v7M17 7v11"/></svg>
                     <span>System Analytics</span>
                 </a>
             </li>
@@ -52,19 +50,16 @@
         <ul class="nav">
             <li>
                 <a th:href="@{/admin/users}" th:classappend="${#strings.contains(currentPath,'/admin/users')}? ' active'">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/></svg>
                     <span>Manage Users</span>
                 </a>
             </li>
             <li>
                 <a th:href="@{/admin/shops}" th:classappend="${#strings.contains(currentPath,'/admin/shops')}? ' active'">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-6 9 6"/><path d="M4 10h16v10H4z"/></svg>
                     <span>Manage Shops</span>
                 </a>
             </li>
             <li>
                 <a th:href="@{/admin/disputes}" th:classappend="${#strings.contains(currentPath,'/admin/disputes')}? ' active'">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20l9-16H3z"/></svg>
                     <span>Handle Disputes</span>
                 </a>
             </li>
@@ -74,13 +69,11 @@
         <ul class="nav">
             <li>
                 <a th:href="@{/admin/transactions}" th:classappend="${#strings.contains(currentPath,'/admin/transactions')}? ' active'">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18"/><path d="M7 10h14"/><path d="M3 14h18"/><path d="M3 18h14"/></svg>
                     <span>Transactions</span>
                 </a>
             </li>
             <li>
                 <a th:href="@{/admin/wallets}" th:classappend="${#strings.contains(currentPath,'/admin/wallets')}? ' active'">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="20" height="12" rx="2"/><path d="M18 11h2"/></svg>
                     <span>System Wallet</span>
                 </a>
             </li>
