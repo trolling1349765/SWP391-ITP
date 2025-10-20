@@ -40,20 +40,25 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
     }
 
     @Override
-    public UserRestriction update(Long id, UserRestriction updated) {
+    public UserRestriction update(Long id, String reason, String status) {
         UserRestriction entity = userRestrictionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
-        entity.setReason(updated.getReason());
-        entity.setStatus(updated.getStatus());
+        entity.setReason(reason);
+        entity.setStatus(status);
         entity.setUpdateAt(LocalDate.now());
         return userRestrictionRepository.save(entity);
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Long id, String username) {
         UserRestriction entity = userRestrictionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
-
+        if (entity != null) {
+            entity.setIsDeleted(true);
+            entity.setDeleteBy(username);
+            entity.setUpdateAt(LocalDate.now());
+            userRestrictionRepository.save(entity);
+        }
     }
     @Override
     public Page<UserRestriction> findByFilter(String username, String status, LocalDate fromDate, LocalDate toDate, String deleted, int page, int size) {

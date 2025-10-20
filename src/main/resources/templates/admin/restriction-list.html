@@ -7,12 +7,12 @@
 </head>
 <body class="bg-light">
 <!--Header-->
-<header th:insert="~{Included/Header.html :: header}"></header>
+<!--<header th:insert="~{Included/Header.html :: header}"></header>-->
 
 <div class="row g-0">
     <!-- Sidebar -->
     <div class="col-md-3 col-lg-2 sidebar-wrapper p-0">
-        <aside th:insert="~{Included/AdminSidebar :: adminSidebar (currentPath='')}"></aside>
+<!--        <aside th:insert="~{Included/AdminSidebar :: adminSidebar (currentPath='')}"></aside>-->
     </div>
     <!--    Main content -->
     <div class="col-md-9 col-lg-10 p-4">
@@ -61,9 +61,9 @@
                         <th>
                             <select class="form-select form-select-sm" name="status">
                                 <option value="">All</option>
-                                <option value="suspended" th:selected="${status == 'suspended'}">SUSPENDED</option>
-                                <option value="locked" th:selected="${status == 'locked'}">LOCKED</option>
-                                <option value="banned" th:selected="${status == 'banned'}">BANNED</option>
+                                <option value="SUSPENDED" th:selected="${status == 'SUSPENDED'}">SUSPENDED</option>
+                                <option value="LOCKED" th:selected="${status == 'LOCKED'}">LOCKED</option>
+                                <option value="BANNED" th:selected="${status == 'BANNED'}">BANNED</option>
                             </select>
                         </th>
                         <th></th>
@@ -104,9 +104,9 @@
                     <td th:text="${#temporals.format(restriction.createAt, 'yyyy-MM-dd HH:mm')}"></td>
                     <td th:text="${restriction.createBy}"></td>
                     <td th:text="${restriction.isDeleted} ? 'Yes' : 'No'"></td>
-                    <td th:text="${restriction.isDeleted} ? restriction.deleteBy : ''"></td>
+                    <td th:text="${restriction.isDeleted} ? ${restriction.deleteBy} : ''"></td>
                     <td>
-                        <a th:href="@{'/admin/user-restriction/' + ${restriction.user != null ? restriction.user.id : 0}}"
+                        <a th:href="@{'/admin/user-restriction/' + ${restriction.user != null ? restriction.id : 0}}"
                            class="btn btn-success btn-sm">
                             <i class="bi bi-plus-circle"></i> Details
                         </a>

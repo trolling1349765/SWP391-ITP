@@ -1,7 +1,9 @@
 package fpt.swp.springmvctt.itp.controller;
 
+import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.entity.UserRestriction;
 import fpt.swp.springmvctt.itp.service.UserRestrictionService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -64,14 +66,20 @@ public class UserRestrictionController {
 
     // ✅ Cập nhật (PUT)
     @PutMapping("/edit/{id}")
-    public String update(@PathVariable Long id, @ModelAttribute UserRestriction restriction) {
-        userRestrictionService.update(id, restriction);
+    public String update(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason,
+            @RequestParam(required = false) String status
+                         ) {
+        userRestrictionService.update(id, reason, status);
+
         return "redirect:/admin/user-restriction";
     }
 
     @DeleteMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
-        userRestrictionService.delete(id);
+    public String delete(@PathVariable Long id, HttpSession session) {
+         User user =  (User) session.getAttribute("user");
+        userRestrictionService.delete(id, user.getUsername());
         return "redirect:/admin/user-restriction";
     }
 }
