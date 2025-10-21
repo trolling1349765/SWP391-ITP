@@ -70,7 +70,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                 try {
                     serialCode = getCellValueAsString(row.getCell(0));
                     String secretCode = getCellValueAsString(row.getCell(1));
-                    Integer quantity = getCellValueAsInteger(row.getCell(2));
+                    // Removed quantity validation - each serial represents 1 item
                     BigDecimal faceValue = getCellValueAsBigDecimal(row.getCell(3));
                     String information = getCellValueAsString(row.getCell(4));
                     
@@ -83,13 +83,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                         continue;
                     }
                     
-                    if (quantity == null || quantity < 0) {
-                        String errorMsg = "Dòng " + (i + 1) + ": Số lượng không hợp lệ (" + quantity + ")";
-                        errors.add(errorMsg);
-                        invalidSerials.add(serialCode);
-                        skippedCount++;
-                        continue;
-                    }
+                    // Each serial represents exactly 1 item - no quantity validation needed
                     
                     if (processedSerials.contains(serialCode)) {
                         String warningMsg = "Dòng " + (i + 1) + ": Serial code trùng lặp (" + serialCode + ")";
@@ -141,7 +135,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     Map<String, Object> serialData = new HashMap<>();
                     serialData.put("serialCode", serialCode);
                     serialData.put("secretCode", secretCode);
-                    serialData.put("quantity", quantity);
+                    // Removed quantity - each serial represents 1 item
                     serialData.put("faceValue", faceValue != null ? faceValue.doubleValue() : 0);
                     serialData.put("information", information != null ? information : "");
                     serialData.put("status", "AVAILABLE");
@@ -156,7 +150,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     stockForm.setProductId(form.getProductId());
                     stockForm.setSerial(serialCode);
                     stockForm.setCode(secretCode);
-                    stockForm.setQuantity(quantity);
+                    // Removed setQuantity - each serial represents 1 item
                     stockForm.setFaceValue(faceValue);
                     stockForm.setInfomation(information);
                     stockForm.setStatus("AVAILABLE");
@@ -224,7 +218,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                 try {
                     serialCode = getCellValueAsString(row.getCell(0));
                     String secretCode = getCellValueAsString(row.getCell(1));
-                    Integer quantity = getCellValueAsInteger(row.getCell(2));
+                    // Removed quantity validation - each serial represents 1 item
                     BigDecimal faceValue = getCellValueAsBigDecimal(row.getCell(3));
                     String information = getCellValueAsString(row.getCell(4));
                     
@@ -237,13 +231,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                         continue;
                     }
                     
-                    if (quantity == null || quantity < 0) {
-                        String errorMsg = "Dòng " + (i + 1) + ": Số lượng không hợp lệ (" + quantity + ")";
-                        errors.add(errorMsg);
-                        invalidSerials.add(serialCode);
-                        skippedCount++;
-                        continue;
-                    }
+                    // Each serial represents exactly 1 item - no quantity validation needed
                     
                     if (processedSerials.contains(serialCode)) {
                         String warningMsg = "Dòng " + (i + 1) + ": Serial code trùng lặp (" + serialCode + ")";
@@ -257,7 +245,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     Map<String, Object> serialData = new HashMap<>();
                     serialData.put("serialCode", serialCode);
                     serialData.put("secretCode", secretCode);
-                    serialData.put("quantity", quantity);
+                    // Removed quantity - each serial represents 1 item
                     serialData.put("faceValue", faceValue != null ? faceValue.doubleValue() : 0);
                     serialData.put("information", information != null ? information : "");
                     serialData.put("status", "AVAILABLE");
@@ -324,7 +312,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             ObjectNode serialNode = mapper.createObjectNode();
             serialNode.put("serialCode", (String) serial.get("serialCode"));
             serialNode.put("secretCode", (String) serial.get("secretCode"));
-            serialNode.put("quantity", (Integer) serial.get("quantity"));
+            // Removed quantity - each serial represents 1 item
             serialNode.put("faceValue", (Double) serial.get("faceValue"));
             serialNode.put("information", (String) serial.get("information"));
             serialNode.put("status", (String) serial.get("status"));
@@ -396,7 +384,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                 Map<String, Object> serial = new HashMap<>();
                 serial.put("serialCode", serialNode.get("serialCode").asText());
                 serial.put("secretCode", serialNode.get("secretCode").asText());
-                serial.put("quantity", serialNode.get("quantity").asInt());
+                // Removed quantity - each serial represents 1 item
                 serial.put("faceValue", serialNode.get("faceValue").asDouble());
                 serial.put("information", serialNode.get("information").asText());
                 serial.put("status", serialNode.get("status").asText());
@@ -482,8 +470,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     return false;
                 }
                 
-                // Check header columns
-                String[] expectedHeaders = {"Serial Code", "Secret Code", "Quantity", "Face Value", "Information"};
+                // Check header columns (removed Quantity column)
+                String[] expectedHeaders = {"Serial Code", "Secret Code", "Face Value", "Information"};
                 for (int i = 0; i < expectedHeaders.length; i++) {
                     String cellValue = getCellValueAsString(headerRow.getCell(i));
                     if (!expectedHeaders[i].equalsIgnoreCase(cellValue)) {
@@ -499,7 +487,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             return false;
         }
     }
-
+    
     @Override
     public byte[] generateExcelTemplate(Long productId) {
         try (Workbook workbook = new XSSFWorkbook()) {
@@ -507,62 +495,51 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             
             // Create header row
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"Serial Code", "Secret Code", "Quantity", "Face Value", "Information"};
+            String[] headers = {"Serial Code", "Secret Code", "Face Value", "Information"};
             
+            // Style for header
             CellStyle headerStyle = workbook.createCellStyle();
             Font headerFont = workbook.createFont();
             headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
             headerStyle.setFont(headerFont);
-            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
             
+            // Create header cells
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
                 cell.setCellStyle(headerStyle);
             }
             
-            // Add sample data based on product type
-            if (productId == 0L) {
-                // Generic template
-                Row sampleRow1 = sheet.createRow(1);
-                sampleRow1.createCell(0).setCellValue("1234567890123456");
-                sampleRow1.createCell(1).setCellValue("ABCD1234");
-                sampleRow1.createCell(2).setCellValue(1);
-                sampleRow1.createCell(3).setCellValue(10000);
-                sampleRow1.createCell(4).setCellValue("Thẻ điện thoại 10K");
-                
-                Row sampleRow2 = sheet.createRow(2);
-                sampleRow2.createCell(0).setCellValue("1234567890123457");
-                sampleRow2.createCell(1).setCellValue("ABCD1235");
-                sampleRow2.createCell(2).setCellValue(1);
-                sampleRow2.createCell(3).setCellValue(10000);
-                sampleRow2.createCell(4).setCellValue("Thẻ điện thoại 10K");
-            } else {
-                // Specific product template
-                Product product = productRepository.findById(productId).orElse(null);
-                if (product != null && isTelecomCard(product.getProductType())) {
-                    Row sampleRow1 = sheet.createRow(1);
-                    sampleRow1.createCell(0).setCellValue("1234567890123456");
-                    sampleRow1.createCell(1).setCellValue("ABCD1234");
-                    sampleRow1.createCell(2).setCellValue(1);
-                    sampleRow1.createCell(3).setCellValue(product.getPrice().intValue());
-                    sampleRow1.createCell(4).setCellValue("Thẻ " + product.getPrice().intValue() + "K");
-                    
-                    Row sampleRow2 = sheet.createRow(2);
-                    sampleRow2.createCell(0).setCellValue("1234567890123457");
-                    sampleRow2.createCell(1).setCellValue("ABCD1235");
-                    sampleRow2.createCell(2).setCellValue(1);
-                    sampleRow2.createCell(3).setCellValue(product.getPrice().intValue());
-                    sampleRow2.createCell(4).setCellValue("Thẻ " + product.getPrice().intValue() + "K");
-                } else {
-                    // Default sample
-                    Row sampleRow1 = sheet.createRow(1);
-                    sampleRow1.createCell(0).setCellValue("SR-001");
-                    sampleRow1.createCell(1).setCellValue("SEC-001");
-                    sampleRow1.createCell(2).setCellValue(1);
-                    sampleRow1.createCell(3).setCellValue(10000);
-                    sampleRow1.createCell(4).setCellValue("Mô tả serial 1");
+            // Create sample data rows based on product type
+            Product product = null;
+            if (productId != null && productId > 0) {
+                product = productRepository.findById(productId).orElse(null);
+            }
+            
+            // Sample data based on product type
+            String[][] sampleData = getSampleDataForProductType(product);
+            
+            // Style for data rows
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            
+            // Create sample data rows
+            for (int i = 0; i < sampleData.length; i++) {
+                Row dataRow = sheet.createRow(i + 1);
+                for (int j = 0; j < sampleData[i].length; j++) {
+                    Cell cell = dataRow.createCell(j);
+                    cell.setCellValue(sampleData[i][j]);
+                    cell.setCellStyle(dataStyle);
                 }
             }
             
@@ -576,11 +553,44 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             workbook.write(outputStream);
             return outputStream.toByteArray();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error generating Excel template: {}", e.getMessage());
-            throw new RuntimeException("Error generating Excel template: " + e.getMessage());
+            throw new RuntimeException("Failed to generate Excel template", e);
         }
     }
+    
+    private String[][] getSampleDataForProductType(Product product) {
+        if (product != null && isTelecomCard(product.getProductType())) {
+            // Telecom card sample data (removed quantity column)
+            return new String[][]{
+                {"SR-1234567890123456", "HE123456", "10000", "Thẻ Viettel 10K"},
+                {"SR-2345678901234567", "HE234567", "20000", "Thẻ Viettel 20K"},
+                {"SR-3456789012345678", "HE345678", "50000", "Thẻ Viettel 50K"}
+            };
+        } else if (product != null && isDigitalAccount(product.getProductType())) {
+            // Digital account sample data (removed quantity column)
+            return new String[][]{
+                {"user123@gmail.com", "password123", "50000", "Gmail account verified"},
+                {"user456@outlook.com", "password456", "45000", "Outlook account verified"},
+                {"user789@yahoo.com", "password789", "40000", "Yahoo account verified"}
+            };
+        } else {
+            // Generic sample data (removed quantity column)
+            return new String[][]{
+                {"SAMPLE-001", "SECRET-001", "10000", "Sample product 1"},
+                {"SAMPLE-002", "SECRET-002", "20000", "Sample product 2"},
+                {"SAMPLE-003", "SECRET-003", "30000", "Sample product 3"}
+            };
+        }
+    }
+    
+    private boolean isDigitalAccount(ProductType productType) {
+        return productType == ProductType.EMAIL || 
+               productType == ProductType.SOCIAL || 
+               productType == ProductType.STREAMING || 
+               productType == ProductType.APP;
+    }
+
     
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return null;

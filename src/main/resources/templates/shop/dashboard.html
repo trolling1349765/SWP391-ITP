@@ -1,36 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head th:replace="~{Included/ShopHeader :: shopHead}">
-    <style>
-        body { margin:0 !important; padding-top: 56px !important; overflow-x:hidden; }
-        .row { margin-left:0 !important; margin-right:0 !important; }
-        
-        /* Fix button hover effects */
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        /* Fix sidebar links */
-        .sidebar-link {
-            transition: all 0.2s ease;
-        }
-        
-        .sidebar-link:hover {
-            background: #374151 !important;
-            color: #ffffff !important;
-        }
-        
-        /* Fix form controls */
-        .form-select, .form-control {
-            border: 1px solid #d1d5db;
-        }
-        
-        .form-select:focus, .form-control:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-        }
-    </style>
+    <link th:href="@{/assets/css/shop/shop-common.css}" rel="stylesheet">
 </head>
 <body style="margin:0;padding-top:56px;overflow-x:hidden;">
 <div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
@@ -91,7 +62,20 @@
                         <td th:text="${p.productName}">Tên</td>
                         <td th:text="${p.description}">Mô tả</td>
                         <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0</td>
-                        <td th:text="${stockMap[p.id]}">0</td>
+                        <td>
+                            <!-- Total stock -->
+                            <div class="fw-bold" th:text="${stockMap[p.id]}">0</div>
+                            <!-- Stock by batches -->
+                            <div th:if="${batchMap[p.id] != null && !batchMap[p.id].isEmpty()}" class="small text-muted">
+                                <div th:each="batch : ${batchMap[p.id]}" class="d-flex justify-content-between">
+                                    <span th:text="${#numbers.formatDecimal(batch.key, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                                    <span class="badge bg-secondary" th:text="${batch.value}">0</span>
+                                </div>
+                            </div>
+                            <div th:if="${batchMap[p.id] == null || batchMap[p.id].isEmpty()}" class="text-muted small">
+                                Chưa có serial
+                            </div>
+                        </td>
                         <td><span class="badge text-bg-dark" th:text="${p.status}">HIDDEN</span></td>
                         <td class="text-nowrap">
                             <a th:href="@{|/shop/updateProduct/${p.id}|}" class="btn btn-sm btn-outline-primary">Sửa</a>
@@ -226,5 +210,6 @@
         });
     });
 </script>
+<script th:src="@{/assets/js/shop/shop-common.js}"></script>
 </body>
 </html>

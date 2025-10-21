@@ -5,6 +5,7 @@ import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.ProductStore;
 import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -19,4 +20,8 @@ public interface InventoryService {
     int availableStockForProduct(Long shopId, Long productId);
     Map<Long, Integer> availableStockByProductForShop(Long shopId);
     void deleteByProductId(Long productId);
+    
+    // New methods for batch counting
+    Map<BigDecimal, Long> getStockByBatches(Long productId);
+    long getStockForBatch(Long productId, BigDecimal price);
 }

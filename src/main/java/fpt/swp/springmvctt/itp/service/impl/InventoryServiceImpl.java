@@ -27,29 +27,33 @@ public class InventoryServiceImpl implements InventoryService {
     public Product addOrUpdateStock(StockForm form) {
         if (form.getProductId() == null) throw new IllegalArgumentException("productId is required");
         if (form.getSerial() == null || form.getSerial().isBlank()) throw new IllegalArgumentException("serial_code is required");
-        if (form.getQuantity() == null || form.getQuantity() < 0) throw new IllegalArgumentException("quantity must be >= 0");
 
         Product p = productRepository.findById(form.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + form.getProductId()));
 
-        ProductStore ps = productStoreRepository
+        // Check if serial already exists
+        ProductStore existingPs = productStoreRepository
                 .findByProductIdAndSerialCode(form.getProductId(), form.getSerial())
                 .orElse(null);
 
-        if (ps == null) {
-            ps = new ProductStore();
-            ps.setProductId(form.getProductId());
-            ps.setShopId(p.getShopId());
-            ps.setSerialCode(form.getSerial());
-            ps.setSecretCode(form.getCode());
-            ps.setQuantity(0);
-            ps.setStatus(ProductStatus.HIDDEN); // serial mới luôn ẩn
+        if (existingPs != null) {
+            // Serial already exists - just update secret code if provided
+            if (form.getCode() != null) {
+                existingPs.setSecretCode(form.getCode());
+                productStoreRepository.save(existingPs);
+            }
+            return rebuildProductQuantity(p.getId());
         }
 
-        int base = ps.getQuantity() == null ? 0 : ps.getQuantity();
-        int add  = form.getQuantity() == null ? 0 : form.getQuantity();
-        ps.setQuantity(base + add);
-        if (form.getCode() != null) ps.setSecretCode(form.getCode());
+        // Create new serial (each serial = 1 item)
+        ProductStore ps = new ProductStore();
+        ps.setProductId(form.getProductId());
+        ps.setShopId(p.getShopId());
+        ps.setSerialCode(form.getSerial());
+        ps.setSecretCode(form.getCode());
+        ps.setStatus(ProductStatus.HIDDEN); // new serial always hidden
+        ps.setFaceValue(p.getPrice()); // copy price from product
+        ps.setInfomation(form.getInfomation());
 
         productStoreRepository.save(ps);
         return rebuildProductQuantity(p.getId());
@@ -57,17 +61,9 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public Product setSerialQuantity(Long productId, String serialCode, Long absoluteQty) {
-        if (absoluteQty == null || absoluteQty < 0) throw new IllegalArgumentException("absoluteQty must be >= 0");
-        productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
-
-        ProductStore ps = productStoreRepository
-                .findByProductIdAndSerialCode(productId, serialCode)
-                .orElseThrow(() -> new IllegalArgumentException("Serial not found: " + serialCode));
-
-        ps.setQuantity(absoluteQty.intValue());
-        productStoreRepository.save(ps);
-        return rebuildProductQuantity(productId);
+        // This method is no longer needed since each serial = 1 item
+        // But keeping for backward compatibility
+        throw new UnsupportedOperationException("setSerialQuantity is deprecated - each serial represents 1 item");
     }
 
     @Override
@@ -75,12 +71,34 @@ public class InventoryServiceImpl implements InventoryService {
         Product p = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
 
-        long sum = 0L;
-        for (ProductStore s : productStoreRepository.findByProductIdOrderByIdDesc(productId)) {
-            sum += (s.getQuantity() == null ? 0 : s.getQuantity());
-        }
-        p.setAvailableStock((int) Math.max(0L, Math.min(Integer.MAX_VALUE, sum)));
+        // Count total number of serials (all batches combined)
+        long totalCount = productStoreRepository.countByProductId(productId);
+        p.setAvailableStock((int) Math.max(0L, Math.min(Integer.MAX_VALUE, totalCount)));
         return productRepository.save(p);
+    }
+    
+    /**
+     * Get stock count by batch (grouped by price)
+     * Returns Map<Price, Count> for a specific product
+     */
+    public Map<java.math.BigDecimal, Long> getStockByBatches(Long productId) {
+        Map<java.math.BigDecimal, Long> batchMap = new LinkedHashMap<>();
+        List<Object[]> batches = productStoreRepository.findBatchesByProductId(productId);
+        
+        for (Object[] batch : batches) {
+            java.math.BigDecimal price = (java.math.BigDecimal) batch[0];
+            Long count = (Long) batch[1];
+            batchMap.put(price, count);
+        }
+        
+        return batchMap;
+    }
+    
+    /**
+     * Get stock count for a specific batch (product_id + price)
+     */
+    public long getStockForBatch(Long productId, java.math.BigDecimal price) {
+        return productStoreRepository.countByProductIdAndFaceValue(productId, price);
     }
 
     @Override
