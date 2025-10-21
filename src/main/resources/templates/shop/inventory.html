@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head th:replace="~{Included/ShopHeader :: shopHead}">
     <style>
-        body { margin:0 !important; padding:0 !important; overflow-x:hidden; }
+        body { margin:0 !important; padding-top:56px !important; overflow-x:hidden; }
         .row { margin-left:0 !important; margin-right:0 !important; }
     </style>
 </head>
-<body style="margin:0;padding:0;overflow-x:hidden;">
+<body style="margin:0;padding-top:56px;overflow-x:hidden;">
 <div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
 <div class="container-fluid p-0">
@@ -22,6 +22,72 @@
         <!-- Alerts -->
         <div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
         <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+        
+        <!-- Filter Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter text-primary"></i>
+                    Filter & Search
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Product Type:</label>
+                        <select class="form-select" id="productTypeFilter" onchange="filterInventory()">
+                            <option value="">All Types</option>
+                            <option value="VIETTEL">📱 Thẻ Viettel</option>
+                            <option value="MOBIFONE">📱 Thẻ Mobifone</option>
+                            <option value="VINAPHONE">📱 Thẻ Vinaphone</option>
+                            <option value="VIETTEL_DATA">📶 Gói data Viettel</option>
+                            <option value="MOBIFONE_DATA">📶 Gói data Mobifone</option>
+                            <option value="VINAPHONE_DATA">📶 Gói data Vinaphone</option>
+                            <option value="EMAIL">💳 Tài khoản Email</option>
+                            <option value="GIFT">🎁 Thẻ quà tặng</option>
+                            <option value="SOFTWARE">🔑 Key phần mềm</option>
+                            <option value="OTHER">📦 Khác</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Face Value:</label>
+                        <select class="form-select" id="faceValueFilter" onchange="filterInventory()">
+                            <option value="">All Values</option>
+                            <option value="10000">10,000 ₫</option>
+                            <option value="20000">20,000 ₫</option>
+                            <option value="50000">50,000 ₫</option>
+                            <option value="100000">100,000 ₫</option>
+                            <option value="200000">200,000 ₫</option>
+                            <option value="500000">500,000 ₫</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Stock Status:</label>
+                        <select class="form-select" id="stockStatusFilter" onchange="filterInventory()">
+                            <option value="">All Status</option>
+                            <option value="in-stock">In Stock (>10)</option>
+                            <option value="low-stock">Low Stock (1-10)</option>
+                            <option value="out-of-stock">Out of Stock (0)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Search:</label>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search product name..." onkeyup="filterInventory()">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button class="btn btn-secondary" onclick="clearFilters()">
+                            <i class="fas fa-times"></i> Clear Filters
+                        </button>
+                        <button class="btn btn-primary" onclick="exportFilteredData()">
+                            <i class="fas fa-download"></i> Export Filtered
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
 
         <!-- Inventory Summary Cards -->
         <div class="row mb-4">
@@ -82,10 +148,18 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="p, iterStat : ${products}">
+                    <tr th:each="p, iterStat : ${products}" 
+                        th:data-product-type="${p.productType.name()}"
+                        th:data-face-value="${p.price.intValue()}"
+                        th:data-stock="${stockMap[p.id]}"
+                        th:data-product-name="${p.productName.toLowerCase()}">
                         <td th:text="${iterStat.index + 1}">1</td>
                         <td th:text="${p.id}">1</td>
-                        <td th:text="${p.productName}">Tên</td>
+                        <td>
+                            <strong th:text="${p.productName}">Tên</strong>
+                            <br>
+                            <small class="text-muted" th:text="${p.productType.displayName}">Product Type</small>
+                        </td>
                         <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0</td>
                         <td>
                             <span th:if="${stockMap[p.id] > 10}" class="badge text-bg-success" th:text="${stockMap[p.id]}">100</span>
@@ -223,6 +297,127 @@
             }
         }, 5000);
     }
+    
+    // Filtering Functions
+    function filterInventory() {
+        const productTypeFilter = document.getElementById('productTypeFilter').value;
+        const faceValueFilter = document.getElementById('faceValueFilter').value;
+        const stockStatusFilter = document.getElementById('stockStatusFilter').value;
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        
+        const rows = document.querySelectorAll('tbody tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const productType = row.getAttribute('data-product-type');
+            const faceValue = row.getAttribute('data-face-value');
+            const stock = parseInt(row.getAttribute('data-stock'));
+            const productName = row.getAttribute('data-product-name');
+            
+            let showRow = true;
+            
+            // Filter by product type
+            if (productTypeFilter && productType !== productTypeFilter) {
+                showRow = false;
+            }
+            
+            // Filter by face value
+            if (faceValueFilter && faceValue !== faceValueFilter) {
+                showRow = false;
+            }
+            
+            // Filter by stock status
+            if (stockStatusFilter) {
+                if (stockStatusFilter === 'in-stock' && stock <= 10) {
+                    showRow = false;
+                } else if (stockStatusFilter === 'low-stock' && (stock <= 0 || stock > 10)) {
+                    showRow = false;
+                } else if (stockStatusFilter === 'out-of-stock' && stock > 0) {
+                    showRow = false;
+                }
+            }
+            
+            // Filter by search
+            if (searchInput && !productName.includes(searchInput)) {
+                showRow = false;
+            }
+            
+            if (showRow) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update counter
+        updateVisibleCount(visibleCount, rows.length);
+    }
+    
+    function clearFilters() {
+        document.getElementById('productTypeFilter').value = '';
+        document.getElementById('faceValueFilter').value = '';
+        document.getElementById('stockStatusFilter').value = '';
+        document.getElementById('searchInput').value = '';
+        
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+        
+        updateVisibleCount(rows.length, rows.length);
+    }
+    
+    function updateVisibleCount(visible, total) {
+        // Update or create counter element
+        let counter = document.getElementById('filterCounter');
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'filterCounter';
+            counter.className = 'alert alert-info';
+            document.querySelector('.card-body').appendChild(counter);
+        }
+        
+        if (visible === total) {
+            counter.style.display = 'none';
+        } else {
+            counter.style.display = 'block';
+            counter.innerHTML = `<i class="fas fa-info-circle"></i> Showing ${visible} of ${total} products`;
+        }
+    }
+    
+    function exportFilteredData() {
+        const visibleRows = document.querySelectorAll('tbody tr[style=""]');
+        let csvContent = "ID,Product Name,Product Type,Price,Stock,Status\n";
+        
+        visibleRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 6) {
+                const id = cells[1].textContent;
+                const name = cells[2].textContent.replace(/\n/g, ' ').trim();
+                const price = cells[3].textContent;
+                const stock = cells[4].textContent;
+                const status = cells[5].textContent;
+                
+                csvContent += `"${id}","${name}","${price}","${stock}","${status}"\n`;
+            }
+        });
+        
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'filtered_inventory_' + new Date().toISOString().split('T')[0] + '.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateVisibleCount(document.querySelectorAll('tbody tr').length, document.querySelectorAll('tbody tr').length);
+    });
+    
 </script>
 
 </body>
