@@ -6,7 +6,12 @@ import fpt.swp.springmvctt.itp.dto.request.ExcelImportForm;
 import fpt.swp.springmvctt.itp.dto.response.ImportResult;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.ProductStore;
+import fpt.swp.springmvctt.itp.entity.Category;
 import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
+import fpt.swp.springmvctt.itp.entity.enums.ProductType;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import fpt.swp.springmvctt.itp.service.CategoryService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
 import fpt.swp.springmvctt.itp.service.ProductService;
@@ -86,7 +91,13 @@ public class ShopController {
                                     @RequestParam(required = false) String serial,
                                     @RequestParam(required = false) String secretCode,
                                     @RequestParam(required = false) Integer stockQuantity,
+                                    @RequestParam(required = false) BigDecimal faceValue,
                                     RedirectAttributes ra) {
+        // Set face value from form if provided
+        if (faceValue != null) {
+            form.setFaceValue(faceValue);
+        }
+        
         Product created = productService.createProduct(SHOP_ID, form); // HIDDEN
         
         //  serial
@@ -96,6 +107,7 @@ public class ShopController {
             stockForm.setSerial(serial);
             stockForm.setCode(secretCode);
             stockForm.setQuantity(stockQuantity);
+            stockForm.setFaceValue(faceValue); // Set face value in stock form
             inventoryService.addOrUpdateStock(stockForm);
             ra.addFlashAttribute("ok", "Đã tạo sản phẩm #" + created.getId() + " và thêm " + stockQuantity + " vào kho (HIDDEN)");
         } else {
@@ -227,6 +239,44 @@ public class ShopController {
         System.out.println("ProductDetail - Product ID: " + id + ", Serial count: " + serials.size());
         
         return "shop/ProductDetail";
+    }
+    
+    /**
+     * Helper method to get Vietnamese display name for English category
+     */
+    public String getCategoryDisplayName(String categoryName) {
+        switch (categoryName) {
+            case "TELECOM":
+                return "Viễn thông";
+            case "DIGITAL_ACCOUNTS":
+                return "Tài khoản số";
+            case "GIFTS_VOUCHERS":
+                return "Quà tặng & Voucher";
+            case "SOFTWARE_LICENSES":
+                return "Phần mềm & License";
+            case "GAMING":
+                return "Gaming";
+            case "OTHER":
+                return "Khác";
+            default:
+                return categoryName;
+        }
+    }
+    
+    // Test endpoint to check categories
+    @GetMapping("/test-categories")
+    @ResponseBody
+    public String testCategories() {
+        List<Category> categories = categoryService.findAll();
+        StringBuilder result = new StringBuilder();
+        result.append("Current Categories:\n");
+        for (Category cat : categories) {
+            result.append("ID: ").append(cat.getId())
+                  .append(", Name: ").append(cat.getCategoryName())
+                  .append(", Description: ").append(cat.getDescription())
+                  .append("\n");
+        }
+        return result.toString();
     }
 
     @PostMapping("/stocks/{psId}/status")

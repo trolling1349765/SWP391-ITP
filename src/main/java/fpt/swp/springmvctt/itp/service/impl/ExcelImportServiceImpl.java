@@ -110,9 +110,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                         }
                     }
                     
-                    // Validate face value consistency for phone cards
+                    // Validate face value consistency for telecom cards
                     Product product = productRepository.findById(form.getProductId()).orElse(null);
-                    if (product != null && product.getProductType().name().equals("PHONE_CARD")) {
+                    if (product != null && isTelecomCard(product.getProductType())) {
                         if (faceValue == null) {
                             String errorMsg = "Dòng " + (i + 1) + ": Face value bắt buộc cho thẻ điện thoại";
                             errors.add(errorMsg);
@@ -366,11 +366,14 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     @Override
     public List<Map<String, Object>> getProductSerials(Long productId) {
         try {
+            System.out.println("DEBUG: Getting serials for product ID: " + productId);
             String jsonFilePath = getLatestJsonFile(productId);
             if (jsonFilePath == null) {
+                System.out.println("DEBUG: No JSON file found for product ID: " + productId);
                 log.warn("No JSON file found for product ID: {}", productId);
                 return new ArrayList<>();
             }
+            System.out.println("DEBUG: Found JSON file: " + jsonFilePath);
             
             ObjectMapper mapper = new ObjectMapper();
             Path jsonPath = Paths.get(jsonFilePath);
@@ -416,11 +419,14 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     @Override
     public String getLatestJsonFile(Long productId) {
         try {
+            System.out.println("DEBUG: Looking for JSON files for product ID: " + productId);
             Path jsonDir = Paths.get("src/main/resources/assets/json");
             if (!Files.exists(jsonDir)) {
+                System.out.println("DEBUG: JSON directory does not exist: " + jsonDir);
                 log.warn("JSON directory does not exist: {}", jsonDir);
                 return null;
             }
+            System.out.println("DEBUG: JSON directory exists: " + jsonDir);
             
             // Find all JSON files for this product
             List<Path> jsonFiles = Files.list(jsonDir)
@@ -440,12 +446,15 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     })
                     .collect(Collectors.toList());
             
+            System.out.println("DEBUG: Found " + jsonFiles.size() + " JSON files for product ID " + productId);
             if (jsonFiles.isEmpty()) {
+                System.out.println("DEBUG: No JSON files found for product ID: " + productId);
                 log.warn("No JSON files found for product ID: {}", productId);
                 return null;
             }
             
             String latestFile = jsonFiles.get(0).toString();
+            System.out.println("DEBUG: Latest JSON file for product ID " + productId + ": " + latestFile);
             log.info("Found latest JSON file for product ID {}: {}", productId, latestFile);
             return latestFile;
             
@@ -532,7 +541,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             } else {
                 // Specific product template
                 Product product = productRepository.findById(productId).orElse(null);
-                if (product != null && product.getProductType() == ProductType.PHONE_CARD) {
+                if (product != null && isTelecomCard(product.getProductType())) {
                     Row sampleRow1 = sheet.createRow(1);
                     sampleRow1.createCell(0).setCellValue("1234567890123456");
                     sampleRow1.createCell(1).setCellValue("ABCD1234");
@@ -626,5 +635,17 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             default:
                 return null;
         }
+    }
+    
+    /**
+     * Check if the product type is a telecom card (phone card or data package)
+     */
+    private boolean isTelecomCard(ProductType productType) {
+        return productType == ProductType.VIETTEL ||
+               productType == ProductType.MOBIFONE ||
+               productType == ProductType.VINAPHONE ||
+               productType == ProductType.VIETTEL_DATA ||
+               productType == ProductType.MOBIFONE_DATA ||
+               productType == ProductType.VINAPHONE_DATA;
     }
 }
