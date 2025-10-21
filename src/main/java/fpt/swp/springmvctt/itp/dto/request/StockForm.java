@@ -1,6 +1,7 @@
 package fpt.swp.springmvctt.itp.dto.request;
 
 import lombok.Data;
+import java.math.BigDecimal;
 
 @Data
 public class StockForm {
@@ -8,4 +9,7 @@ public class StockForm {
     private String serial;
     private String code;
     private Integer quantity;
+    private BigDecimal faceValue;
+    private String infomation;
+    private String status;
 }
