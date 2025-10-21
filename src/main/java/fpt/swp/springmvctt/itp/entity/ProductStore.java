@@ -30,8 +30,7 @@ public class ProductStore extends BaseEntity {
     @Column(name="secret_code", length=255)
     private String secretCode;              // mã như id (tùy chọn)
 
-    @Column(nullable=false)
-    private Integer quantity = 0;           // INT
+    // Removed quantity field - each serial code represents 1 item
 
     @Enumerated(EnumType.STRING)
     @Column(nullable=false, length=20)

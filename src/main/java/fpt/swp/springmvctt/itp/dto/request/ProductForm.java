@@ -12,7 +12,8 @@ public class ProductForm {
     private String detailedDescription;        // Mô tả chi tiết
     private BigDecimal price;
     private Long categoryId;
-    private ProductType productType;           // Loại sản phẩm (PHONE_CARD, EMAIL_ACCOUNT, etc.)
+    private ProductType productType;           // Loại sản phẩm (VIETTEL, EMAIL, etc.)
+    private BigDecimal faceValue;              // Mệnh giá (cho thẻ điện thoại)
     private String img;
     private MultipartFile file;
     private MultipartFile serialFile;          // File Excel chứa serial và số lượng

@@ -11,15 +11,12 @@ import java.math.BigDecimal;
 public class ProductStoreForm {
     @NotNull
     private Long productId;
-
     private String serialCode;
     private String secretCode;
     private BigDecimal faceValue;
-
     @NotNull
     @Min(1)
     private Integer quantity;
-
     private String infomation;
     private String status = "AVAILABLE";
 }

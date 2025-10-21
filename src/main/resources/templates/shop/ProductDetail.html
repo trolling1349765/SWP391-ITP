@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head th:replace="~{Included/ShopHeader :: shopHead}"></head>
+<head th:replace="~{Included/ShopHeader :: shopHead}">
+    <link th:href="@{/assets/css/shop/shop-common.css}" rel="stylesheet">
+</head>
 <body style="margin:0;padding-top:56px;overflow-x:hidden;">
 <div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
@@ -57,9 +59,9 @@
                             <tr>
                                 <th width="60">STT</th>
                                 <th>Serial Code</th>
-                                <th th:if="${product.productType.name() == 'EMAIL_ACCOUNT'}">Secret Code</th>
+                                <th th:if="${product.productType.name() == 'EMAIL'}">Secret Code</th>
                                 <th>Quantity</th>
-                                <th th:if="${product.productType.name() == 'PHONE_CARD'}">Face Value</th>
+                                <th th:if="${@shopController.isTelecomCard(product.productType)}">Face Value</th>
                                 <th>Information</th>
                                 <th>Status</th>
                                 <th>Import Date</th>
@@ -72,13 +74,13 @@
                                 <td>
                                     <code class="bg-light p-1 rounded" th:text="${s.serialCode}">SR-001</code>
                                 </td>
-                                <td th:if="${product.productType.name() == 'EMAIL_ACCOUNT'}">
+                                <td th:if="${product.productType.name() == 'EMAIL'}">
                                     <code class="bg-light p-1 rounded" th:text="${s.secretCode}">SECRET</code>
                                 </td>
                                 <td>
                                     <span class="badge bg-primary" th:text="${s.quantity}">1</span>
                                 </td>
-                                <td th:if="${product.productType.name() == 'PHONE_CARD'}">
+                                <td th:if="${@shopController.isTelecomCard(product.productType)}">
                                     <strong th:text="${#numbers.formatDecimal(s.faceValue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">10,000 ₫</strong>
                                 </td>
                                 <td th:text="${s.information}">Thông tin</td>
@@ -250,6 +252,9 @@ function showAlert(type, message) {
     }, 5000);
 }
 </script>
+
+<script th:src="@{/assets/js/shop/shop-common.js}"></script>
+
 </body>
 </html>
 
