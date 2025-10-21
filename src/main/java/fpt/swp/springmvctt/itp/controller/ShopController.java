@@ -2,12 +2,15 @@ package fpt.swp.springmvctt.itp.controller;
 
 import fpt.swp.springmvctt.itp.dto.request.ProductForm;
 import fpt.swp.springmvctt.itp.dto.request.StockForm;
+import fpt.swp.springmvctt.itp.dto.request.ExcelImportForm;
+import fpt.swp.springmvctt.itp.dto.response.ImportResult;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.ProductStore;
 import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
 import fpt.swp.springmvctt.itp.service.CategoryService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
 import fpt.swp.springmvctt.itp.service.ProductService;
+import fpt.swp.springmvctt.itp.service.ExcelImportService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,6 +18,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +33,7 @@ public class ShopController {
     private final ProductService productService;
     private final InventoryService inventoryService;
     private final CategoryService categoryService;
+    private final ExcelImportService excelImportService;
     private static final Long SHOP_ID = 1L; // shop demo
 
     private void putCurrentPath(Model model, HttpServletRequest request) {
@@ -182,6 +188,7 @@ public class ShopController {
         return "shop/inventory";
     }
 
+
     // Add Serial form
     @GetMapping("/addSerial")
     public String addSerialForm(Model model, HttpServletRequest request) {
@@ -208,10 +215,17 @@ public class ShopController {
     @GetMapping("/products/{id}")
     public String productDetail(@PathVariable Long id, Model model) {
         Product p = productService.get(id);
-        List<ProductStore> serials = inventoryService.listSerials(id);
+        
+        // Get serial data from JSON file instead of database
+        List<Map<String, Object>> serials = excelImportService.getProductSerials(id);
+        
         model.addAttribute("productDetail", p);
         model.addAttribute("product", p);
         model.addAttribute("serials", serials);
+        model.addAttribute("serialCount", serials.size());
+        
+        System.out.println("ProductDetail - Product ID: " + id + ", Serial count: " + serials.size());
+        
         return "shop/ProductDetail";
     }
 
@@ -263,6 +277,97 @@ public class ShopController {
             e.printStackTrace();
             response.put("success", false);
             response.put("message", "Có lỗi xảy ra: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
+    @GetMapping("/importTemplate/{productId}")
+    @ResponseBody
+    public ResponseEntity<byte[]> downloadImportTemplate(@PathVariable Long productId) {
+        try {
+            byte[] template = excelImportService.generateExcelTemplate(productId);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "import_template_" + productId + ".xlsx");
+            return ResponseEntity.ok().headers(headers).body(template);
+        } catch (Exception e) {
+            System.out.println("Error generating template: " + e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
+    }
+    
+    @GetMapping("/addProductTemplate")
+    @ResponseBody
+    public ResponseEntity<byte[]> downloadAddProductTemplate() {
+        try {
+            // Generate template for new product (productId = 0 means new product)
+            byte[] template = excelImportService.generateExcelTemplate(0L);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "add_product_template.xlsx");
+            return ResponseEntity.ok().headers(headers).body(template);
+        } catch (Exception e) {
+            System.out.println("Error generating add product template: " + e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
+    }
+    
+    @PostMapping("/previewExcel")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> previewExcel(@ModelAttribute ExcelImportForm form) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            System.out.println("Preview request for product ID: " + form.getProductId());
+            
+            if (!excelImportService.validateExcelFormat(form.getExcelFile())) {
+                response.put("success", false);
+                response.put("message", "Định dạng file Excel không đúng. Vui lòng sử dụng template chuẩn.");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            Map<String, Object> result = excelImportService.previewExcelImport(form);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.out.println("Error previewing Excel: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Lỗi khi preview: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
+    @PostMapping("/importSerials")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> importSerials(@ModelAttribute ExcelImportForm form) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            System.out.println("Import request for product ID: " + form.getProductId());
+            
+            if (!excelImportService.validateExcelFormat(form.getExcelFile())) {
+                response.put("success", false);
+                response.put("message", "Định dạng file Excel không đúng. Vui lòng sử dụng template chuẩn.");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            ImportResult result = excelImportService.importSerialsFromExcel(form);
+            
+            response.put("success", true);
+            response.put("message", "Import hoàn thành!");
+            response.put("totalRows", result.getTotalRows());
+            response.put("importedCount", result.getImportedCount());
+            response.put("skippedCount", result.getSkippedCount());
+            response.put("errors", result.getErrors());
+            response.put("warnings", result.getWarnings());
+            response.put("duplicateSerials", result.getDuplicateSerials());
+            response.put("invalidSerials", result.getInvalidSerials());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("Error importing serials: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Lỗi khi import: " + e.getMessage());
             return ResponseEntity.status(500).body(response);
         }
     }

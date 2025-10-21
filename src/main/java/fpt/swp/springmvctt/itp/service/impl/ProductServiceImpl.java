@@ -1,12 +1,16 @@
 package fpt.swp.springmvctt.itp.service.impl;
 
 import fpt.swp.springmvctt.itp.dto.request.ProductForm;
+import fpt.swp.springmvctt.itp.dto.request.ExcelImportForm;
+import fpt.swp.springmvctt.itp.dto.response.ImportResult;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
+import fpt.swp.springmvctt.itp.entity.enums.ProductType;
 import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.service.ProductService;
 import fpt.swp.springmvctt.itp.service.StorageService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
+import fpt.swp.springmvctt.itp.service.ExcelImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +25,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final StorageService storageService;
     private final InventoryService inventoryService;
+    private final ExcelImportService excelImportService;
 
     @Override
     public Product createProduct(Long shopId, ProductForm form) {
@@ -28,8 +33,10 @@ public class ProductServiceImpl implements ProductService {
         p.setShopId(shopId);
         p.setProductName(form.getProductName());
         p.setDescription(form.getDescription());
+        p.setDetailedDescription(form.getDetailedDescription());
         p.setPrice(form.getPrice() == null ? BigDecimal.ZERO : form.getPrice());
         p.setCategoryId(form.getCategoryId());
+        p.setProductType(form.getProductType() == null ? ProductType.OTHER : form.getProductType());
         p.setStatus(ProductStatus.HIDDEN);
         p.setAvailableStock(0);
 
@@ -41,7 +48,37 @@ public class ProductServiceImpl implements ProductService {
             p.setImage(form.getImg());
             System.out.println("Created product with existing image: " + form.getImg());
         }
-        return productRepository.save(p);
+        
+        // Save product first to get ID
+        Product savedProduct = productRepository.save(p);
+        
+        // Import serials from Excel file if provided
+        if (form.getSerialFile() != null && !form.getSerialFile().isEmpty()) {
+            try {
+                ExcelImportForm importForm = new ExcelImportForm();
+                importForm.setProductId(savedProduct.getId());
+                importForm.setExcelFile(form.getSerialFile());
+                importForm.setOverrideExisting(false);
+                
+                   ImportResult result = excelImportService.importSerialsFromExcel(importForm);
+                   System.out.println("Imported " + result.getImportedCount() + " serials for product " + savedProduct.getId());
+                   if (result.getErrors().size() > 0) {
+                       System.out.println("Import errors: " + result.getErrors());
+                   }
+                   if (result.getWarnings().size() > 0) {
+                       System.out.println("Import warnings: " + result.getWarnings());
+                   }
+                
+                // Rebuild product quantity after import
+                savedProduct = inventoryService.rebuildProductQuantity(savedProduct.getId());
+                
+            } catch (Exception e) {
+                System.err.println("Error importing serials: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        
+        return savedProduct;
     }
 
     @Override
@@ -51,8 +88,10 @@ public class ProductServiceImpl implements ProductService {
 
         if (form.getProductName() != null) p.setProductName(form.getProductName());
         if (form.getDescription() != null) p.setDescription(form.getDescription());
+        if (form.getDetailedDescription() != null) p.setDetailedDescription(form.getDetailedDescription());
         if (form.getPrice() != null) p.setPrice(form.getPrice());
         if (form.getCategoryId() != null) p.setCategoryId(form.getCategoryId());
+        if (form.getProductType() != null) p.setProductType(form.getProductType());
 
         if (form.getFile() != null && !form.getFile().isEmpty()) {
             String imagePath = storageService.saveProductImage(form.getFile());
