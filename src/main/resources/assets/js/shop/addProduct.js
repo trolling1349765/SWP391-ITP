@@ -176,12 +176,24 @@ const categoryProductTypeMap = {
 
 // Handle category selection change
 function updateProductTypeOptions() {
-    const categorySelect = document.querySelector('select[name="categoryId"]');
+    const categorySelect = document.getElementById('categoryId');
     const productTypeSelect = document.getElementById('productTypeSelect');
-    const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
+    
+    if (!categorySelect || !productTypeSelect) {
+        return;
+    }
+    
+    const selectedIndex = categorySelect.selectedIndex;
+    const selectedCategoryText = categorySelect.options[selectedIndex].text;
+    const selectedCategoryValue = categorySelect.options[selectedIndex].value;
     
     // Clear existing options except the first one
     productTypeSelect.innerHTML = '<option value="">-- Chọn kiểu sản phẩm --</option>';
+    
+    // If no category selected, return
+    if (selectedIndex === 0 || !selectedCategoryValue) {
+        return;
+    }
     
     // Map Vietnamese display names to English category names
     const displayNameToCategoryMap = {
@@ -212,11 +224,24 @@ function updateProductTypeOptions() {
 
 // Initialize event listener for category change
 document.addEventListener('DOMContentLoaded', function() {
-    const categorySelect = document.querySelector('select[name="categoryId"]');
-    if (categorySelect) {
-        categorySelect.addEventListener('change', updateProductTypeOptions);
-        updateProductTypeOptions();
-    }
+    // Wait a bit for DOM to be fully ready
+    setTimeout(function() {
+        const categorySelect = document.getElementById('categoryId');
+        const productTypeSelect = document.getElementById('productTypeSelect');
+        
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function() {
+                updateProductTypeOptions();
+            });
+            
+            // Also try onchange attribute as backup
+            categorySelect.setAttribute('onchange', 'updateProductTypeOptions()');
+            
+            // Initial call
+            updateProductTypeOptions();
+        }
+        
+    }, 100); // Wait 100ms
     
     initializePlatformFeeHandler();
     initializeFileUploadHandler();
@@ -280,7 +305,7 @@ function clearProfitCalculation() {
                 <small>
                     <strong>Phí sàn cố định: ${platformFee}%</strong><br>
                     <em>Lợi nhuận sẽ được tính sau khi import Excel</em>
-                </small>
+                    </small>
             </div>
         `;
     } else {
@@ -893,6 +918,14 @@ function confirmSubmit() {
         return false;
     }
     
+    // Use AJAX confirmation instead of simple confirm
+    const form = document.querySelector('form[th\\:action="@{/shop/addProduct}"]');
+    if (form && window.submitFormWithConfirmation) {
+        submitFormWithConfirmation(form);
+        return false; // Prevent default form submission
+    }
+    
+    // Fallback to original confirmation if AJAX not available
     const totalSerials = document.getElementById('totalSerials').textContent;
     const productName = document.querySelector('input[name="productName"]').value;
     

@@ -35,7 +35,7 @@
 
                 <div class="col-md-6" th:if="${categories != null}">
                     <label class="form-label">Phân loại sản phẩm</label>
-                    <select th:field="*{categoryId}" class="form-select">
+                    <select th:field="*{categoryId}" class="form-select" onchange="updateProductTypeOptions()">
                         <option value="">-- Chọn phân loại (tùy chọn) --</option>
                         <option th:each="c : ${categories}" th:value="${c.id}"
                                 th:text="${@shopController.getCategoryDisplayName(c.categoryName)}">Cat
@@ -298,6 +298,432 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script th:src="@{/assets/js/shop/addProduct.js}"></script>
+<!-- Include AJAX confirmation script -->
+<script src="/assets/ajax/shop/addProductConfirmation.js"></script>
+
+<script>
+// AddProduct specific JavaScript functions
+
+// Platform fee configuration by product type (Fixed rates)
+const platformFeeConfig = {
+    // Telecom cards - Lower fee (2-5%)
+    'VIETTEL': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
+    'MOBIFONE': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
+    'VINAPHONE': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
+    'VIETTEL_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
+    'MOBIFONE_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
+    'VINAPHONE_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
+    
+    // Digital accounts - Medium fee (5-10%)
+    'EMAIL': { fee: 7, description: 'Tài khoản email - Phí trung bình' },
+    'SOCIAL': { fee: 7, description: 'Social media - Phí trung bình' },
+    'STREAMING': { fee: 7, description: 'Streaming - Phí trung bình' },
+    'APP': { fee: 7, description: 'Ứng dụng - Phí trung bình' },
+    
+    // Gift cards - Medium fee (5-12%)
+    'GIFT': { fee: 8, description: 'Thẻ quà tặng - Phí trung bình' },
+    'VOUCHER': { fee: 8, description: 'Voucher - Phí trung bình' },
+    'COUPON': { fee: 8, description: 'Coupon - Phí trung bình' },
+    'PROMO': { fee: 8, description: 'Mã khuyến mãi - Phí trung bình' },
+    
+    // Software licenses - Higher fee (8-15%)
+    'SOFTWARE': { fee: 12, description: 'Key phần mềm - Phí cao' },
+    'LICENSE': { fee: 12, description: 'License key - Phí cao' },
+    'ACTIVATION': { fee: 12, description: 'Mã kích hoạt - Phí cao' },
+    'SUBSCRIPTION': { fee: 12, description: 'Subscription - Phí cao' },
+    
+    // Gaming - Variable fee (5-20%)
+    'GAME_ACC': { fee: 10, description: 'Tài khoản game - Phí biến động' },
+    'GAME_ITEM': { fee: 10, description: 'Item game - Phí biến động' },
+    'GAME_CURRENCY': { fee: 10, description: 'Tiền tệ game - Phí biến động' },
+    'GAME_CODE': { fee: 10, description: 'Gift code game - Phí biến động' },
+    
+    // Other - Default fee (5-10%)
+    'OTHER': { fee: 7, description: 'Khác - Phí mặc định' }
+};
+
+// Category to ProductType mapping (Categories in English, ProductTypes in Vietnamese)
+const categoryProductTypeMap = {
+    // TELECOM (Viễn thông)
+    'TELECOM': [
+        { value: 'VIETTEL', text: 'Thẻ Viettel' },
+        { value: 'MOBIFONE', text: 'Thẻ Mobifone' },
+        { value: 'VINAPHONE', text: 'Thẻ Vinaphone' },
+        { value: 'VIETTEL_DATA', text: 'Gói data Viettel' },
+        { value: 'MOBIFONE_DATA', text: 'Gói data Mobifone' },
+        { value: 'VINAPHONE_DATA', text: 'Gói data Vinaphone' }
+    ],
+    // DIGITAL_ACCOUNTS (Tài khoản số)
+    'DIGITAL_ACCOUNTS': [
+        { value: 'EMAIL', text: 'Tài khoản email' },
+        { value: 'SOCIAL', text: 'Tài khoản social media' },
+        { value: 'STREAMING', text: 'Tài khoản streaming' },
+        { value: 'APP', text: 'Tài khoản ứng dụng' }
+    ],
+    // GIFTS_VOUCHERS (Quà tặng & Voucher)
+    'GIFTS_VOUCHERS': [
+        { value: 'GIFT', text: 'Thẻ quà tặng' },
+        { value: 'VOUCHER', text: 'Voucher' },
+        { value: 'COUPON', text: 'Coupon' },
+        { value: 'PROMO', text: 'Mã khuyến mãi' }
+    ],
+    // SOFTWARE_LICENSES (Phần mềm & License)
+    'SOFTWARE_LICENSES': [
+        { value: 'SOFTWARE', text: 'Key phần mềm' },
+        { value: 'LICENSE', text: 'License key' },
+        { value: 'ACTIVATION', text: 'Mã kích hoạt' },
+        { value: 'SUBSCRIPTION', text: 'Subscription' }
+    ],
+    // GAMING (Gaming)
+    'GAMING': [
+        { value: 'GAME_ACC', text: 'Tài khoản game' },
+        { value: 'GAME_ITEM', text: 'Item game' },
+        { value: 'GAME_CURRENCY', text: 'Tiền tệ game' },
+        { value: 'GAME_CODE', text: 'Gift code game' }
+    ],
+    // OTHER (Khác)
+    'OTHER': [
+        { value: 'OTHER', text: 'Khác' }
+    ]
+};
+
+// Handle category selection change
+function updateProductTypeOptions() {
+    const categorySelect = document.getElementById('categoryId');
+    const productTypeSelect = document.getElementById('productTypeSelect');
+    
+    if (!categorySelect || !productTypeSelect) {
+        return;
+    }
+    
+    const selectedIndex = categorySelect.selectedIndex;
+    const selectedCategoryText = categorySelect.options[selectedIndex].text;
+    const selectedCategoryValue = categorySelect.options[selectedIndex].value;
+    
+    // Clear existing options except the first one
+    productTypeSelect.innerHTML = '<option value="">-- Chọn kiểu sản phẩm --</option>';
+    
+    // If no category selected, return
+    if (selectedIndex === 0 || !selectedCategoryValue) {
+        return;
+    }
+    
+    // Map Vietnamese display names to English category names
+    const displayNameToCategoryMap = {
+        'Viễn thông': 'TELECOM',
+        'Tài khoản số': 'DIGITAL_ACCOUNTS',
+        'Quà tặng & Voucher': 'GIFTS_VOUCHERS',
+        'Phần mềm & License': 'SOFTWARE_LICENSES',
+        'Gaming': 'GAMING',
+        'Khác': 'OTHER'
+    };
+    
+    // Get English category name from Vietnamese display name
+    const englishCategoryName = displayNameToCategoryMap[selectedCategoryText];
+    
+    // Add options based on selected category
+    if (englishCategoryName && categoryProductTypeMap[englishCategoryName]) {
+        categoryProductTypeMap[englishCategoryName].forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.text;
+            productTypeSelect.appendChild(optionElement);
+        });
+    }
+    
+    // Reset product type guide
+    updateProductTypeGuide();
+}
+
+// Handle product type selection
+function updateProductTypeGuide() {
+    const productType = document.querySelector('select[name="productType"]').value;
+    const faceValueSection = document.getElementById('faceValueSection');
+    const faceValueSelect = document.getElementById('faceValueSelect');
+    const priceInput = document.getElementById('priceInput');
+    const platformFeeInput = document.getElementById('platformFeeInput');
+    const platformFeeInfo = document.getElementById('platformFeeInfo');
+    
+    // Hide all guides first
+    faceValueSection.style.display = 'none';
+    
+    // Clear platform fee info
+    if (platformFeeInfo) {
+        platformFeeInfo.innerHTML = '';
+    }
+    
+    // Clear platform fee input
+    if (platformFeeInput) {
+        platformFeeInput.value = '';
+    }
+    
+    if (!productType) {
+        return;
+    }
+    
+    // Show face value section for telecom products
+    if (['VIETTEL', 'MOBIFONE', 'VINAPHONE', 'VIETTEL_DATA', 'MOBIFONE_DATA', 'VINAPHONE_DATA'].includes(productType)) {
+        faceValueSection.style.display = 'block';
+    }
+    
+    // Update platform fee
+    if (platformFeeConfig[productType]) {
+        const config = platformFeeConfig[productType];
+        if (platformFeeInput) {
+            platformFeeInput.value = config.fee;
+        }
+        if (platformFeeInfo) {
+            platformFeeInfo.innerHTML = `<small class="text-info">${config.description}</small>`;
+        }
+    }
+}
+
+// Initialize event listener for category change
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for DOM to be fully ready
+    setTimeout(function() {
+        const categorySelect = document.getElementById('categoryId');
+        const productTypeSelect = document.getElementById('productTypeSelect');
+        
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function() {
+                updateProductTypeOptions();
+            });
+            
+            // Also try onchange attribute as backup
+            categorySelect.setAttribute('onchange', 'updateProductTypeOptions()');
+            
+            // Initial call
+            updateProductTypeOptions();
+        }
+        
+    }, 100); // Wait 100ms
+    
+    // Initialize platform fee to empty state
+    const platformFeeInput = document.getElementById('platformFeeInput');
+    const platformFeeInfo = document.getElementById('platformFeeInfo');
+    if (platformFeeInput && platformFeeInfo) {
+        platformFeeInput.value = '';
+        platformFeeInfo.innerHTML = '';
+    }
+});
+
+// Initialize platform fee handler
+function initializePlatformFeeHandler() {
+    const platformFeeInput = document.getElementById('platformFeeInput');
+    const priceInput = document.getElementById('priceInput');
+    
+    if (platformFeeInput && priceInput) {
+        platformFeeInput.addEventListener('input', function() {
+            updateProfitCalculation();
+        });
+        
+        priceInput.addEventListener('input', function() {
+            updateProfitCalculation();
+        });
+    }
+}
+
+// Initialize file upload handler
+function initializeFileUploadHandler() {
+    const fileInput = document.getElementById('excelFile');
+    const fileInfo = document.getElementById('fileInfo');
+    
+    if (fileInput && fileInfo) {
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                fileInfo.innerHTML = `
+                    <div class="alert alert-info">
+                        <strong>File Excel đã sẵn sàng!</strong><br>
+                        Tên file: ${file.name}<br>
+                        Kích thước: ${(file.size / 1024).toFixed(2)} KB<br>
+                        Loại: ${file.type}
+                    </div>
+                `;
+            } else {
+                fileInfo.innerHTML = '';
+            }
+        });
+    }
+}
+
+// Update profit calculation
+function updateProfitCalculation() {
+    // This function is called when product type changes
+    // Implementation can be added here if needed
+}
+
+// Preview Excel file
+function previewExcelFile(input) {
+    const file = input.files[0];
+    if (!file) {
+        hideExcelPreview();
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            parseExcelFile(jsonData);
+        } catch (error) {
+            showExcelPreviewError('Lỗi đọc file Excel: ' + error.message);
+        }
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
+
+// Parse Excel file and show preview
+function parseExcelFile(data) {
+    if (data.length < 2) {
+        showExcelPreviewError('File Excel không có dữ liệu hoặc định dạng không đúng');
+        return;
+    }
+    
+    const headers = data[0];
+    const expectedHeaders = ['Serial Code', 'Secret Code'];
+    
+    // Check if headers match expected format
+    if (!expectedHeaders.every(header => headers.includes(header))) {
+        showExcelPreviewError('File Excel không đúng định dạng. Cần có các cột: ' + expectedHeaders.join(', '));
+        return;
+    }
+    
+    const serials = [];
+    let validCount = 0;
+    let errorCount = 0;
+    
+    for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        if (row.length < 2) continue;
+        
+        const serialCode = row[0] ? String(row[0]).trim() : '';
+        const secretCode = row[1] ? String(row[1]).trim() : '';
+        
+        if (serialCode && secretCode) {
+            serials.push({
+                serialCode: serialCode,
+                secretCode: secretCode,
+                status: 'ready'
+            });
+            validCount++;
+        } else {
+            serials.push({
+                serialCode: serialCode || '',
+                secretCode: secretCode || '',
+                status: 'error'
+            });
+            errorCount++;
+        }
+    }
+    
+    if (serials.length === 0) {
+        showExcelPreviewError('Không tìm thấy dữ liệu serial nào trong file Excel');
+        return;
+    }
+    
+    showExcelPreview(serials, validCount, errorCount);
+}
+
+// Show Excel preview table
+function showExcelPreview(serials, validCount, errorCount) {
+    const previewDiv = document.getElementById('excelPreview');
+    if (!previewDiv) return;
+    
+    let tableHTML = `
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Danh sách serials sẽ được thêm vào</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>STT</th>
+                                <th>Serial Code</th>
+                                <th>Secret Code</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+    
+    serials.forEach((serial, index) => {
+        const statusBadge = serial.status === 'ready' 
+            ? '<span class="badge bg-success">Sẵn sàng</span>'
+            : '<span class="badge bg-danger">Có lỗi</span>';
+        
+        tableHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${serial.serialCode}</td>
+                <td>${serial.secretCode}</td>
+                <td>${statusBadge}</td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    Tổng cộng: ${serials.length} serials sẽ được thêm vào
+                    ${validCount > 0 ? ` (${validCount} hợp lệ)` : ''}
+                    ${errorCount > 0 ? ` (${errorCount} có lỗi)` : ''}
+                </small>
+            </div>
+        </div>
+    `;
+    
+    previewDiv.innerHTML = tableHTML;
+    previewDiv.style.display = 'block';
+}
+
+// Show Excel preview error
+function showExcelPreviewError(message) {
+    const previewDiv = document.getElementById('excelPreview');
+    if (!previewDiv) return;
+    
+    previewDiv.innerHTML = `
+        <div class="alert alert-danger mt-3">
+            <strong>Lỗi:</strong> ${message}
+        </div>
+    `;
+    previewDiv.style.display = 'block';
+}
+
+// Hide Excel preview
+function hideExcelPreview() {
+    const previewDiv = document.getElementById('excelPreview');
+    if (previewDiv) {
+        previewDiv.style.display = 'none';
+        previewDiv.innerHTML = '';
+    }
+}
+
+// Confirm submit
+function confirmSubmit() {
+    const productName = document.querySelector('input[name="name"]').value;
+    const excelFile = document.getElementById('excelFile').files[0];
+    
+    let confirmMessage = `Bạn có chắc chắn muốn tạo sản phẩm "${productName}"?`;
+    
+    if (excelFile) {
+        confirmMessage += `\n\nFile Excel "${excelFile.name}" sẽ được xử lý để thêm serials.`;
+    }
+    
+    return confirm(confirmMessage);
+}
+</script>
 </body>
 </html>
