@@ -1,0 +1,34 @@
+{
+  "productId" : 0,
+  "importDate" : "2025-10-21T11:28:24.2201355",
+  "totalRows" : 2,
+  "importedCount" : 2,
+  "skippedCount" : 0,
+  "serials" : [ {
+    "serialCode" : "SR-09090",
+    "secretCode" : "SEC-0033333333343434",
+    "quantity" : 1,
+    "faceValue" : 10000.0,
+    "information" : "day kad sjrjfrrerre",
+    "status" : "AVAILABLE",
+    "importDate" : "2025-10-21T11:28:24.2121913",
+    "isSold" : false,
+    "soldDate" : null,
+    "soldTo" : null
+  }, {
+    "serialCode" : "SR-23454",
+    "secretCode" : "573822125633634",
+    "quantity" : 1,
+    "faceValue" : 10000.0,
+    "information" : "344353546tety4ertretre",
+    "status" : "AVAILABLE",
+    "importDate" : "2025-10-21T11:28:24.2191172",
+    "isSold" : false,
+    "soldDate" : null,
+    "soldTo" : null
+  } ],
+  "errors" : [ ],
+  "warnings" : [ ],
+  "duplicateSerials" : [ ],
+  "invalidSerials" : [ ]
+}
