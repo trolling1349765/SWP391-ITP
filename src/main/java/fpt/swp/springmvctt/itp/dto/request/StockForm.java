@@ -8,7 +8,7 @@ public class StockForm {
     private Long productId;
     private String serial;
     private String code;
-    private Integer quantity;
+    // Removed quantity - each serial represents 1 item
     private BigDecimal faceValue;
     private String infomation;
     private String status;

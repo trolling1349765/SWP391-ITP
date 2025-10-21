@@ -15,29 +15,25 @@ import java.nio.file.Path;
 @RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
 
-    @Value("${app.upload-dir:uploads/assets/img}")
-    private String uploadDir;
-
-    @Value("${app.dev-assets-dir:src/main/resources/assets/img}")
-    private String devResourcesDir;
+    @Value("${app.assets-dir:src/main/resources/assets/img}")
+    private String assetsDir;
 
     @Override
     public String saveProductImage(MultipartFile file) {
         if (file == null || file.isEmpty()) return null;
         try {
-            Files.createDirectories(Path.of(uploadDir));
+            // Create assets directory if not exists
+            Files.createDirectories(Path.of(assetsDir));
+            
+            // Generate unique filename
             String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
             String filename = "p_" + System.currentTimeMillis() + (ext == null ? "" : "." + ext.toLowerCase());
-            Path runtimeDest = Path.of(uploadDir, filename).toAbsolutePath().normalize();
-            file.transferTo(runtimeDest.toFile());
-
-            // copy sang resources (dev)
-            try {
-                Files.createDirectories(Path.of(devResourcesDir));
-                Path devDest = Path.of(devResourcesDir, filename).toAbsolutePath().normalize();
-                if (!Files.exists(devDest)) Files.copy(runtimeDest, devDest);
-            } catch (IOException ignored) { }
-
+            
+            // Save file to assets directory
+            Path filePath = Path.of(assetsDir, filename).toAbsolutePath().normalize();
+            file.transferTo(filePath.toFile());
+            
+            System.out.println("Image saved to: " + filePath);
             return "/assets/img/" + filename;
         } catch (IOException e) {
             throw new RuntimeException("Cannot save file", e);

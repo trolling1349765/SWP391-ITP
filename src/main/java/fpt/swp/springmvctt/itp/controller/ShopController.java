@@ -18,6 +18,7 @@ import fpt.swp.springmvctt.itp.service.ProductService;
 import fpt.swp.springmvctt.itp.service.ExcelImportService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -65,10 +66,17 @@ public class ShopController {
         List<Product> products = allProducts.subList(startIndex, endIndex);
         
         Map<Long, Integer> stockMap = new LinkedHashMap<>();
-        for (Product p : products) stockMap.put(p.getId(), p.getAvailableStock());
+        Map<Long, Map<java.math.BigDecimal, Long>> batchMap = new LinkedHashMap<>();
+        
+        for (Product p : products) {
+            stockMap.put(p.getId(), p.getAvailableStock());
+            // Get stock by batches (grouped by price)
+            batchMap.put(p.getId(), inventoryService.getStockByBatches(p.getId()));
+        }
         
         model.addAttribute("products", products);
         model.addAttribute("stockMap", stockMap);
+        model.addAttribute("batchMap", batchMap);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("pageSize", size);
@@ -90,7 +98,6 @@ public class ShopController {
     public String addProductSubmit(@ModelAttribute("form") ProductForm form, 
                                     @RequestParam(required = false) String serial,
                                     @RequestParam(required = false) String secretCode,
-                                    @RequestParam(required = false) Integer stockQuantity,
                                     @RequestParam(required = false) BigDecimal faceValue,
                                     RedirectAttributes ra) {
         // Set face value from form if provided
@@ -100,16 +107,15 @@ public class ShopController {
         
         Product created = productService.createProduct(SHOP_ID, form); // HIDDEN
         
-        //  serial
-        if (serial != null && !serial.isBlank() && stockQuantity != null && stockQuantity > 0) {
+        // If serial provided, create stock (each serial = 1 item)
+        if (serial != null && !serial.isBlank()) {
             StockForm stockForm = new StockForm();
             stockForm.setProductId(created.getId());
             stockForm.setSerial(serial);
             stockForm.setCode(secretCode);
-            stockForm.setQuantity(stockQuantity);
             stockForm.setFaceValue(faceValue); // Set face value in stock form
             inventoryService.addOrUpdateStock(stockForm);
-            ra.addFlashAttribute("ok", "Đã tạo sản phẩm #" + created.getId() + " và thêm " + stockQuantity + " vào kho (HIDDEN)");
+            ra.addFlashAttribute("ok", "Đã tạo sản phẩm #" + created.getId() + " và thêm serial '" + serial + "' (HIDDEN)");
         } else {
             ra.addFlashAttribute("ok", "Đã tạo sản phẩm #" + created.getId() + " (HIDDEN)");
         }
@@ -170,8 +176,9 @@ public class ShopController {
         // Sắp xếp theo ID tăng dần (từ bé lên lớn)
         products.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
         
-        // Tạo stockMap và tính toán thống kê
+        // Tạo stockMap, batchMap và tính toán thống kê
         Map<Long, Integer> stockMap = new LinkedHashMap<>();
+        Map<Long, Map<java.math.BigDecimal, Long>> batchMap = new LinkedHashMap<>();
         int totalActiveProducts = 0;
         int lowStockProducts = 0;
         int outOfStockProducts = 0;
@@ -179,6 +186,8 @@ public class ShopController {
         for (Product p : products) {
             int stock = p.getAvailableStock();
             stockMap.put(p.getId(), stock);
+            // Get stock by batches (grouped by price)
+            batchMap.put(p.getId(), inventoryService.getStockByBatches(p.getId()));
             
             // Calculate statistics
             if (p.getStatus().name().equals("ACTIVE")) {
@@ -193,6 +202,7 @@ public class ShopController {
         
         model.addAttribute("products", products);
         model.addAttribute("stockMap", stockMap);
+        model.addAttribute("batchMap", batchMap);
         model.addAttribute("totalActiveProducts", totalActiveProducts);
         model.addAttribute("lowStockProducts", lowStockProducts);
         model.addAttribute("outOfStockProducts", outOfStockProducts);
@@ -364,16 +374,23 @@ public class ShopController {
     
     @PostMapping("/previewExcel")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> previewExcel(@ModelAttribute ExcelImportForm form) {
+    public ResponseEntity<Map<String, Object>> previewExcel(@RequestParam("file") MultipartFile file,
+                                                           @RequestParam("productType") String productType) {
         Map<String, Object> response = new LinkedHashMap<>();
         try {
-            System.out.println("Preview request for product ID: " + form.getProductId());
+            System.out.println("Preview request for file: " + file.getOriginalFilename() + ", productType: " + productType);
             
-            if (!excelImportService.validateExcelFormat(form.getExcelFile())) {
+            if (!excelImportService.validateExcelFormat(file)) {
                 response.put("success", false);
                 response.put("message", "Định dạng file Excel không đúng. Vui lòng sử dụng template chuẩn.");
                 return ResponseEntity.badRequest().body(response);
             }
+            
+            // Create ExcelImportForm for preview
+            ExcelImportForm form = new ExcelImportForm();
+            form.setProductId(0L); // Temporary ID for preview
+            form.setExcelFile(file);
+            form.setOverrideExisting(false);
             
             Map<String, Object> result = excelImportService.previewExcelImport(form);
             
