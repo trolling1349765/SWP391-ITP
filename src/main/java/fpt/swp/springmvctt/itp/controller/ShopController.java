@@ -12,15 +12,21 @@ import fpt.swp.springmvctt.itp.entity.enums.ProductType;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
+import fpt.swp.springmvctt.itp.repository.CategoryRepository;
+import fpt.swp.springmvctt.itp.repository.ProductStoreRepository;
 import fpt.swp.springmvctt.itp.service.CategoryService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
 import fpt.swp.springmvctt.itp.service.ProductService;
 import fpt.swp.springmvctt.itp.service.ExcelImportService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +46,8 @@ public class ShopController {
     private final InventoryService inventoryService;
     private final CategoryService categoryService;
     private final ExcelImportService excelImportService;
+    private final ProductStoreRepository productStoreRepository;
+    private final CategoryRepository categoryRepository;
     private static final Long SHOP_ID = 1L; // shop demo
 
     private void putCurrentPath(Model model, HttpServletRequest request) {
@@ -49,40 +57,86 @@ public class ShopController {
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(defaultValue = "1") int page,
                            @RequestParam(defaultValue = "10") int size,
-                           Model model, HttpServletRequest request) {
-        putCurrentPath(model, request);
-        List<Product> allProducts = productService.listByShop(SHOP_ID);
-        
-        // Sắp xếp theo ID tăng dần (từ bé lên lớn)
-        allProducts.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
-        
-        // Tính toán phân trang
-        int totalProducts = allProducts.size();
-        int totalPages = (int) Math.ceil((double) totalProducts / size);
-        page = Math.max(1, Math.min(page, totalPages)); // Đảm bảo page hợp lệ
-        
-        int startIndex = (page - 1) * size;
-        int endIndex = Math.min(startIndex + size, totalProducts);
-        List<Product> products = allProducts.subList(startIndex, endIndex);
-        
-        Map<Long, Integer> stockMap = new LinkedHashMap<>();
-        Map<Long, Map<java.math.BigDecimal, Long>> batchMap = new LinkedHashMap<>();
-        
-        for (Product p : products) {
-            stockMap.put(p.getId(), p.getAvailableStock());
-            // Get stock by batches (grouped by price)
-            batchMap.put(p.getId(), inventoryService.getStockByBatches(p.getId()));
+                           Model model, HttpServletRequest request,
+                           RedirectAttributes ra) {
+        try {
+            putCurrentPath(model, request);
+            
+            // Input validation
+            if (page < 1) page = 1;
+            if (size < 1 || size > 100) size = 10;
+            
+            // Get products with error handling
+            List<Product> allProducts;
+            try {
+                allProducts = productService.listByShop(SHOP_ID);
+            } catch (Exception e) {
+                ra.addFlashAttribute("error", "Lỗi khi tải danh sách sản phẩm: " + e.getMessage());
+                return "redirect:/shop/dashboard";
+            }
+            
+            // Handle empty state
+            if (allProducts == null || allProducts.isEmpty()) {
+                model.addAttribute("products", new ArrayList<>());
+                model.addAttribute("stockMap", new LinkedHashMap<>());
+                model.addAttribute("batchMap", new LinkedHashMap<>());
+                model.addAttribute("currentPage", 1);
+                model.addAttribute("totalPages", 0);
+                model.addAttribute("pageSize", size);
+                model.addAttribute("totalProducts", 0);
+                model.addAttribute("info", "Chưa có sản phẩm nào. Hãy thêm sản phẩm đầu tiên!");
+                return "shop/dashboard";
+            }
+            
+            // Sort products
+            allProducts.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
+            
+            // Calculate pagination
+            int totalProducts = allProducts.size();
+            int totalPages = Math.max(1, (int) Math.ceil((double) totalProducts / size));
+            page = Math.max(1, Math.min(page, totalPages));
+            
+            int startIndex = (page - 1) * size;
+            int endIndex = Math.min(startIndex + size, totalProducts);
+            
+            // Safe sublist
+            List<Product> products;
+            if (startIndex >= totalProducts) {
+                products = new ArrayList<>();
+            } else {
+                products = allProducts.subList(startIndex, endIndex);
+            }
+            
+            // Build stock maps with error handling
+            Map<Long, Integer> stockMap = new LinkedHashMap<>();
+            Map<Long, Map<java.math.BigDecimal, Long>> batchMap = new LinkedHashMap<>();
+            
+            for (Product p : products) {
+                try {
+                    stockMap.put(p.getId(), p.getAvailableStock());
+                    Map<java.math.BigDecimal, Long> batches = inventoryService.getStockByBatches(p.getId());
+                    batchMap.put(p.getId(), batches != null ? batches : new LinkedHashMap<>());
+                } catch (Exception e) {
+                    System.err.println("Error processing product " + p.getId() + ": " + e.getMessage());
+                    stockMap.put(p.getId(), 0);
+                    batchMap.put(p.getId(), new LinkedHashMap<>());
+                }
+            }
+            
+            model.addAttribute("products", products);
+            model.addAttribute("stockMap", stockMap);
+            model.addAttribute("batchMap", batchMap);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("pageSize", size);
+            model.addAttribute("totalProducts", totalProducts);
+            
+            return "shop/dashboard";
+            
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            return "redirect:/shop/dashboard";
         }
-        
-        model.addAttribute("products", products);
-        model.addAttribute("stockMap", stockMap);
-        model.addAttribute("batchMap", batchMap);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", totalPages);
-        model.addAttribute("pageSize", size);
-        model.addAttribute("totalProducts", totalProducts);
-        
-        return "shop/dashboard";
     }
 
     // Add Product
@@ -95,31 +149,37 @@ public class ShopController {
     }
 
     @PostMapping("/addProduct")
-    public String addProductSubmit(@ModelAttribute("form") ProductForm form, 
-                                    @RequestParam(required = false) String serial,
-                                    @RequestParam(required = false) String secretCode,
-                                    @RequestParam(required = false) BigDecimal faceValue,
+    public String addProductSubmit(@Valid @ModelAttribute("form") ProductForm form, 
+                                    BindingResult bindingResult,
                                     RedirectAttributes ra) {
-        // Set face value from form if provided
-        if (faceValue != null) {
-            form.setFaceValue(faceValue);
+        
+        // Check for validation errors
+        if (bindingResult.hasErrors()) {
+            ra.addFlashAttribute("error", "Vui lòng kiểm tra lại thông tin đã nhập");
+            ra.addFlashAttribute("org.springframework.validation.BindingResult.form", bindingResult);
+            ra.addFlashAttribute("form", form);
+            return "redirect:/shop/addProduct";
         }
         
-        Product created = productService.createProduct(SHOP_ID, form); // HIDDEN
-        
-        // If serial provided, create stock (each serial = 1 item)
-        if (serial != null && !serial.isBlank()) {
-            StockForm stockForm = new StockForm();
-            stockForm.setProductId(created.getId());
-            stockForm.setSerial(serial);
-            stockForm.setCode(secretCode);
-            stockForm.setFaceValue(faceValue); // Set face value in stock form
-            inventoryService.addOrUpdateStock(stockForm);
-            ra.addFlashAttribute("ok", "Đã tạo sản phẩm #" + created.getId() + " và thêm serial '" + serial + "' (HIDDEN)");
-        } else {
-            ra.addFlashAttribute("ok", "Đã tạo sản phẩm #" + created.getId() + " (HIDDEN)");
+        try {
+            Product created = productService.createProduct(SHOP_ID, form); // HIDDEN
+            
+            // ProductService already handles Excel import, just show success message with product name
+            String successMsg = String.format("Đã tạo sản phẩm '%s' (#%d) thành công! Đã import %d serials.", 
+                                            created.getProductName(), 
+                                            created.getId(), 
+                                            created.getAvailableStock());
+            ra.addFlashAttribute("ok", successMsg);
+            
+            return "redirect:/shop/dashboard";
+            
+        } catch (Exception e) {
+            System.err.println("Error creating product: " + e.getMessage());
+            e.printStackTrace();
+            ra.addFlashAttribute("error", "Lỗi khi tạo sản phẩm: " + e.getMessage());
+            ra.addFlashAttribute("form", form);
+            return "redirect:/shop/addProduct";
         }
-        return "redirect:/shop/dashboard";
     }
 
     // Update Product
@@ -235,20 +295,139 @@ public class ShopController {
 
     // Chi tiết sản phẩm
     @GetMapping("/products/{id}")
-    public String productDetail(@PathVariable Long id, Model model) {
-        Product p = productService.get(id);
+    public String productDetail(@PathVariable Long id, Model model, HttpServletRequest request) {
+        try {
+            putCurrentPath(model, request);
+            
+            Product p = productService.get(id);
+            
+            // Get serial data from database instead of JSON files
+            List<ProductStore> productStores = productStoreRepository.findByProductIdOrderByIdDesc(id);
+            
+            // Convert ProductStore entities to Map format for template compatibility
+            List<Map<String, Object>> serials = new ArrayList<>();
+            int activeCount = 0, hiddenCount = 0, blockedCount = 0;
+            
+            for (ProductStore ps : productStores) {
+                Map<String, Object> serialMap = new LinkedHashMap<>();
+                serialMap.put("serialCode", ps.getSerialCode());
+                serialMap.put("secretCode", ps.getSecretCode());
+                serialMap.put("quantity", 1); // Each serial = 1 item
+                serialMap.put("faceValue", ps.getFaceValue());
+                serialMap.put("information", ps.getInfomation());
+                serialMap.put("status", ps.getStatus().name());
+                serialMap.put("importDate", ps.getCreateAt() != null ? ps.getCreateAt().toString() : "N/A");
+                serialMap.put("isSold", false); // Mới add chưa bán, luôn là false
+                serials.add(serialMap);
+                
+                // Count by status
+                switch (ps.getStatus()) {
+                    case ACTIVE: activeCount++; break;
+                    case HIDDEN: hiddenCount++; break;
+                    case BLOCKED: blockedCount++; break;
+                }
+            }
+            
+            model.addAttribute("productDetail", p);
+            model.addAttribute("product", p);
+            model.addAttribute("serials", serials);
+            model.addAttribute("serialCount", serials.size());
+            model.addAttribute("activeCount", activeCount);
+            model.addAttribute("hiddenCount", hiddenCount);
+            model.addAttribute("blockedCount", blockedCount);
+            
+            // Get category name for display
+            String categoryDisplayName = "Chưa phân loại";
+            if (p.getCategoryId() != null) {
+                try {
+                    Category category = categoryRepository.findById(p.getCategoryId()).orElse(null);
+                    if (category != null) {
+                        categoryDisplayName = getCategoryDisplayName(category.getCategoryName());
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error getting category: " + e.getMessage());
+                }
+            }
+            model.addAttribute("categoryDisplayName", categoryDisplayName);
+            
+            System.out.println("ProductDetail - Product ID: " + id + ", Serial count from DB: " + serials.size());
+            
+            return "shop/ProductDetail";
+            
+        } catch (Exception e) {
+            System.err.println("Error loading product detail: " + e.getMessage());
+            return "redirect:/shop/dashboard";
+        }
+    }
+    
+    /**
+     * Helper method to check if product type is telecom card
+     */
+    public boolean isTelecomCard(ProductType productType) {
+        return productType != null && 
+               (productType == ProductType.VIETTEL || 
+                productType == ProductType.MOBIFONE || 
+                productType == ProductType.VINAPHONE ||
+                productType == ProductType.VIETTEL_DATA ||
+                productType == ProductType.MOBIFONE_DATA ||
+                productType == ProductType.VINAPHONE_DATA);
+    }
+    
+    /**
+     * Helper method to get product type display name from ProductType
+     */
+    public String getSupplierName(ProductType productType) {
+        if (productType == null) return "Không xác định";
         
-        // Get serial data from JSON file instead of database
-        List<Map<String, Object>> serials = excelImportService.getProductSerials(id);
-        
-        model.addAttribute("productDetail", p);
-        model.addAttribute("product", p);
-        model.addAttribute("serials", serials);
-        model.addAttribute("serialCount", serials.size());
-        
-        System.out.println("ProductDetail - Product ID: " + id + ", Serial count: " + serials.size());
-        
-        return "shop/ProductDetail";
+        switch (productType) {
+            case VIETTEL:
+                return "Thẻ Viettel";
+            case MOBIFONE:
+                return "Thẻ Mobifone";
+            case VINAPHONE:
+                return "Thẻ Vinaphone";
+            case VIETTEL_DATA:
+                return "Gói data Viettel";
+            case MOBIFONE_DATA:
+                return "Gói data Mobifone";
+            case VINAPHONE_DATA:
+                return "Gói data Vinaphone";
+            case EMAIL:
+                return "Tài khoản email";
+            case SOCIAL:
+                return "Tài khoản social media";
+            case STREAMING:
+                return "Tài khoản streaming";
+            case APP:
+                return "Tài khoản ứng dụng";
+            case GIFT:
+                return "Thẻ quà tặng";
+            case VOUCHER:
+                return "Voucher";
+            case COUPON:
+                return "Coupon";
+            case PROMO:
+                return "Mã khuyến mãi";
+            case SOFTWARE:
+                return "Key phần mềm";
+            case LICENSE:
+                return "License key";
+            case ACTIVATION:
+                return "Mã kích hoạt";
+            case SUBSCRIPTION:
+                return "Subscription";
+            case GAME_ACC:
+                return "Tài khoản game";
+            case GAME_ITEM:
+                return "Item game";
+            case GAME_CURRENCY:
+                return "Tiền tệ game";
+            case GAME_CODE:
+                return "Gift code game";
+            case OTHER:
+            default:
+                return "Khác";
+        }
     }
     
     /**
@@ -270,6 +449,31 @@ public class ShopController {
                 return "Khác";
             default:
                 return categoryName;
+        }
+    }
+    
+    @PostMapping("/check-serial-duplicates")
+    @ResponseBody
+    public Map<String, Object> checkSerialDuplicates(@RequestBody List<String> serialCodes) {
+        try {
+            List<String> duplicates = new ArrayList<>();
+            
+            for (String serialCode : serialCodes) {
+                if (productStoreRepository.existsBySerialCode(serialCode)) {
+                    duplicates.add(serialCode);
+                }
+            }
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("duplicates", duplicates);
+            result.put("totalChecked", serialCodes.size());
+            result.put("duplicateCount", duplicates.size());
+            
+            return result;
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return error;
         }
     }
     

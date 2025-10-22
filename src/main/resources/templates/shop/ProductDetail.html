@@ -29,17 +29,36 @@
                         <img th:if="${product.image}" th:src="@{${product.image}}" class="img-fluid rounded border" alt="image"/>
                     </div>
                     <div class="col-md-8">
-                        <div class="mb-2"><strong>Tên:</strong> <span th:text="${product.productName}">Tên</span></div>
-                        <div class="mb-2"><strong>Giá:</strong> <span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0</span></div>
-                        <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge text-bg-secondary" th:text="${product.status}">HIDDEN</span></div>
-                        <div class="mb-2"><strong>Tồn kho:</strong> <span th:text="${product.availableStock}">0</span></div>
-                        <div class="mb-2"><strong>Danh mục:</strong> <span th:text="${product.categoryId}">-</span></div>
-                        <div class="mb-2"><strong>Tổng số serial:</strong> 
-                            <span th:if="${serials != null && !serials.empty}" class="badge bg-primary" th:text="${serialCount}">0</span>
-                            <span th:if="${serials == null || serials.empty}" class="text-muted">Chưa có serial</span>
+                        <div class="mb-3"><strong>Tên:</strong> <span th:text="${product.productName}">Tên</span></div>
+                        <div class="mb-3"><strong>Giá:</strong> <span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0</span></div>
+                        <div class="mb-3"><strong>Trạng thái:</strong> <span class="badge text-bg-secondary" th:text="${product.status}">HIDDEN</span></div>
+                        <div class="mb-3"><strong>Tồn kho:</strong> <span th:text="${product.availableStock}">0</span></div>
+                        
+                        <!-- Loại sản phẩm -->
+                        <div class="mb-3"><strong>Loại sản phẩm:</strong> 
+                            <span th:if="${product.categoryId != null}" class="badge bg-info" th:text="${categoryDisplayName}">Viễn thông</span>
+                            <span th:if="${product.categoryId == null}" class="text-muted">Chưa phân loại</span>
                         </div>
-                        <div class="mb-2"><strong>Mô tả:</strong>
-                            <div class="border rounded p-2" th:text="${product.description}">Mô tả</div>
+                        
+                        <!-- Kiểu sản phẩm -->
+                        <div class="mb-3"><strong>Kiểu sản phẩm:</strong> 
+                            <span class="badge bg-primary" th:text="${@shopController.getSupplierName(product.productType)}">Nhà cung cấp</span>
+                        </div>
+                        
+                        <!-- Mô tả ngắn -->
+                        <div class="mb-3"><strong>Mô tả ngắn:</strong>
+                            <div class="border rounded p-2 bg-light" th:text="${product.description != null ? product.description : 'Chưa có mô tả ngắn'}">Mô tả ngắn</div>
+                        </div>
+                        
+                        <!-- Mô tả chi tiết -->
+                        <div class="mb-3"><strong>Mô tả chi tiết:</strong>
+                            <div class="border rounded p-2 bg-light" th:text="${product.detailedDescription != null ? product.detailedDescription : 'Chưa có mô tả chi tiết'}">Mô tả chi tiết</div>
+                        </div>
+                        
+                        <!-- Tổng số serial -->
+                        <div class="mb-3"><strong>Tổng số serial:</strong> 
+                            <span th:if="${serials != null && !serials.empty}" class="badge bg-success" th:text="${serialCount}">0</span>
+                            <span th:if="${serials == null || serials.empty}" class="badge bg-warning">Chưa có serial</span>
                         </div>
                     </div>
                 </div>
@@ -49,8 +68,8 @@
         <!-- Danh sách Serial Codes từ Excel -->
         <div th:if="${serials != null && !serials.empty}" class="card mb-3">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Danh sách Serial Codes từ Excel</h5>
-                <small>Tổng cộng: <span th:text="${serialCount}">0</span> serial codes</small>
+                <h5 class="mb-0">Danh sách Sản phẩm</h5>
+                <small>Tổng cộng: <span th:text="${serialCount}">0</span> sản phẩm</small>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -58,14 +77,14 @@
                         <thead class="table-dark">
                             <tr>
                                 <th width="60">STT</th>
-                                <th>Serial Code</th>
+                                <th>Mã sản phẩm</th>
                                 <th th:if="${product.productType.name() == 'EMAIL'}">Secret Code</th>
-                                <th>Quantity</th>
-                                <th th:if="${@shopController.isTelecomCard(product.productType)}">Face Value</th>
-                                <th>Information</th>
-                                <th>Status</th>
-                                <th>Import Date</th>
-                                <th>Sold</th>
+                                <th>Số lượng</th>
+                                <th th:if="${@shopController.isTelecomCard(product.productType)}">Mệnh giá</th>
+                                <th>Thông tin</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày import</th>
+                                <th>Đã bán</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,9 +104,9 @@
                                 </td>
                                 <td th:text="${s.information}">Thông tin</td>
                                 <td>
-                                    <span th:if="${s.status == 'AVAILABLE'}" class="badge bg-success">Available</span>
-                                    <span th:if="${s.status == 'SOLD'}" class="badge bg-danger">Sold</span>
-                                    <span th:if="${s.status == 'HIDDEN'}" class="badge bg-secondary">Hidden</span>
+                                    <span th:if="${s.status == 'ACTIVE'}" class="badge bg-success">Có thể bán</span>
+                                    <span th:if="${s.status == 'HIDDEN'}" class="badge bg-secondary">Đã ẩn</span>
+                                    <span th:if="${s.status == 'BLOCKED'}" class="badge bg-danger">Bị khóa</span>
                                 </td>
                                 <td th:text="${s.importDate}">20/10/2025 19:30</td>
                                 <td>
@@ -104,31 +123,31 @@
                     <div class="col-md-3">
                         <div class="card text-center border-success">
                             <div class="card-body">
-                                <h6 class="text-success">Available</h6>
-                                <h4 th:text="${serialCount}">0</h4>
+                                <h6 class="text-success">Có thể bán</h6>
+                                <h4 th:text="${activeCount}">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-secondary">
+                            <div class="card-body">
+                                <h6 class="text-secondary">Đã ẩn</h6>
+                                <h4 th:text="${hiddenCount}">0</h4>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card text-center border-danger">
                             <div class="card-body">
-                                <h6 class="text-danger">Sold</h6>
-                                <h4>0</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center border-primary">
-                            <div class="card-body">
-                                <h6 class="text-primary">Total Value</h6>
-                                <h4>N/A</h4>
+                                <h6 class="text-danger">Bị khóa</h6>
+                                <h4 th:text="${blockedCount}">0</h4>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card text-center border-info">
                             <div class="card-body">
-                                <h6 class="text-info">Total Quantity</h6>
+                                <h6 class="text-info">Tổng số</h6>
                                 <h4 th:text="${serialCount}">0</h4>
                             </div>
                         </div>
@@ -142,7 +161,7 @@
             <div class="card-body text-center">
                 <div class="text-muted">
                     <h5>Chưa có serial codes</h5>
-                    <p>Sản phẩm này chưa được import serial codes từ Excel.</p>
+                    <p>Sản phẩm này chưa có serial codes nào trong hệ thống.</p>
                     <a th:href="@{|/shop/updateProduct/${product.id}|}" class="btn btn-primary">
                         Cập nhật sản phẩm để thêm serial
                     </a>

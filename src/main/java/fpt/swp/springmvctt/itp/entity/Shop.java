@@ -3,6 +3,7 @@ package fpt.swp.springmvctt.itp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import fpt.swp.springmvctt.itp.entity.BaseEntity;
 
 @Entity
 @Table(name="shops",

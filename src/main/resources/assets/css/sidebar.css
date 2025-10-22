@@ -1,0 +1,25 @@
+/* Sidebar CSS - Basic styles */
+.sidebar {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-link {
+    color: #e2e8f0;
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    display: block;
+    transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+    background-color: #374151;
+    color: #ffffff;
+}
+
+.sidebar-link.active {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
