@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @Controller
-@RequestMapping("/admin/user-restriction")
+@RequestMapping("/admin/restrictions")
 public class UserRestrictionController {
 
     @Autowired

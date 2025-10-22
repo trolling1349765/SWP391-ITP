@@ -38,7 +38,7 @@ public class ShopController {
         return "shop/shop-detail";
     }
     
-    @GetMapping("/register")
+    @GetMapping("/registers")
     public String showRegister(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -63,7 +63,7 @@ public class ShopController {
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
 
-        return "shop/register";
+        return "admin/register";
     }
 
     //

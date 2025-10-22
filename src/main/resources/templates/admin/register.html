@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Shop Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/sidebar.css}">
+    <style>
+        .table thead {
+            background-color: #1f2937;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-light">
+<!--Header-->
+<header th:insert="~{Included/Header.html :: header}"></header>
+<div class="container-fluid">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-12 col-md-3 col-lg-2 p-0 sidebar">
+            <aside th:insert="~{Included/AdminSidebar :: adminSidebar (currentPath)}"></aside>
+        </div>
+        <!-- Main content -->
+        <div class="col-12 col-md-9 col-lg-10 p-4">
+            <form th:action="@{/shop/register}" method="get">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Shop Name</th>
+                        <th>Status</th>
+                        <th>User</th>
+                        <th>Created At</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td></td>
+
+                        <!-- Shop Name Filter -->
+                        <td>
+                            <input type="text" name="shopName" class="form-control" th:value="${shopName}">
+                        </td>
+
+                        <td>
+
+                        </td>
+
+                        <!-- User Name Filter -->
+                        <td>
+                            <input type="text" name="username" class="form-control" th:value="${username}">
+                        </td>
+
+                        <!-- Created At Filter -->
+                        <td class="d-flex gap-1">
+                            <input type="date" name="fromDate" class="form-control" th:value="${fromDate}">
+                            <input type="date" name="toDate" class="form-control" th:value="${toDate}">
+                        </td>
+
+                        <!-- Rating Filter -->
+                        <td></td>
+
+
+                        <td>
+                            <button class="btn btn-primary btn-sm" type="submit">Filter</button>
+                            <button type="reset" class="btn btn-secondary btn-sm">Clear</button>
+                        </td>
+                    </tr>
+
+                    <!-- Hiển thị danh sách shop -->
+                    <tr th:each="shop : ${shops}">
+                        <td th:text="${shop.id}">1</td>
+                        <td th:text="${shop.shopName}">Shop A</td>
+                        <td th:text="${shop.status}">Inactive</td>
+                        <td th:text="${shop.user != null ? shop.user.username : 'N/A'}">user01</td>
+                        <td th:text="${#temporals.format(shop.createAt, 'yyyy-MM-dd')}"></td>
+                        <td th:text="${shop.rating}">4.5</td>
+                        <td>
+                            <a th:href="@{'/shop/registerDetail/' + ${shop.id}}"
+                               class="btn btn-success btn-sm">Details</a>
+                        </td>
+                    </tr>
+
+                    <!-- Không có dữ liệu -->
+                    <tr th:if="${#lists.isEmpty(shops)}">
+                        <td colspan="8" class="text-center">No shops found</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form>
+            <!-- 📄 Pagination -->
+            <div class="mt-3">
+                <nav th:if="${totalPages > 1}" aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+
+                        <!-- Previous -->
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/shop/register(page=${currentPage - 1},
+                                                          shopName=${shopName},
+                                                          fromDate=${fromDate},
+                                                          toDate=${toDate},
+                                                         username=${username})}">
+                                Previous
+                            </a>
+                        </li>
+
+                        <!-- Page numbers -->
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link"
+                               th:text="${i + 1}"
+                               th:href="@{/shop/register(page=${i},
+                                                          shopName=${shopName},
+                                                          fromDate=${fromDate},
+                                                          toDate=${toDate},
+                                                         username=${username})}">
+                            </a>
+                        </li>
+
+                        <!-- Next -->
+                        <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/shop/register(page=${currentPage + 1},
+                                                          shopName=${shopName},
+                                                          fromDate=${fromDate},
+                                                          toDate=${toDate},
+                                                         username=${username})}">
+                                Next
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!--    footer -->
+</div>
+
+</body>
+</html>
