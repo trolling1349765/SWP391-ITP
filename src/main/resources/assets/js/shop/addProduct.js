@@ -285,10 +285,10 @@ function showPlatformFeeInfo() {
                 <small>
                     <strong>Phí sàn cố định: ${platformFee}%</strong><br>
                     <em>Lợi nhuận sẽ được tính sau khi import Excel</em>
-                </small>
+                    </small>
             </div>
-        `;
-    } else {
+                `;
+            } else {
         platformFeeInfo.innerHTML = '';
     }
 }
@@ -338,11 +338,11 @@ function showFileInfo(file) {
         <div class="alert alert-info p-2">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <strong>📄 ${file.name}</strong><br>
+                    <strong>${file.name}</strong><br>
                     <small class="text-muted">Size: ${fileSize} KB | Type: ${fileType}</small>
                 </div>
                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearFileInput()">
-                    🗑️ Xóa
+                    Xóa
                 </button>
             </div>
         </div>
@@ -465,7 +465,7 @@ function validateExcelFile(file) {
             importResults.innerHTML = `
                 <div class="card">
                     <div class="card-header bg-danger text-white">
-                        <h6 class="mb-0">❌ Lỗi Import</h6>
+                        <h6 class="mb-0">Lỗi Import</h6>
                     </div>
                     <div class="card-body">
                         <div class="alert alert-danger">
@@ -484,7 +484,7 @@ function validateExcelFile(file) {
         importResults.innerHTML = `
             <div class="card">
                 <div class="card-header bg-danger text-white">
-                    <h6 class="mb-0">❌ Lỗi Kết Nối</h6>
+                    <h6 class="mb-0">Lỗi Kết Nối</h6>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-danger">
@@ -550,7 +550,7 @@ function displayImportResults(data) {
             <div class="col-md-6">
                 <div class="card border-danger">
                     <div class="card-header bg-danger text-white">
-                        <h6 class="mb-0">❌ Lỗi Import</h6>
+                        <h6 class="mb-0">Lỗi Import</h6>
                     </div>
                     <div class="card-body">
                         <ul class="mb-0">
@@ -567,7 +567,7 @@ function displayImportResults(data) {
             <div class="col-md-6">
                 <div class="card border-warning">
                     <div class="card-header bg-warning text-white">
-                        <h6 class="mb-0">⚠️ Cảnh báo</h6>
+                        <h6 class="mb-0">Cảnh báo</h6>
                     </div>
                     <div class="card-body">
                         <ul class="mb-0">
@@ -590,7 +590,7 @@ function displayImportResults(data) {
             <div class="col-md-6">
                 <div class="card border-info">
                     <div class="card-header bg-info text-white">
-                        <h6 class="mb-0">🔄 Serial trùng lặp</h6>
+                        <h6 class="mb-0">Serial trùng lặp</h6>
                     </div>
                     <div class="card-body">
                         <ul class="mb-0">
@@ -624,7 +624,7 @@ function displayImportResults(data) {
             importSummary.innerHTML += `
                 <div class="col-12 mt-3">
                     <div class="alert alert-success">
-                        <strong>✅ Import thành công!</strong> Tất cả ${data.importedCount} serials đã được thêm vào hệ thống.
+                        <strong>Import thành công!</strong> Tất cả ${data.importedCount} serials đã được thêm vào hệ thống.
                     </div>
                 </div>
                 <div class="col-12 mt-2">
@@ -666,7 +666,7 @@ function displayImportResults(data) {
             importSummary.innerHTML += `
                 <div class="col-12 mt-3">
                     <div class="alert alert-success">
-                        <strong>✅ Import thành công!</strong> Tất cả ${data.importedCount} serials đã được thêm vào hệ thống.
+                        <strong>Import thành công!</strong> Tất cả ${data.importedCount} serials đã được thêm vào hệ thống.
                     </div>
                 </div>
             `;
@@ -769,10 +769,10 @@ function previewExcelFile(input) {
     const fileInfo = document.getElementById('fileInfo');
     fileInfo.innerHTML = `
         <div class="alert alert-success">
-            <strong>✅ File Excel đã sẵn sàng!</strong><br>
-            <strong>📁 Tên file:</strong> ${file.name}<br>
-            <strong>📊 Kích thước:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
-            <strong>📅 Ngày tạo:</strong> ${new Date(file.lastModified).toLocaleString()}<br>
+            <strong>File Excel đã sẵn sàng!</strong><br>
+            <strong>Tên file:</strong> ${file.name}<br>
+            <strong>Kích thước:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+            <strong>Ngày tạo:</strong> ${new Date(file.lastModified).toLocaleString()}<br>
             <small class="text-muted">Đang xử lý và hiển thị danh sách serials sẽ được thêm vào...</small>
         </div>
     `;

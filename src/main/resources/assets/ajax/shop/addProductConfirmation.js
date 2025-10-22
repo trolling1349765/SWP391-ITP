@@ -1,12 +1,4 @@
-// AJAX functions for Shop Add Product confirmation
-// File: resources/assets/ajax/shop/addProductConfirmation.js
 
-/**
- * Show confirmation dialog for adding product
- * @param {Object} productData - Product data to be added
- * @param {Function} onConfirm - Callback function when user confirms
- * @param {Function} onCancel - Callback function when user cancels
- */
 function showAddProductConfirmation(productData, onConfirm, onCancel) {
     // Create confirmation message
     const message = `
@@ -40,13 +32,6 @@ function showAddProductConfirmation(productData, onConfirm, onCancel) {
     // Show modal
     showConfirmationModal(message, onConfirm, onCancel);
 }
-
-/**
- * Show confirmation modal
- * @param {string} content - HTML content for modal
- * @param {Function} onConfirm - Confirm callback
- * @param {Function} onCancel - Cancel callback
- */
 function showConfirmationModal(content, onConfirm, onCancel) {
     // Remove existing modal if any
     const existingModal = document.getElementById('addProductConfirmationModal');
@@ -94,9 +79,6 @@ function showConfirmationModal(content, onConfirm, onCancel) {
     });
 }
 
-/**
- * Confirm add product action
- */
 function confirmAddProduct() {
     // Hide modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('addProductConfirmationModal'));
@@ -112,9 +94,6 @@ function confirmAddProduct() {
     window.addProductCancelCallback = null;
 }
 
-/**
- * Cancel add product action
- */
 function cancelAddProduct() {
     // Hide modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('addProductConfirmationModal'));
@@ -130,12 +109,6 @@ function cancelAddProduct() {
     window.addProductCancelCallback = null;
 }
 
-/**
- * AJAX function to submit product form
- * @param {FormData} formData - Form data to submit
- * @param {Function} onSuccess - Success callback
- * @param {Function} onError - Error callback
- */
 function submitProductFormAjax(formData, onSuccess, onError) {
     // Show loading indicator
     showLoadingIndicator();
@@ -170,9 +143,6 @@ function submitProductFormAjax(formData, onSuccess, onError) {
     });
 }
 
-/**
- * Show loading indicator
- */
 function showLoadingIndicator() {
     const loadingHTML = `
         <div id="addProductLoading" class="loading-overlay">
@@ -188,9 +158,7 @@ function showLoadingIndicator() {
     document.body.insertAdjacentHTML('beforeend', loadingHTML);
 }
 
-/**
- * Hide loading indicator
- */
+
 function hideLoadingIndicator() {
     const loadingElement = document.getElementById('addProductLoading');
     if (loadingElement) {
@@ -198,10 +166,6 @@ function hideLoadingIndicator() {
     }
 }
 
-/**
- * Show success message
- * @param {string} message - Success message
- */
 function showSuccessMessage(message) {
     const alertHTML = `
         <div class="alert alert-success alert-dismissible fade show position-fixed" 
@@ -223,10 +187,6 @@ function showSuccessMessage(message) {
     }, 5000);
 }
 
-/**
- * Show error message
- * @param {string} message - Error message
- */
 function showErrorMessage(message) {
     const alertHTML = `
         <div class="alert alert-danger alert-dismissible fade show position-fixed" 
@@ -247,10 +207,7 @@ function showErrorMessage(message) {
     }, 7000);
 }
 
-/**
- * Enhanced form submission with confirmation
- * @param {HTMLFormElement} form - Form element
- */
+
 function submitFormWithConfirmation(form) {
     // Collect form data
     const formData = new FormData(form);
@@ -288,10 +245,6 @@ function submitFormWithConfirmation(form) {
     );
 }
 
-/**
- * Get selected category name
- * @returns {string} Category name
- */
 function getSelectedCategoryName() {
     const categorySelect = document.querySelector('select[name="categoryId"]');
     if (categorySelect && categorySelect.selectedIndex > 0) {
@@ -300,10 +253,7 @@ function getSelectedCategoryName() {
     return 'Chưa chọn';
 }
 
-/**
- * Get serial count from preview
- * @returns {number} Serial count
- */
+
 function getSerialCount() {
     const totalSerialsSpan = document.getElementById('totalSerials');
     if (totalSerialsSpan) {
