@@ -4,9 +4,11 @@ import fpt.swp.springmvctt.itp.dto.request.ProductForm;
 import fpt.swp.springmvctt.itp.dto.request.ExcelImportForm;
 import fpt.swp.springmvctt.itp.dto.response.ImportResult;
 import fpt.swp.springmvctt.itp.entity.Product;
+import fpt.swp.springmvctt.itp.entity.ProductStore;
 import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
 import fpt.swp.springmvctt.itp.entity.enums.ProductType;
 import fpt.swp.springmvctt.itp.repository.ProductRepository;
+import fpt.swp.springmvctt.itp.repository.ProductStoreRepository;
 import fpt.swp.springmvctt.itp.service.ProductService;
 import fpt.swp.springmvctt.itp.service.StorageService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
@@ -23,6 +25,7 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductStoreRepository productStoreRepository;
     private final StorageService storageService;
     private final InventoryService inventoryService;
     private final ExcelImportService excelImportService;
@@ -108,8 +111,25 @@ public class ProductServiceImpl implements ProductService {
     public Product changeStatus(Long productId, ProductStatus status) {
         Product p = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+        
+        // Update product status
         p.setStatus(status);
-        return productRepository.save(p);
+        Product savedProduct = productRepository.save(p);
+        
+        // CASCADE: Update all serials to match product status
+        List<ProductStore> serials = 
+            productStoreRepository.findByProductIdOrderByIdDesc(productId);
+        
+        for (ProductStore serial : serials) {
+            serial.setStatus(status);
+        }
+        
+        if (!serials.isEmpty()) {
+            productStoreRepository.saveAll(serials);
+            System.out.println("Updated " + serials.size() + " serials to status: " + status);
+        }
+        
+        return savedProduct;
     }
 
     @Override @Transactional(readOnly = true)

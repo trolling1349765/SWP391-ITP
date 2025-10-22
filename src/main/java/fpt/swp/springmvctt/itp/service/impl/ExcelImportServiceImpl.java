@@ -70,9 +70,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                 try {
                     serialCode = getCellValueAsString(row.getCell(0));
                     String secretCode = getCellValueAsString(row.getCell(1));
-                    // Removed quantity validation - each serial represents 1 item
-                    BigDecimal faceValue = getCellValueAsBigDecimal(row.getCell(2));
-                    String information = getCellValueAsString(row.getCell(3));
+                    // Face value và information lấy từ product, không cần từ Excel
+                    BigDecimal faceValue = null;  // Sẽ lấy từ product.price
+                    String information = null;     // Không cần thông tin thêm
                     
                     // Validation
                     if (serialCode == null || serialCode.trim().isEmpty()) {
@@ -166,6 +166,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             int dbImportedCount = 0;
             int dbSkippedCount = 0;
             
+            // Get product to use its price as faceValue
+            Product product = productRepository.findById(form.getProductId()).orElse(null);
+            
             for (Map<String, Object> serialData : serials) {
                 try {
                     ProductStore productStore = new ProductStore();
@@ -173,13 +176,13 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     productStore.setSerialCode((String) serialData.get("serialCode"));
                     productStore.setSecretCode((String) serialData.get("secretCode"));
                     
-                    // Convert faceValue from Double to BigDecimal
-                    if (serialData.get("faceValue") != null) {
-                        Double faceValueDouble = (Double) serialData.get("faceValue");
-                        productStore.setFaceValue(BigDecimal.valueOf(faceValueDouble));
+                    // Lấy faceValue từ product.price
+                    if (product != null && product.getPrice() != null) {
+                        productStore.setFaceValue(product.getPrice());
                     }
                     
-                    productStore.setInfomation((String) serialData.get("information"));
+                    // Information để trống hoặc dùng product name
+                    productStore.setInfomation(product != null ? product.getProductName() : "");
                     productStore.setStatus(ProductStatus.HIDDEN);
                     productStore.setCreateAt(LocalDateTime.now());
                     productStore.setUpdateAt(LocalDateTime.now());
@@ -240,9 +243,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                 try {
                     serialCode = getCellValueAsString(row.getCell(0));
                     String secretCode = getCellValueAsString(row.getCell(1));
-                    // Removed quantity validation - each serial represents 1 item
-                    BigDecimal faceValue = getCellValueAsBigDecimal(row.getCell(2));
-                    String information = getCellValueAsString(row.getCell(3));
+                    // Face value và information lấy từ product, không cần từ Excel
+                    BigDecimal faceValue = null;  // Sẽ lấy từ product.price
+                    String information = null;     // Không cần thông tin thêm
                     
                     // Validation (same as import method)
                     if (serialCode == null || serialCode.trim().isEmpty()) {
@@ -590,7 +593,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                 }
                 
                 // Check header columns (removed Quantity column)
-                String[] expectedHeaders = {"Serial Code", "Secret Code", "Face Value", "Information"};
+                String[] expectedHeaders = {"Serial Code", "Secret Code"};
                 for (int i = 0; i < expectedHeaders.length; i++) {
                     String cellValue = getCellValueAsString(headerRow.getCell(i));
                     if (!expectedHeaders[i].equalsIgnoreCase(cellValue)) {
@@ -614,7 +617,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             
             // Create header row
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"Serial Code", "Secret Code", "Face Value", "Information"};
+            String[] headers = {"Serial Code", "Secret Code"};
             
             // Style for header
             CellStyle headerStyle = workbook.createCellStyle();
@@ -680,25 +683,25 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     
     private String[][] getSampleDataForProductType(Product product) {
         if (product != null && isTelecomCard(product.getProductType())) {
-            // Telecom card sample data (removed quantity column)
+            // Telecom card sample data - CHỈ 2 CỘT
             return new String[][]{
-                {"SR-1234567890123456", "HE123456", "10000", "Thẻ Viettel 10K"},
-                {"SR-2345678901234567", "HE234567", "20000", "Thẻ Viettel 20K"},
-                {"SR-3456789012345678", "HE345678", "50000", "Thẻ Viettel 50K"}
+                {"SR-1234567890123456", "HE123456"},
+                {"SR-2345678901234567", "HE234567"},
+                {"SR-3456789012345678", "HE345678"}
             };
         } else if (product != null && isDigitalAccount(product.getProductType())) {
-            // Digital account sample data (removed quantity column)
+            // Digital account sample data - CHỈ 2 CỘT
             return new String[][]{
-                {"user123@gmail.com", "password123", "50000", "Gmail account verified"},
-                {"user456@outlook.com", "password456", "45000", "Outlook account verified"},
-                {"user789@yahoo.com", "password789", "40000", "Yahoo account verified"}
+                {"user123@gmail.com", "password123"},
+                {"user456@outlook.com", "password456"},
+                {"user789@yahoo.com", "password789"}
             };
         } else {
-            // Generic sample data (removed quantity column)
+            // Generic sample data - CHỈ 2 CỘT
             return new String[][]{
-                {"SAMPLE-001", "SECRET-001", "10000", "Sample product 1"},
-                {"SAMPLE-002", "SECRET-002", "20000", "Sample product 2"},
-                {"SAMPLE-003", "SECRET-003", "30000", "Sample product 3"}
+                {"SAMPLE-001", "SECRET-001"},
+                {"SAMPLE-002", "SECRET-002"},
+                {"SAMPLE-003", "SECRET-003"}
             };
         }
     }

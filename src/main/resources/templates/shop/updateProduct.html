@@ -18,53 +18,117 @@
             <div class="card-body">
                 <form th:action="@{'/shop/updateProduct/' + ${productId}}" th:object="${form}" method="post" enctype="multipart/form-data" class="row g-3">
 
+                    <!-- Thông tin cơ bản -->
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 mb-3">Thông tin cơ bản</h5>
+                    </div>
+
                     <div class="col-md-8">
-                        <label class="form-label">Tên sản phẩm</label>
+                        <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
                         <input th:field="*{productName}" class="form-control" required/>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Giá</label>
+                        <label class="form-label">Giá <span class="text-danger">*</span></label>
                         <input th:field="*{price}" type="number" min="0" step="0.01" class="form-control" required/>
                     </div>
 
                     <div class="col-md-6" th:if="${categories != null}">
-                        <label class="form-label">Danh mục</label>
-                        <select th:field="*{categoryId}" class="form-select">
-                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.categoryName}">Cat</option>
+                        <label class="form-label">Phân loại sản phẩm</label>
+                        <select th:field="*{categoryId}" class="form-select" id="categorySelect" onchange="updateProductTypeOptions()">
+                            <option value="">-- Chọn phân loại (tùy chọn) --</option>
+                            <option th:each="c : ${categories}" 
+                                    th:value="${c.id}" 
+                                    th:text="${@shopController.getCategoryDisplayName(c.categoryName)}"
+                                    th:selected="${c.id == form.categoryId}">Cat</option>
                         </select>
                     </div>
                     <input th:if="${categories == null}" type="hidden" th:field="*{categoryId}"/>
 
+                    <div class="col-md-6">
+                        <label class="form-label">Kiểu sản phẩm <span class="text-danger">*</span></label>
+                        <select th:field="*{productType}" id="productTypeSelect" class="form-select" required>
+                            <option value="">-- Chọn kiểu sản phẩm --</option>
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+
+                    <!-- Mô tả -->
                     <div class="col-12">
-                        <label class="form-label">Mô tả</label>
-                        <textarea th:field="*{description}" rows="4" class="form-control"></textarea>
+                        <h5 class="border-bottom pb-2 mb-3 mt-3">Mô tả sản phẩm</h5>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Mô tả ngắn</label>
+                        <textarea th:field="*{description}" rows="2" class="form-control" placeholder="Mô tả ngắn gọn về sản phẩm"></textarea>
+                        <small class="text-muted">Hiển thị trong danh sách sản phẩm</small>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Mô tả chi tiết</label>
+                        <textarea th:field="*{detailedDescription}" rows="4" class="form-control" placeholder="Mô tả chi tiết về sản phẩm, tính năng, cách sử dụng..."></textarea>
+                        <small class="text-muted">Hiển thị trong trang chi tiết sản phẩm</small>
+                    </div>
+
+                    <!-- Hình ảnh -->
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 mb-3 mt-3">Hình ảnh sản phẩm</h5>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Ảnh hiện tại</label><br/>
-                        <img th:if="${product.image}" th:src="@{${product.image}}" alt="current" class="img-thumbnail" style="max-height:120px"/>
+                        <div th:if="${product.image}" class="position-relative d-inline-block">
+                            <img th:src="@{${product.image}}" 
+                                 alt="current" 
+                                 class="img-thumbnail" 
+                                 style="max-height:200px; max-width:100%;"
+                                 loading="lazy"/>
+                        </div>
+                        <div th:unless="${product.image}" class="alert alert-secondary">
+                            Chưa có ảnh
+                        </div>
                         <input type="hidden" th:field="*{img}" th:value="${product.image}"/>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Ảnh mới (tùy chọn)</label>
-                        <input type="file" th:field="*{file}" accept="image/*" class="form-control"/>
+                        <input type="file" 
+                               th:field="*{file}" 
+                               accept="image/*" 
+                               class="form-control"
+                               id="imageInput"
+                               onchange="previewImage(this)"/>
+                        <small class="text-muted">Upload ảnh mới để thay thế ảnh hiện tại</small>
+                        
+                        <!-- Preview ảnh mới -->
+                        <div id="imagePreview" class="mt-3" style="display: none;">
+                            <label class="form-label">Xem trước ảnh mới:</label><br/>
+                            <img id="previewImg" src="" class="img-thumbnail" style="max-height:200px; max-width:100%;"/>
+                        </div>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label">Tồn kho hiện tại</label>
-                        <input th:value="${availableStock}" class="form-control" readonly/>
+                    <!-- Trạng thái & Kho -->
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 mb-3 mt-3">Trạng thái & Kho hàng</h5>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label">Trạng thái sản phẩm</label>
-                        <select name="status" class="form-select">
-                            <option value="HIDDEN"  th:selected="${product.status.name()=='HIDDEN'}">HIDDEN (Ẩn với khách)</option>
-                            <option value="ACTIVE"  th:selected="${product.status.name()=='ACTIVE'}">ACTIVE (Hiển thị)</option>
-                            <option value="BLOCKED" th:selected="${product.status.name()=='BLOCKED'}">BLOCKED (Khóa)</option>
+                    <div class="col-md-6">
+                        <label class="form-label">Trạng thái sản phẩm <span class="text-danger">*</span></label>
+                        <select name="status" class="form-select" required>
+                            <option value="HIDDEN"  th:selected="${product.status.name()=='HIDDEN'}">HIDDEN - Ẩn với khách</option>
+                            <option value="ACTIVE"  th:selected="${product.status.name()=='ACTIVE'}">ACTIVE - Hiển thị công khai</option>
+                            <option value="BLOCKED" th:selected="${product.status.name()=='BLOCKED'}">BLOCKED - Tạm khóa</option>
                         </select>
                         <small class="text-muted">Chỉ sản phẩm ACTIVE mới hiển thị với khách hàng</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tồn kho hiện tại</label>
+                        <div class="input-group">
+                            <input th:value="${availableStock}" class="form-control" readonly disabled/>
+                            <span class="input-group-text">serials</span>
+                        </div>
+                        <small class="text-muted text-danger">⚠️ Không thể sửa trực tiếp. Vui lòng quản lý qua trang Kho hàng.</small>
                     </div>
 
                     <div class="col-12">
@@ -87,9 +151,113 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Fix update product functionality
+<script th:inline="javascript">
+    // Category to ProductType mapping
+    const categoryProductTypeMap = {
+        'TELECOM': [
+            { value: 'VIETTEL', text: 'Thẻ Viettel' },
+            { value: 'MOBIFONE', text: 'Thẻ Mobifone' },
+            { value: 'VINAPHONE', text: 'Thẻ Vinaphone' },
+            { value: 'VIETTEL_DATA', text: 'Gói data Viettel' },
+            { value: 'MOBIFONE_DATA', text: 'Gói data Mobifone' },
+            { value: 'VINAPHONE_DATA', text: 'Gói data Vinaphone' }
+        ],
+        'DIGITAL_ACCOUNTS': [
+            { value: 'EMAIL', text: 'Tài khoản email' },
+            { value: 'SOCIAL', text: 'Tài khoản social media' },
+            { value: 'STREAMING', text: 'Tài khoản streaming' },
+            { value: 'APP', text: 'Tài khoản ứng dụng' }
+        ],
+        'GIFTS_VOUCHERS': [
+            { value: 'GIFT', text: 'Thẻ quà tặng' },
+            { value: 'VOUCHER', text: 'Voucher' },
+            { value: 'COUPON', text: 'Coupon' },
+            { value: 'PROMO', text: 'Mã khuyến mãi' }
+        ],
+        'SOFTWARE_LICENSES': [
+            { value: 'SOFTWARE', text: 'Key phần mềm' },
+            { value: 'LICENSE', text: 'License key' },
+            { value: 'ACTIVATION', text: 'Mã kích hoạt' },
+            { value: 'SUBSCRIPTION', text: 'Subscription' }
+        ],
+        'GAMING': [
+            { value: 'GAME_ACC', text: 'Tài khoản game' },
+            { value: 'GAME_ITEM', text: 'Item game' },
+            { value: 'GAME_CURRENCY', text: 'Tiền tệ game' },
+            { value: 'GAME_CODE', text: 'Gift code game' }
+        ],
+        'OTHER': [
+            { value: 'OTHER', text: 'Khác' }
+        ]
+    };
+
+    // Vietnamese to English category mapping
+    const displayNameToCategoryMap = {
+        'Viễn thông': 'TELECOM',
+        'Tài khoản số': 'DIGITAL_ACCOUNTS',
+        'Quà tặng & Voucher': 'GIFTS_VOUCHERS',
+        'Phần mềm & License': 'SOFTWARE_LICENSES',
+        'Gaming': 'GAMING',
+        'Khác': 'OTHER'
+    };
+
+    // Current product type (from Thymeleaf)
+    const currentProductType = /*[[${form.productType}]]*/ '';
+
+    // Update product type options based on category
+    function updateProductTypeOptions() {
+        const categorySelect = document.getElementById('categorySelect');
+        const productTypeSelect = document.getElementById('productTypeSelect');
+        
+        if (!categorySelect || !productTypeSelect) return;
+        
+        const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
+        const englishCategoryName = displayNameToCategoryMap[selectedCategoryText];
+        
+        // Clear existing options
+        productTypeSelect.innerHTML = '<option value="">-- Chọn kiểu sản phẩm --</option>';
+        
+        // Add new options based on category
+        if (englishCategoryName && categoryProductTypeMap[englishCategoryName]) {
+            categoryProductTypeMap[englishCategoryName].forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.text;
+                
+                // Preserve current selection
+                if (option.value === currentProductType) {
+                    optionElement.selected = true;
+                }
+                
+                productTypeSelect.appendChild(optionElement);
+            });
+        }
+    }
+
+    // Preview image before upload
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize product type options based on current category
+        updateProductTypeOptions();
+        
         // Fix form submission
         const form = document.querySelector('form');
         if (form) {
@@ -97,35 +265,18 @@
                 const submitBtn = this.querySelector('button[type="submit"]');
                 if (submitBtn) {
                     submitBtn.disabled = true;
-                    submitBtn.innerHTML = 'Đang cập nhật...';
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang cập nhật...';
                 }
             });
         }
+        
         // Fix navigation buttons
         const navBtns = document.querySelectorAll('a[href*="/shop/"]');
         navBtns.forEach(btn => {
             btn.addEventListener('click', function(e) {
-                // Add loading state
                 this.style.opacity = '0.6';
             });
         });
-        // Fix file upload preview
-        const fileInput = document.querySelector('input[type="file"]');
-        if (fileInput) {
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = document.querySelector('img[alt="current"]');
-                        if (img) {
-                            img.src = e.target.result;
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
     });
 </script>
 <script th:src="@{/assets/js/shop/shop-common.js}"></script>

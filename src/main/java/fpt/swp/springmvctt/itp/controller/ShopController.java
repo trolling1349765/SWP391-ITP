@@ -206,16 +206,30 @@ public class ShopController {
                                       @ModelAttribute("form") ProductForm form,
                                       @RequestParam(required = false) ProductStatus status,
                                       RedirectAttributes ra) {
-        productService.updateProduct(id, form);
-        
-        // Cập nhật status
-        if (status != null) {
-            productService.changeStatus(id, status);
-            ra.addFlashAttribute("ok", "Đã cập nhật sản phẩm #" + id + " → Status: " + status);
-        } else {
-            ra.addFlashAttribute("ok", "Đã cập nhật sản phẩm #" + id);
+        try {
+            Product updated = productService.updateProduct(id, form);
+            
+            // Cập nhật status
+            if (status != null) {
+                updated = productService.changeStatus(id, status);
+                String successMsg = String.format("Đã cập nhật sản phẩm '%s' (#%d) → Trạng thái: %s", 
+                                                  updated.getProductName(), 
+                                                  updated.getId(), 
+                                                  status);
+                ra.addFlashAttribute("ok", successMsg);
+            } else {
+                String successMsg = String.format("Đã cập nhật sản phẩm '%s' (#%d) thành công!", 
+                                                  updated.getProductName(), 
+                                                  updated.getId());
+                ra.addFlashAttribute("ok", successMsg);
+            }
+            return "redirect:/shop/dashboard";
+        } catch (Exception e) {
+            System.err.println("Error updating product: " + e.getMessage());
+            e.printStackTrace();
+            ra.addFlashAttribute("error", "Lỗi khi cập nhật sản phẩm: " + e.getMessage());
+            return "redirect:/shop/updateProduct/" + id;
         }
-        return "redirect:/shop/dashboard";
     }
 
     // ACTIVE/HIDDEN/BLOCKED
