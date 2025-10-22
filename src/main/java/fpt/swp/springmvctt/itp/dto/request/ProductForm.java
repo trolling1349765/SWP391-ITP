@@ -36,6 +36,6 @@ public class ProductForm {
     
     private MultipartFile file;
     
-    @NotNull(message = "Vui lòng upload file Excel chứa danh sách sản phẩm")
-    private MultipartFile serialFile;          // File Excel chứa serial và số lượng
+    // @NotNull(message = "Vui lòng upload file Excel chứa danh sách sản phẩm")
+    private MultipartFile serialFile;          // File Excel chứa serial và số lượng (optional for debugging)
 }

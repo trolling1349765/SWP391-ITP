@@ -105,14 +105,14 @@
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Thông tin Serial</h5>
+                            <h5 class="mb-0">Thông tin sản phẩm</h5>
                         </div>
                         <div class="card-body">
-                            <p class="text-muted mb-3">Bắt buộc upload file Excel để nhập serial</p>
+                            <p class="text-muted mb-3">Bắt buộc upload file Excel để nhập mã sản phẩm</p>
 
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="form-label mb-0">File Excel chứa Serial</label>
+                                    <label class="form-label mb-0">File Excel chứa mã sản phẩm</label>
                                     <div class="btn-group" role="group">
                                         <a th:href="@{/shop/addProductTemplate}" class="btn btn-outline-primary btn-sm">
                                             Tải Template
@@ -124,7 +124,7 @@
                                     </div>
                                 </div>
                                 <input th:field="*{serialFile}" type="file" class="form-control" accept=".xlsx,.xls"
-                                       required id="serialFileInput" onchange="previewExcelFile(this)"/>
+                                       id="serialFileInput" onchange="previewExcelFile(this)"/>
                                 <small class="text-muted">Upload file Excel theo template chuẩn</small>
                                 <div id="fileInfo" class="mt-2"></div>
 
@@ -132,7 +132,7 @@
                                 <div id="excelPreview" class="mt-3" style="display: none;">
                                     <div class="card border-warning">
                                         <div class="card-header bg-warning text-dark">
-                                            <h6 class="mb-0">Danh sách serials sẽ được thêm vào</h6>
+                                            <h6 class="mb-0">Danh sách các sản phẩm sẽ được thêm vào</h6>
                                         </div>
                                         <div class="card-body p-0">
                                             <div class="table-responsive">
@@ -153,7 +153,7 @@
                                             <div class="card-footer bg-light">
                                                 <small class="text-muted">
                                                     <i class="fas fa-info-circle"></i>
-                                                    Tổng cộng: <span id="totalSerials">0</span> serials sẽ được thêm vào
+                                                    Tổng cộng: <span id="totalSerials">0</span> Các sản phẩm sẽ được thêm vào
                                                     sản phẩm này
                                                 </small>
                                             </div>
@@ -167,7 +167,7 @@
                             <div id="importResults" class="mb-3" style="display: none;">
                                 <div class="card">
                                     <div class="card-header bg-success text-white">
-                                        <h6 class="mb-0">📊 Kết quả Import</h6>
+                                        <h6 class="mb-0"> Kết quả Import</h6>
                                     </div>
                                     <div class="card-body">
                                         <div id="importSummary" class="row g-2 mb-3"></div>
@@ -177,7 +177,7 @@
                                         <div id="serialListSection" class="mt-3" style="display: none;">
                                             <div class="card border-info">
                                                 <div class="card-header bg-info text-white">
-                                                    <h6 class="mb-0">📋 Danh Sách Serials Đã Import</h6>
+                                                    <h6 class="mb-0">Danh Sách sản phẩm Đã Import</h6>
                                                 </div>
                                                 <div class="card-body p-0">
                                                     <div class="table-responsive">
@@ -576,7 +576,7 @@ function parseExcelFile(data) {
     }
     
     if (serials.length === 0) {
-        showExcelPreviewError('Không tìm thấy dữ liệu serial nào trong file Excel');
+        showExcelPreviewError('Không tìm thấy dữ liệu mã sản phẩm nào trong file Excel');
         return;
     }
     
@@ -634,7 +634,7 @@ function showExcelPreview(serials, validCount, errorCount, duplicateCount = 0, d
     let tableHTML = `
         <div class="card mt-3">
             <div class="card-header">
-                <h6 class="mb-0">Danh sách serials sẽ được thêm vào</h6>
+                <h6 class="mb-0">Danh sách sản phẩm sẽ được thêm vào</h6>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -731,7 +731,7 @@ function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
         submitButton.disabled = true;
         submitButton.classList.remove('btn-primary');
         submitButton.classList.add('btn-secondary');
-        submitButton.title = `Không thể submit vì có ${totalDuplicates} serial trùng`;
+        submitButton.title = `Không thể submit vì có ${totalDuplicates} sản phẩm trùng`;
         
         // Add warning message
         let warningMsg = document.getElementById('submitWarning');
@@ -741,13 +741,13 @@ function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
             warningMsg.className = 'alert alert-warning mt-2';
             submitButton.parentNode.appendChild(warningMsg);
         }
-        warningMsg.innerHTML = `⚠️ Không thể tạo sản phẩm vì có ${totalDuplicates} serial trùng. Vui lòng sửa file Excel.`;
+        warningMsg.innerHTML = `⚠️ Không thể tạo sản phẩm vì có ${totalDuplicates} Mã sản phẩm trùng. Vui lòng sửa file Excel.`;
     } else if (validCount > 0) {
         // Enable submit button if there are valid serials
         submitButton.disabled = false;
         submitButton.classList.remove('btn-secondary');
         submitButton.classList.add('btn-primary');
-        submitButton.title = `Có thể tạo sản phẩm với ${validCount} serial hợp lệ`;
+        submitButton.title = `Có thể tạo sản phẩm với ${validCount} mã sản phẩm hợp lệ`;
         
         // Remove warning message
         const warningMsg = document.getElementById('submitWarning');
@@ -759,7 +759,7 @@ function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
         submitButton.disabled = true;
         submitButton.classList.remove('btn-primary');
         submitButton.classList.add('btn-secondary');
-        submitButton.title = 'Không có serial hợp lệ nào';
+        submitButton.title = 'Không có sản phẩm hợp lệ nào';
         
         // Add warning message
         let warningMsg = document.getElementById('submitWarning');
@@ -769,7 +769,7 @@ function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
             warningMsg.className = 'alert alert-warning mt-2';
             submitButton.parentNode.appendChild(warningMsg);
         }
-        warningMsg.innerHTML = '⚠️ Không có serial hợp lệ nào để tạo sản phẩm.';
+        warningMsg.innerHTML = ' Không có sản phẩm hợp lệ nào để tạo.';
     }
 }
 
@@ -858,7 +858,7 @@ function confirmSubmit() {
         // Check if there are any valid serials
         const validBadges = previewDiv.querySelectorAll('.badge.bg-success');
         if (validBadges.length === 0) {
-            alert('Không có serial hợp lệ nào để thêm!\n\nVui lòng kiểm tra lại file Excel.');
+            alert('Không có sản phẩm hợp lệ nào để thêm!\n\nVui lòng kiểm tra lại file Excel.');
             return false;
         }
     }

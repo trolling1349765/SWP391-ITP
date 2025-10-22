@@ -45,8 +45,14 @@ public class ExcelImportServiceImpl implements ExcelImportService {
 
     @Override
     public ImportResult importSerialsFromExcel(ExcelImportForm form) {
+        log.info("🔥 importSerialsFromExcel called for product ID: {}", form.getProductId());
+        log.info("   - Excel file: {}", form.getExcelFile() != null ? form.getExcelFile().getOriginalFilename() : "NULL");
+        log.info("   - File size: {} bytes", form.getExcelFile() != null ? form.getExcelFile().getSize() : 0);
+        
         try (Workbook workbook = WorkbookFactory.create(form.getExcelFile().getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
+            log.info("   - Sheet name: {}", sheet.getSheetName());
+            log.info("   - Total rows: {}", sheet.getLastRowNum());
             
             List<Map<String, Object>> serials = new ArrayList<>();
             List<String> errors = new ArrayList<>();
@@ -104,32 +110,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                         }
                     }
                     
-                    // Validate face value consistency for telecom cards
-                    Product product = productRepository.findById(form.getProductId()).orElse(null);
-                    if (product != null && isTelecomCard(product.getProductType())) {
-                        if (faceValue == null) {
-                            String errorMsg = "Dòng " + (i + 1) + ": Face value bắt buộc cho thẻ điện thoại";
-                            errors.add(errorMsg);
-                            invalidSerials.add(serialCode);
-                            skippedCount++;
-                            continue;
-                        }
-                        
-                        // Check if face value matches product price (all cards should have same face value)
-                        if (i == 1) {
-                            // First row - store the expected face value for this import
-                            expectedFaceValue = faceValue;
-                        } else {
-                            // Subsequent rows - check consistency with first row
-                            if (expectedFaceValue != null && !expectedFaceValue.equals(faceValue)) {
-                                String errorMsg = "Dòng " + (i + 1) + ": Face value " + faceValue + " không khớp với mệnh giá " + expectedFaceValue;
-                                errors.add(errorMsg);
-                                invalidSerials.add(serialCode);
-                                skippedCount++;
-                                continue;
-                            }
-                        }
-                    }
+                    // REMOVED: Face value validation - now using product.price instead of Excel column
                     
                     // Create serial data for JSON storage
                     Map<String, Object> serialData = new HashMap<>();
@@ -161,20 +142,27 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             }
             
             // Import trực tiếp vào database (không tạo JSON file)
-            log.info("Importing {} serials directly to database for product {}", serials.size(), form.getProductId());
+            log.info("📦 Importing {} serials directly to database for product {}", serials.size(), form.getProductId());
             
             int dbImportedCount = 0;
             int dbSkippedCount = 0;
             
             // Get product to use its price as faceValue
             Product product = productRepository.findById(form.getProductId()).orElse(null);
+            log.info("   - Product found: {}", product != null ? product.getProductName() : "NULL");
+            log.info("   - Product price: {}", product != null ? product.getPrice() : "NULL");
             
             for (Map<String, Object> serialData : serials) {
                 try {
+                    String serialCode = (String) serialData.get("serialCode");
+                    String secretCode = (String) serialData.get("secretCode");
+                    
+                    log.info("💾 Saving serial: {} / {}", serialCode, secretCode);
+                    
                     ProductStore productStore = new ProductStore();
                     productStore.setProductId(form.getProductId());
-                    productStore.setSerialCode((String) serialData.get("serialCode"));
-                    productStore.setSecretCode((String) serialData.get("secretCode"));
+                    productStore.setSerialCode(serialCode);
+                    productStore.setSecretCode(secretCode);
                     
                     // Lấy faceValue từ product.price
                     if (product != null && product.getPrice() != null) {
@@ -187,13 +175,14 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     productStore.setCreateAt(LocalDateTime.now());
                     productStore.setUpdateAt(LocalDateTime.now());
                     
-                    productStoreRepository.save(productStore);
+                    ProductStore saved = productStoreRepository.save(productStore);
                     dbImportedCount++;
                     
-                    log.info("Imported serial {} for product {}", productStore.getSerialCode(), form.getProductId());
+                    log.info("   ✅ Saved with ID: {}", saved.getId());
                     
                 } catch (Exception e) {
-                    log.error("Error importing serial: {}", e.getMessage());
+                    log.error("   ❌ Error importing serial to DB: {}", e.getMessage());
+                    e.printStackTrace();
                     dbSkippedCount++;
                 }
             }
