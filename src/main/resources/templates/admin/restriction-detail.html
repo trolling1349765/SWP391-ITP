@@ -25,7 +25,7 @@
 
             <div class="card-body">
 
-                <form th:action="@{/admin/user-restriction/edit/{id}(id=${userRestriction.id})}"
+                <form th:action="@{/admin/restrictions/edit/{id}(id=${userRestriction.id})}"
                       method="post" class="d-inline">
                     <input type="hidden" name="_method" value="put">
                     <div class="d-flex justify-content-end gap-2 mt-3">
@@ -93,7 +93,7 @@
                 <!-- Delete -->
                 <div class="d-flex justify-content-end gap-2 mt-3">
                     <!-- Nút Delete -->
-                    <form th:action="@{/admin/user-restriction/delete/{id}(id=${userRestriction.id})}"
+                    <form th:action="@{/admin/restrictions/delete/{id}(id=${userRestriction.id})}"
                           method="post" class="d-inline">
                         <input type="hidden" name="_method" value="delete">
                         <button type="submit" class="btn btn-danger">Delete</button>

@@ -61,7 +61,7 @@ public class UserRestrictionController {
     @PostMapping()
     public String create(@ModelAttribute("newRestriction") UserRestriction restriction) {
         userRestrictionService.save(restriction);
-        return "redirect:/admin/user-restriction";
+        return "redirect:/admin/restrictions";
     }
 
     // ✅ Cập nhật (PUT)
@@ -73,13 +73,13 @@ public class UserRestrictionController {
                          ) {
         userRestrictionService.update(id, reason, status);
 
-        return "redirect:/admin/user-restriction";
+        return "redirect:/admin/restrictions";
     }
 
     @DeleteMapping("/delete/{id}")
     public String delete(@PathVariable Long id, HttpSession session) {
          User user =  (User) session.getAttribute("user");
         userRestrictionService.delete(id, user.getUsername());
-        return "redirect:/admin/user-restriction";
+        return "redirect:/admin/restrictions";
     }
 }

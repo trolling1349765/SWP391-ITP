@@ -19,7 +19,7 @@
         <div class="col-12 col-md-9 col-lg-10 p-4">
 
             <!-- 🔍 Search form -->
-            <form class="mb-3 d-flex" th:action="@{/admin/user-restriction}" method="get">
+            <form class="mb-3 d-flex" th:action="@{/admin/restrictions}" method="get">
                 <div class="input-group">
                     <input type="hidden" th:name="status" th:value="${status}">
                     <input type="hidden" th:name="toDate" th:value="${toDate}">
@@ -50,7 +50,7 @@
 
                         <!-- 🔽 Filter row -->
                         <tr class="table-secondary">
-                            <form th:action="@{/admin/user-restriction}" method="get" class="align-middle">
+                            <form th:action="@{/admin/restrictions}" method="get" class="align-middle">
                                 <input type="hidden" th:name="search" th:value="${search}">
                                 <th></th>
                                 <th></th>
@@ -126,7 +126,7 @@
                         <!-- Previous -->
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/admin/user-restriction(page=${currentPage - 1},
+                               th:href="@{/admin/restrictions(page=${currentPage - 1},
                                                           status=${status},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},
@@ -141,7 +141,7 @@
                             th:classappend="${i == currentPage} ? 'active'">
                             <a class="page-link"
                                th:text="${i + 1}"
-                               th:href="@{/admin/user-restriction(page=${i},
+                               th:href="@{/admin/restrictions(page=${i},
                                                           status=${status},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},
@@ -152,7 +152,7 @@
                         <!-- Next -->
                         <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/admin/user-restriction(page=${currentPage + 1},
+                               th:href="@{/admin/restrictions(page=${currentPage + 1},
                                                           status=${status},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},
