@@ -71,8 +71,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     serialCode = getCellValueAsString(row.getCell(0));
                     String secretCode = getCellValueAsString(row.getCell(1));
                     // Removed quantity validation - each serial represents 1 item
-                    BigDecimal faceValue = getCellValueAsBigDecimal(row.getCell(3));
-                    String information = getCellValueAsString(row.getCell(4));
+                    BigDecimal faceValue = getCellValueAsBigDecimal(row.getCell(2));
+                    String information = getCellValueAsString(row.getCell(3));
                     
                     // Validation
                     if (serialCode == null || serialCode.trim().isEmpty()) {
@@ -138,24 +138,14 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     // Removed quantity - each serial represents 1 item
                     serialData.put("faceValue", faceValue != null ? faceValue.doubleValue() : 0);
                     serialData.put("information", information != null ? information : "");
-                    serialData.put("status", "AVAILABLE");
+                    serialData.put("status", "HIDDEN"); // New serials are always hidden
                     serialData.put("importDate", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
                     serialData.put("isSold", false);
                     serialData.put("soldDate", null);
                     serialData.put("soldTo", null);
                     serials.add(serialData);
                     
-                    // Create StockForm and add to inventory
-                    StockForm stockForm = new StockForm();
-                    stockForm.setProductId(form.getProductId());
-                    stockForm.setSerial(serialCode);
-                    stockForm.setCode(secretCode);
-                    // Removed setQuantity - each serial represents 1 item
-                    stockForm.setFaceValue(faceValue);
-                    stockForm.setInfomation(information);
-                    stockForm.setStatus("AVAILABLE");
-                    
-                    inventoryService.addOrUpdateStock(stockForm);
+                    // Will be imported to database after parsing all rows
                     processedSerials.add(serialCode);
                     importedCount++;
                     
@@ -170,12 +160,44 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                 }
             }
             
-            // Create JSON file for persistent storage
-            String jsonFileName = "serials_" + form.getProductId() + "_" + System.currentTimeMillis() + ".json";
-            String jsonFilePath = saveSerialsToJson(form.getProductId(), serials, errors, warnings, duplicateSerials, invalidSerials, jsonFileName);
-            log.info("Created JSON file for product {}: {}", form.getProductId(), jsonFilePath);
+            // Import trực tiếp vào database (không tạo JSON file)
+            log.info("Importing {} serials directly to database for product {}", serials.size(), form.getProductId());
             
-            return new ImportResult(totalRows, importedCount, skippedCount, errors, warnings, duplicateSerials, invalidSerials);
+            int dbImportedCount = 0;
+            int dbSkippedCount = 0;
+            
+            for (Map<String, Object> serialData : serials) {
+                try {
+                    ProductStore productStore = new ProductStore();
+                    productStore.setProductId(form.getProductId());
+                    productStore.setSerialCode((String) serialData.get("serialCode"));
+                    productStore.setSecretCode((String) serialData.get("secretCode"));
+                    
+                    // Convert faceValue from Double to BigDecimal
+                    if (serialData.get("faceValue") != null) {
+                        Double faceValueDouble = (Double) serialData.get("faceValue");
+                        productStore.setFaceValue(BigDecimal.valueOf(faceValueDouble));
+                    }
+                    
+                    productStore.setInfomation((String) serialData.get("information"));
+                    productStore.setStatus(ProductStatus.HIDDEN);
+                    productStore.setCreateAt(LocalDateTime.now());
+                    productStore.setUpdateAt(LocalDateTime.now());
+                    
+                    productStoreRepository.save(productStore);
+                    dbImportedCount++;
+                    
+                    log.info("Imported serial {} for product {}", productStore.getSerialCode(), form.getProductId());
+                    
+                } catch (Exception e) {
+                    log.error("Error importing serial: {}", e.getMessage());
+                    dbSkippedCount++;
+                }
+            }
+            
+            log.info("Import completed. Imported: {}, Skipped: {}", dbImportedCount, dbSkippedCount);
+            
+            return new ImportResult(totalRows, dbImportedCount, dbSkippedCount, errors, warnings, duplicateSerials, invalidSerials);
             
         } catch (IOException e) {
             log.error("Error reading Excel file: {}", e.getMessage());
@@ -219,8 +241,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     serialCode = getCellValueAsString(row.getCell(0));
                     String secretCode = getCellValueAsString(row.getCell(1));
                     // Removed quantity validation - each serial represents 1 item
-                    BigDecimal faceValue = getCellValueAsBigDecimal(row.getCell(3));
-                    String information = getCellValueAsString(row.getCell(4));
+                    BigDecimal faceValue = getCellValueAsBigDecimal(row.getCell(2));
+                    String information = getCellValueAsString(row.getCell(3));
                     
                     // Validation (same as import method)
                     if (serialCode == null || serialCode.trim().isEmpty()) {
@@ -248,7 +270,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     // Removed quantity - each serial represents 1 item
                     serialData.put("faceValue", faceValue != null ? faceValue.doubleValue() : 0);
                     serialData.put("information", information != null ? information : "");
-                    serialData.put("status", "AVAILABLE");
+                    serialData.put("status", "HIDDEN"); // New serials are always hidden
                     serialData.put("importDate", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
                     serialData.put("isSold", false);
                     serialData.put("soldDate", null);
@@ -267,20 +289,42 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             }
             
             // Create JSON file
-            String jsonFileName = "serials_" + form.getProductId() + "_" + System.currentTimeMillis() + ".json";
-            String jsonFilePath = saveSerialsToJson(form.getProductId(), serials, errors, warnings, duplicateSerials, invalidSerials, jsonFileName);
+            // Create JSON file in resources/assets/json for preview
+            // Import directly to database without JSON file
+            int dbImportedCount = 0;
+            int dbSkippedCount = 0;
+            
+            for (Map<String, Object> serialData : serials) {
+                try {
+                    ProductStore productStore = new ProductStore();
+                    productStore.setProductId(form.getProductId());
+                    productStore.setSerialCode((String) serialData.get("serialCode"));
+                    productStore.setSecretCode((String) serialData.get("secretCode"));
+                    // No quantity field - each serial represents 1 item
+                    productStore.setFaceValue((BigDecimal) serialData.get("faceValue"));
+                    productStore.setInfomation((String) serialData.get("information"));
+                    productStore.setStatus(ProductStatus.HIDDEN);
+                    productStore.setCreateAt(LocalDateTime.now());
+                    productStore.setUpdateAt(LocalDateTime.now());
+                    
+                    productStoreRepository.save(productStore);
+                    dbImportedCount++;
+                    
+                } catch (Exception e) {
+                    log.error("Error saving serial {}: {}", serialData.get("serialCode"), e.getMessage());
+                    dbSkippedCount++;
+                }
+            }
             
             result.put("success", true);
             result.put("totalRows", totalRows);
-            result.put("importedCount", importedCount);
-            result.put("skippedCount", skippedCount);
+            result.put("importedCount", dbImportedCount);
+            result.put("skippedCount", dbSkippedCount);
             result.put("serials", serials);
             result.put("errors", errors);
             result.put("warnings", warnings);
             result.put("duplicateSerials", duplicateSerials);
             result.put("invalidSerials", invalidSerials);
-            result.put("jsonFilePath", jsonFilePath);
-            result.put("jsonFileName", jsonFileName);
             
         } catch (IOException e) {
             log.error("Error reading Excel file: {}", e.getMessage());
@@ -349,6 +393,81 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         mapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile.toFile(), rootNode);
         
         return jsonFile.toString();
+    }
+
+    private ImportResult importFromJsonFile(String jsonFilePath) {
+        try {
+            log.info("Reading JSON file: {}", jsonFilePath);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(new File(jsonFilePath));
+            
+            Long productId = rootNode.get("productId").asLong();
+            JsonNode serialsArray = rootNode.get("serials");
+            JsonNode errorsArray = rootNode.get("errors");
+            JsonNode warningsArray = rootNode.get("warnings");
+            JsonNode duplicateSerialsArray = rootNode.get("duplicateSerials");
+            JsonNode invalidSerialsArray = rootNode.get("invalidSerials");
+            
+            int importedCount = 0;
+            int skippedCount = 0;
+            
+            log.info("Found {} serials to import for product {}", serialsArray.size(), productId);
+            
+            // Import serials vào database
+            for (JsonNode serialNode : serialsArray) {
+                try {
+                    ProductStore productStore = new ProductStore();
+                    productStore.setProductId(productId);
+                    productStore.setSerialCode(serialNode.get("serialCode").asText());
+                    productStore.setSecretCode(serialNode.get("secretCode").asText());
+                    
+                    if (serialNode.has("faceValue") && !serialNode.get("faceValue").isNull()) {
+                        productStore.setFaceValue(new BigDecimal(serialNode.get("faceValue").asDouble()));
+                    }
+                    
+                    productStore.setInfomation(serialNode.get("information").asText());
+                    productStore.setStatus(ProductStatus.HIDDEN);
+                    productStore.setCreateAt(LocalDateTime.now());
+                    
+                    productStoreRepository.save(productStore);
+                    importedCount++;
+                    
+                    log.info("Imported serial {} for product {}", productStore.getSerialCode(), productId);
+                    
+                } catch (Exception e) {
+                    log.error("Error importing serial from JSON: {}", e.getMessage());
+                    skippedCount++;
+                }
+            }
+            
+            // Convert JSON arrays to lists
+            List<String> errors = new ArrayList<>();
+            List<String> warnings = new ArrayList<>();
+            List<String> duplicateSerials = new ArrayList<>();
+            List<String> invalidSerials = new ArrayList<>();
+            
+            if (errorsArray != null) {
+                errorsArray.forEach(node -> errors.add(node.asText()));
+            }
+            if (warningsArray != null) {
+                warningsArray.forEach(node -> warnings.add(node.asText()));
+            }
+            if (duplicateSerialsArray != null) {
+                duplicateSerialsArray.forEach(node -> duplicateSerials.add(node.asText()));
+            }
+            if (invalidSerialsArray != null) {
+                invalidSerialsArray.forEach(node -> invalidSerials.add(node.asText()));
+            }
+            
+            log.info("Successfully imported {} serials from JSON file: {}", importedCount, jsonFilePath);
+            
+            return new ImportResult(importedCount + skippedCount, importedCount, skippedCount, errors, warnings, duplicateSerials, invalidSerials);
+            
+        } catch (Exception e) {
+            log.error("Error reading JSON file {}: {}", jsonFilePath, e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error reading JSON file: " + e.getMessage());
+        }
     }
     
     @Override

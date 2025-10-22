@@ -13,6 +13,9 @@ public interface ProductStoreRepository extends JpaRepository<ProductStore, Long
     List<ProductStore> findByProductIdOrderByIdDesc(Long productId);
     long countByProductId(Long productId); // Count serials for a product
     
+    // Check if serial code exists
+    boolean existsBySerialCode(String serialCode);
+    
     // Count serials by batch (product_id + price)
     long countByProductIdAndFaceValue(Long productId, java.math.BigDecimal faceValue);
     

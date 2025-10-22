@@ -23,28 +23,25 @@
                   class="row g-3">
 
                     <div class="col-md-8">
-                        <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                        <label class="form-label">Tên sản phẩm</label>
                         <input th:field="*{productName}" class="form-control" placeholder="Nhập tên..." required/>
-                        <div class="invalid-feedback">Vui lòng nhập tên sản phẩm</div>
                     </div>
 
                     <div class="col-md-4">
                     <label class="form-label">Giá <span class="text-danger">*</span></label>
                     <input th:field="*{price}" id="priceInput" type="number" min="0" step="0.01" class="form-control"
                            placeholder="0.00" required/>
-                    <div class="invalid-feedback">Vui lòng nhập giá sản phẩm</div>
-                    <small class="text-muted">Giá này sẽ được tự động điền khi chọn mệnh giá (có thể chỉnh sửa)</small>
+                    <small class="text-muted">Giá này sẽ được tự động điền khi chọn mệnh giá</small>
                     </div>
 
                     <div class="col-md-6" th:if="${categories != null}">
-                    <label class="form-label">Phân loại sản phẩm <span class="text-danger">*</span></label>
-                    <select th:field="*{categoryId}" class="form-select" onchange="updateProductTypeOptions()" required>
-                        <option value="">-- Chọn phân loại --</option>
+                    <label class="form-label">Phân loại sản phẩm</label>
+                    <select th:field="*{categoryId}" class="form-select" onchange="updateProductTypeOptions()">
+                        <option value="">-- Chọn phân loại (tùy chọn) --</option>
                         <option th:each="c : ${categories}" th:value="${c.id}"
                                 th:text="${@shopController.getCategoryDisplayName(c.categoryName)}">Cat
                         </option>
                         </select>
-                    <div class="invalid-feedback">Vui lòng chọn phân loại sản phẩm</div>
                     </div>
                     <input th:if="${categories == null}" type="hidden" th:field="*{categoryId}"/>
 
@@ -55,7 +52,6 @@
                         <option value="">-- Chọn kiểu sản phẩm --</option>
                         <!-- Options will be populated dynamically based on category selection -->
                     </select>
-                    <div class="invalid-feedback">Vui lòng chọn kiểu sản phẩm</div>
                 </div>
 
                 <div class="col-md-6" id="faceValueSection" style="display: none;">
@@ -71,7 +67,6 @@
                         <option value="500000">500,000 ₫</option>
                         <option value="custom">Tùy chỉnh</option>
                     </select>
-                    <div class="invalid-feedback">Vui lòng chọn mệnh giá</div>
                 </div>
 
                 <!-- Business Fields -->
@@ -110,14 +105,14 @@
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Thông tin Sản phẩm</h5>
+                            <h5 class="mb-0">Thông tin Serial</h5>
                         </div>
                         <div class="card-body">
-                            <p class="text-muted mb-3">Bắt buộc upload file Excel để nhập sản phẩm</p>
+                            <p class="text-muted mb-3">Bắt buộc upload file Excel để nhập serial</p>
 
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="form-label mb-0">File Excel chứa Sản phẩm</label>
+                                    <label class="form-label mb-0">File Excel chứa Serial</label>
                                     <div class="btn-group" role="group">
                                         <a th:href="@{/shop/addProductTemplate}" class="btn btn-outline-primary btn-sm">
                                             Tải Template
@@ -137,7 +132,7 @@
                                 <div id="excelPreview" class="mt-3" style="display: none;">
                                     <div class="card border-warning">
                                         <div class="card-header bg-warning text-dark">
-                                            <h6 class="mb-0">Danh sách sản phẩm sẽ được thêm vào</h6>
+                                            <h6 class="mb-0">Danh sách serials sẽ được thêm vào</h6>
                                         </div>
                                         <div class="card-body p-0">
                                             <div class="table-responsive">
@@ -145,10 +140,10 @@
                                                     <thead class="table-dark">
                                                     <tr>
                                                         <th>#</th>
-                                                        <th>Mã sản phẩm</th>
-                                                        <th>Mã bí mật</th>
-                                                        <th>Mệnh giá</th>
-                                                        <th>Thông tin</th>
+                                                        <th>Serial Code</th>
+                                                        <th>Secret Code</th>
+                                                        <th>Face Value</th>
+                                                        <th>Information</th>
                                                         <th>Trạng thái</th>
                                                     </tr>
                                                     </thead>
@@ -160,8 +155,8 @@
                                             <div class="card-footer bg-light">
                                                 <small class="text-muted">
                                                     <i class="fas fa-info-circle"></i>
-                                                    Tổng cộng: <span id="totalSerials">0</span> sản phẩm sẽ được thêm vào
-                                                    danh mục này
+                                                    Tổng cộng: <span id="totalSerials">0</span> serials sẽ được thêm vào
+                                                    sản phẩm này
                                                 </small>
                                             </div>
                                         </div>
@@ -174,7 +169,7 @@
                             <div id="importResults" class="mb-3" style="display: none;">
                                 <div class="card">
                                     <div class="card-header bg-success text-white">
-                                        <h6 class="mb-0">Kết quả Import</h6>
+                                        <h6 class="mb-0">📊 Kết quả Import</h6>
                                     </div>
                                     <div class="card-body">
                                         <div id="importSummary" class="row g-2 mb-3"></div>
@@ -184,7 +179,7 @@
                                         <div id="serialListSection" class="mt-3" style="display: none;">
                                             <div class="card border-info">
                                                 <div class="card-header bg-info text-white">
-                                                    <h6 class="mb-0">Danh Sách Serials Đã Import</h6>
+                                                    <h6 class="mb-0">📋 Danh Sách Serials Đã Import</h6>
                                                 </div>
                                                 <div class="card-body p-0">
                                                     <div class="table-responsive">
@@ -212,7 +207,7 @@
                                         <div id="validationTableSection" class="mt-3" style="display: none;">
                                             <div class="card border-warning">
                                                 <div class="card-header bg-warning text-dark">
-                                                    <h6 class="mb-0">Bảng Kiểm Tra Validation</h6>
+                                                    <h6 class="mb-0">🔍 Bảng Kiểm Tra Validation</h6>
                                                 </div>
                                                 <div class="card-body p-0">
                                                     <div class="table-responsive">
@@ -244,20 +239,20 @@
                                 <div class="phone-card-guide" style="display: none;">
                                     <strong>Thẻ điện thoại:</strong>
                                     <ul class="mb-0">
-                                        <li><strong>Mã sản phẩm:</strong> Mã thẻ điện thoại (VD: 1234567890123456)</li>
-                                        <li><strong>Mã bí mật:</strong> Mã PIN thẻ (VD: ABCD1234)</li>
-                                        <li><strong>Mệnh giá:</strong> Mệnh giá thẻ (VD: 10000)</li>
-                                        <li><strong>Thông tin:</strong> Thông tin bổ sung (VD: Thẻ Viettel 10K)</li>
+                                        <li><strong>Serial Code:</strong> Mã thẻ điện thoại (VD: 1234567890123456)</li>
+                                        <li><strong>Secret Code:</strong> Mã PIN thẻ (VD: ABCD1234)</li>
+                                        <li><strong>Face Value:</strong> Mệnh giá thẻ (VD: 10000)</li>
+                                        <li><strong>Information:</strong> Thông tin bổ sung (VD: Thẻ Viettel 10K)</li>
                                     </ul>
                                 </div>
 
                                 <div class="email-account-guide" style="display: none;">
                                     <strong>Tài khoản email:</strong>
                                     <ul class="mb-0">
-                                        <li><strong>Mã sản phẩm:</strong> Email address (VD: user123@gmail.com)</li>
-                                        <li><strong>Mã bí mật:</strong> Password (VD: password123)</li>
-                                        <li><strong>Mệnh giá:</strong> Giá bán tài khoản (có thể tùy chỉnh)</li>
-                                        <li><strong>Thông tin:</strong> Thông tin bổ sung (đã verify, chưa verify,
+                                        <li><strong>Serial Code:</strong> Email address (VD: user123@gmail.com)</li>
+                                        <li><strong>Secret Code:</strong> Password (VD: password123)</li>
+                                        <li><strong>Face Value:</strong> Giá bán tài khoản (có thể tùy chỉnh)</li>
+                                        <li><strong>Information:</strong> Thông tin bổ sung (đã verify, chưa verify,
                                             etc.)
                                         </li>
                                     </ul>
@@ -265,19 +260,19 @@
                                 <div class="gift-card-guide" style="display: none;">
                                     <strong>Thẻ quà tặng:</strong>
                                     <ul class="mb-0">
-                                        <li><strong>Mã sản phẩm:</strong> Mã thẻ quà tặng</li>
-                                        <li><strong>Mã bí mật:</strong> Pin code (nếu có)</li>
-                                        <li><strong>Mệnh giá:</strong> Mệnh giá thẻ</li>
-                                        <li><strong>Thông tin:</strong> Loại thẻ, hạn sử dụng</li>
+                                        <li><strong>Serial Code:</strong> Mã thẻ quà tặng</li>
+                                        <li><strong>Secret Code:</strong> Pin code (nếu có)</li>
+                                        <li><strong>Face Value:</strong> Mệnh giá thẻ</li>
+                                        <li><strong>Information:</strong> Loại thẻ, hạn sử dụng</li>
                                     </ul>
                                 </div>
                                 <div class="software-key-guide" style="display: none;">
                                     <strong>Key phần mềm:</strong>
                                     <ul class="mb-0">
-                                        <li><strong>Mã sản phẩm:</strong> License key (VD: XXXXX-XXXXX-XXXXX)</li>
-                                        <li><strong>Mã bí mật:</strong> Activation code (nếu có)</li>
-                                        <li><strong>Mệnh giá:</strong> Giá bán key</li>
-                                        <li><strong>Thông tin:</strong> Tên phần mềm, phiên bản</li>
+                                        <li><strong>Serial Code:</strong> License key (VD: XXXXX-XXXXX-XXXXX)</li>
+                                        <li><strong>Secret Code:</strong> Activation code (nếu có)</li>
+                                        <li><strong>Face Value:</strong> Giá bán key</li>
+                                        <li><strong>Information:</strong> Tên phần mềm, phiên bản</li>
                                     </ul>
                                 </div>
                                 <div class="default-guide">
@@ -293,8 +288,7 @@
                 </div>
                 <div class="col-md-12">
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary" onclick="return confirmSubmit()">Tạo sản phẩm
-                        </button>
+                        <button type="submit" class="btn btn-primary">Tạo sản phẩm</button>
                         <a th:href="@{/shop/dashboard}" class="btn btn-secondary">Hủy</a>
                     </div>
                 </div>
@@ -305,45 +299,50 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Include Modular JavaScript -->
-<script th:src="@{/assets/js/shop/excel-processing.js}"></script>
-<script th:src="@{/assets/js/shop/form-manager.js}"></script>
-<script th:src="@{/assets/js/shop/excel-processor.js}"></script>
-<script th:src="@{/assets/js/shop/submit-manager.js}"></script>
-<script th:src="@{/assets/js/shop/add-product-controller.js}"></script>
-
 <script>
-// Simple JavaScript for Add Product functionality
+// AddProduct specific JavaScript functions
 
-// Platform fee configuration
+// Platform fee configuration by product type (Fixed rates)
 const platformFeeConfig = {
+    // Telecom cards - Lower fee (2-5%)
     'VIETTEL': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
     'MOBIFONE': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
     'VINAPHONE': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
     'VIETTEL_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
     'MOBIFONE_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
     'VINAPHONE_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
+    
+    // Digital accounts - Medium fee (5-10%)
     'EMAIL': { fee: 7, description: 'Tài khoản email - Phí trung bình' },
     'SOCIAL': { fee: 7, description: 'Social media - Phí trung bình' },
     'STREAMING': { fee: 7, description: 'Streaming - Phí trung bình' },
     'APP': { fee: 7, description: 'Ứng dụng - Phí trung bình' },
+    
+    // Gift cards - Medium fee (5-12%)
     'GIFT': { fee: 8, description: 'Thẻ quà tặng - Phí trung bình' },
     'VOUCHER': { fee: 8, description: 'Voucher - Phí trung bình' },
     'COUPON': { fee: 8, description: 'Coupon - Phí trung bình' },
     'PROMO': { fee: 8, description: 'Mã khuyến mãi - Phí trung bình' },
+    
+    // Software licenses - Higher fee (8-15%)
     'SOFTWARE': { fee: 12, description: 'Key phần mềm - Phí cao' },
     'LICENSE': { fee: 12, description: 'License key - Phí cao' },
     'ACTIVATION': { fee: 12, description: 'Mã kích hoạt - Phí cao' },
     'SUBSCRIPTION': { fee: 12, description: 'Subscription - Phí cao' },
+    
+    // Gaming - Variable fee (5-20%)
     'GAME_ACC': { fee: 10, description: 'Tài khoản game - Phí biến động' },
     'GAME_ITEM': { fee: 10, description: 'Item game - Phí biến động' },
     'GAME_CURRENCY': { fee: 10, description: 'Tiền tệ game - Phí biến động' },
     'GAME_CODE': { fee: 10, description: 'Gift code game - Phí biến động' },
+    
+    // Other - Default fee (5-10%)
     'OTHER': { fee: 7, description: 'Khác - Phí mặc định' }
 };
 
-// Category to ProductType mapping
+// Category to ProductType mapping (Categories in English, ProductTypes in Vietnamese)
 const categoryProductTypeMap = {
+    // TELECOM (Viễn thông)
     'TELECOM': [
         { value: 'VIETTEL', text: 'Thẻ Viettel' },
         { value: 'MOBIFONE', text: 'Thẻ Mobifone' },
@@ -352,30 +351,35 @@ const categoryProductTypeMap = {
         { value: 'MOBIFONE_DATA', text: 'Gói data Mobifone' },
         { value: 'VINAPHONE_DATA', text: 'Gói data Vinaphone' }
     ],
+    // DIGITAL_ACCOUNTS (Tài khoản số)
     'DIGITAL_ACCOUNTS': [
         { value: 'EMAIL', text: 'Tài khoản email' },
         { value: 'SOCIAL', text: 'Tài khoản social media' },
         { value: 'STREAMING', text: 'Tài khoản streaming' },
         { value: 'APP', text: 'Tài khoản ứng dụng' }
     ],
+    // GIFTS_VOUCHERS (Quà tặng & Voucher)
     'GIFTS_VOUCHERS': [
         { value: 'GIFT', text: 'Thẻ quà tặng' },
         { value: 'VOUCHER', text: 'Voucher' },
         { value: 'COUPON', text: 'Coupon' },
         { value: 'PROMO', text: 'Mã khuyến mãi' }
     ],
+    // SOFTWARE_LICENSES (Phần mềm & License)
     'SOFTWARE_LICENSES': [
         { value: 'SOFTWARE', text: 'Key phần mềm' },
         { value: 'LICENSE', text: 'License key' },
         { value: 'ACTIVATION', text: 'Mã kích hoạt' },
         { value: 'SUBSCRIPTION', text: 'Subscription' }
     ],
+    // GAMING (Gaming)
     'GAMING': [
         { value: 'GAME_ACC', text: 'Tài khoản game' },
         { value: 'GAME_ITEM', text: 'Item game' },
         { value: 'GAME_CURRENCY', text: 'Tiền tệ game' },
         { value: 'GAME_CODE', text: 'Gift code game' }
     ],
+    // OTHER (Khác)
     'OTHER': [
         { value: 'OTHER', text: 'Khác' }
     ]
@@ -433,18 +437,13 @@ function updateProductTypeOptions() {
 function updateProductTypeGuide() {
     const productType = document.querySelector('select[name="productType"]').value;
     const faceValueSection = document.getElementById('faceValueSection');
+    const faceValueSelect = document.getElementById('faceValueSelect');
+    const priceInput = document.getElementById('priceInput');
     const platformFeeInput = document.getElementById('platformFeeInput');
     const platformFeeInfo = document.getElementById('platformFeeInfo');
     
     // Hide all guides first
-    if (faceValueSection) {
-        faceValueSection.style.display = 'none';
-        // Remove required attribute when hiding
-        const faceValueSelect = document.getElementById('faceValueSelect');
-        if (faceValueSelect) {
-            faceValueSelect.removeAttribute('required');
-        }
-    }
+    faceValueSection.style.display = 'none';
     
     // Clear platform fee info
     if (platformFeeInfo) {
@@ -462,20 +461,7 @@ function updateProductTypeGuide() {
     
     // Show face value section for telecom products
     if (['VIETTEL', 'MOBIFONE', 'VINAPHONE', 'VIETTEL_DATA', 'MOBIFONE_DATA', 'VINAPHONE_DATA'].includes(productType)) {
-        if (faceValueSection) {
-            faceValueSection.style.display = 'block';
-            // Add required attribute when section is visible
-            const faceValueSelect = document.getElementById('faceValueSelect');
-            if (faceValueSelect) {
-                faceValueSelect.setAttribute('required', 'required');
-            }
-        }
-    } else {
-        // Remove required attribute when section is hidden
-        const faceValueSelect = document.getElementById('faceValueSelect');
-        if (faceValueSelect) {
-            faceValueSelect.removeAttribute('required');
-        }
+        faceValueSection.style.display = 'block';
     }
     
     // Update platform fee
@@ -490,44 +476,43 @@ function updateProductTypeGuide() {
     }
 }
 
-// Update price from face value selection
-function updatePriceFromFaceValue() {
-    const faceValueSelect = document.getElementById('faceValueSelect');
-    const priceInput = document.getElementById('priceInput');
+// Initialize event listener for category change
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for DOM to be fully ready
+    setTimeout(function() {
+        const categorySelect = document.getElementById('categoryId');
+        const productTypeSelect = document.getElementById('productTypeSelect');
+        
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function() {
+                updateProductTypeOptions();
+            });
+            
+            // Also try onchange attribute as backup
+            categorySelect.setAttribute('onchange', 'updateProductTypeOptions()');
+            
+            // Initial call
+            updateProductTypeOptions();
+        }
+        
+    }, 100); // Wait 100ms
     
-    if (!faceValueSelect || !priceInput) {
-        return;
+    // Initialize platform fee to empty state
+    const platformFeeInput = document.getElementById('platformFeeInput');
+    const platformFeeInfo = document.getElementById('platformFeeInfo');
+    if (platformFeeInput && platformFeeInfo) {
+        platformFeeInput.value = '';
+        platformFeeInfo.innerHTML = '';
     }
-    
-    const selectedValue = faceValueSelect.value;
-    
-    if (selectedValue === 'custom') {
-        // Show custom price input
-        priceInput.readOnly = false;
-        priceInput.placeholder = 'Nhập giá tùy chỉnh';
-        priceInput.value = '';
-    } else if (selectedValue && selectedValue !== '') {
-        // Set price from face value but allow editing
-        priceInput.value = selectedValue;
-        priceInput.readOnly = false;
-        priceInput.placeholder = 'Giá từ mệnh giá (có thể chỉnh sửa)';
-    } else {
-        // Clear price
-        priceInput.value = '';
-        priceInput.readOnly = false;
-        priceInput.placeholder = 'Nhập giá sản phẩm';
-    }
-}
+});
 
-// Preview Excel file
+// Preview Excel file with loading states
 function previewExcelFile(input) {
     const file = input.files[0];
     if (!file) {
         hideExcelPreview();
         return;
     }
-    
-    console.log('File selected:', file.name);
     
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -537,11 +522,9 @@ function previewExcelFile(input) {
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
             
-            console.log('Excel data loaded:', jsonData);
             parseExcelFile(jsonData);
             
         } catch (error) {
-            console.error('Error reading Excel:', error);
             showExcelPreviewError('Lỗi đọc file Excel: ' + error.message);
         }
     };
@@ -551,8 +534,6 @@ function previewExcelFile(input) {
 
 // Parse Excel file and show preview
 function parseExcelFile(data) {
-    console.log('Parsing Excel data:', data);
-    
     if (data.length < 2) {
         showExcelPreviewError('File Excel không có dữ liệu hoặc định dạng không đúng');
         return;
@@ -605,11 +586,9 @@ function parseExcelFile(data) {
     }
     
     if (serials.length === 0) {
-        showExcelPreviewError('Không tìm thấy dữ liệu sản phẩm nào trong file Excel');
+        showExcelPreviewError('Không tìm thấy dữ liệu serial nào trong file Excel');
         return;
     }
-    
-    console.log('Serials parsed:', serials);
     
     // Check duplicates in database
     checkSerialDuplicates(serials, validCount, errorCount, duplicateCount);
@@ -627,8 +606,6 @@ function checkSerialDuplicates(serials, validCount, errorCount, duplicateCount) 
     // Send AJAX request to check duplicates
     const serialCodes = validSerials.map(s => s.serialCode);
     
-    console.log('Checking duplicates for:', serialCodes);
-    
     fetch('/itp/shop/check-serial-duplicates', {
         method: 'POST',
         headers: {
@@ -638,8 +615,6 @@ function checkSerialDuplicates(serials, validCount, errorCount, duplicateCount) 
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Duplicate check response:', data);
-        
         // Update serial status based on database check
         serials.forEach(serial => {
             if (serial.status === 'ready' && data.duplicates.includes(serial.serialCode)) {
@@ -663,15 +638,13 @@ function showExcelPreview(serials, validCount, errorCount, duplicateCount = 0, d
     const previewDiv = document.getElementById('excelPreview');
     if (!previewDiv) return;
     
-    console.log('Showing preview:', { serials, validCount, errorCount, duplicateCount, dbDuplicateCount });
-    
     // Update submit button state
     updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount);
     
     let tableHTML = `
         <div class="card mt-3">
             <div class="card-header">
-                <h6 class="mb-0">Danh sách sản phẩm sẽ được thêm vào</h6>
+                <h6 class="mb-0">Danh sách serials sẽ được thêm vào</h6>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -679,8 +652,8 @@ function showExcelPreview(serials, validCount, errorCount, duplicateCount = 0, d
                         <thead class="table-light">
                             <tr>
                                 <th>STT</th>
-                                <th>Mã sản phẩm</th>
-                                <th>Mã bí mật</th>
+                                <th>Serial Code</th>
+                                <th>Secret Code</th>
                                 <th>Trạng thái</th>
                             </tr>
                         </thead>
@@ -722,10 +695,8 @@ function showExcelPreview(serials, validCount, errorCount, duplicateCount = 0, d
             </div>
             <div class="card-footer">
                 <small class="text-muted">
-                    Tổng cộng: ${serials.length} sản phẩm sẽ được thêm vào
+                    Tổng cộng: ${serials.length} serials sẽ được thêm vào
                     ${validCount > 0 ? ` (${validCount} hợp lệ)` : ''}
-                    ${duplicateCount > 0 ? ` (${duplicateCount} trùng trong file)` : ''}
-                    ${dbDuplicateCount > 0 ? ` (${dbDuplicateCount} trùng trong DB)` : ''}
                     ${errorCount > 0 ? ` (${errorCount} có lỗi)` : ''}
                 </small>
             </div>
@@ -765,14 +736,12 @@ function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
     
     if (!submitButton) return;
     
-    console.log('Updating submit button state:', { validCount, duplicateCount, dbDuplicateCount, totalDuplicates });
-    
     if (totalDuplicates > 0) {
         // Disable submit button if there are duplicates
         submitButton.disabled = true;
         submitButton.classList.remove('btn-primary');
         submitButton.classList.add('btn-secondary');
-        submitButton.title = `Không thể submit vì có ${totalDuplicates} sản phẩm trùng`;
+        submitButton.title = `Không thể submit vì có ${totalDuplicates} serial trùng`;
         
         // Add warning message
         let warningMsg = document.getElementById('submitWarning');
@@ -782,13 +751,13 @@ function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
             warningMsg.className = 'alert alert-warning mt-2';
             submitButton.parentNode.appendChild(warningMsg);
         }
-        warningMsg.innerHTML = `Không thể tạo sản phẩm vì có ${totalDuplicates} sản phẩm trùng. Vui lòng sửa file Excel.`;
+        warningMsg.innerHTML = `⚠️ Không thể tạo sản phẩm vì có ${totalDuplicates} serial trùng. Vui lòng sửa file Excel.`;
     } else if (validCount > 0) {
         // Enable submit button if there are valid serials
         submitButton.disabled = false;
         submitButton.classList.remove('btn-secondary');
         submitButton.classList.add('btn-primary');
-        submitButton.title = `Có thể tạo sản phẩm với ${validCount} sản phẩm hợp lệ`;
+        submitButton.title = `Có thể tạo sản phẩm với ${validCount} serial hợp lệ`;
         
         // Remove warning message
         const warningMsg = document.getElementById('submitWarning');
@@ -800,7 +769,7 @@ function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
         submitButton.disabled = true;
         submitButton.classList.remove('btn-primary');
         submitButton.classList.add('btn-secondary');
-        submitButton.title = 'Không có sản phẩm hợp lệ nào';
+        submitButton.title = 'Không có serial hợp lệ nào';
         
         // Add warning message
         let warningMsg = document.getElementById('submitWarning');
@@ -810,7 +779,7 @@ function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
             warningMsg.className = 'alert alert-warning mt-2';
             submitButton.parentNode.appendChild(warningMsg);
         }
-        warningMsg.innerHTML = 'Không có sản phẩm hợp lệ nào để tạo sản phẩm.';
+        warningMsg.innerHTML = '⚠️ Không có serial hợp lệ nào để tạo sản phẩm.';
     }
 }
 
@@ -849,197 +818,81 @@ function clearFileInput() {
     }
 }
 
-// Validate form before submit
-function validateForm() {
-    let isValid = true;
-    let errorMessages = [];
+// Update price from face value selection
+function updatePriceFromFaceValue() {
+    const faceValueSelect = document.getElementById('faceValueSelect');
+    const priceInput = document.getElementById('priceInput');
     
-    // Validate required fields
-    const productName = document.querySelector('input[name="productName"]').value.trim();
-    if (!productName) {
-        errorMessages.push('Tên sản phẩm không được để trống');
-        isValid = false;
+    if (!faceValueSelect || !priceInput) {
+        return;
     }
     
-    const price = document.querySelector('input[name="price"]').value;
-    if (!price || parseFloat(price) <= 0) {
-        errorMessages.push('Giá sản phẩm phải lớn hơn 0');
-        isValid = false;
-    }
+    const selectedValue = faceValueSelect.value;
     
-    const categoryId = document.querySelector('select[name="categoryId"]').value;
-    if (!categoryId) {
-        errorMessages.push('Vui lòng chọn phân loại sản phẩm');
-        isValid = false;
+    if (selectedValue === 'custom') {
+        // Show custom price input
+        priceInput.readOnly = false;
+        priceInput.placeholder = 'Nhập giá tùy chỉnh';
+        priceInput.value = '';
+    } else if (selectedValue && selectedValue !== '') {
+        // Set price from face value
+        priceInput.value = selectedValue;
+        priceInput.readOnly = false; // Allow editing
+    } else {
+        // Clear price
+        priceInput.value = '';
+        priceInput.readOnly = false;
+        priceInput.placeholder = 'Nhập giá sản phẩm';
     }
-    
-    const productType = document.querySelector('select[name="productType"]').value;
-    if (!productType) {
-        errorMessages.push('Vui lòng chọn kiểu sản phẩm');
-        isValid = false;
-    }
-    
-    // Check if face value section is visible and required
-    const faceValueSection = document.getElementById('faceValueSection');
-    if (faceValueSection && faceValueSection.style.display !== 'none') {
-        const faceValue = document.getElementById('faceValueSelect').value;
-        if (!faceValue) {
-            errorMessages.push('Vui lòng chọn mệnh giá');
-            isValid = false;
-        }
-    }
-    
-    // Validate Excel file
-    const excelFile = document.querySelector('input[name="serialFile"]').files[0];
-    if (!excelFile) {
-        errorMessages.push('Vui lòng upload file Excel chứa danh sách sản phẩm');
-        isValid = false;
-    }
-    
-    // Check Excel preview if exists
-    const previewDiv = document.getElementById('excelPreview');
-    if (previewDiv && previewDiv.style.display !== 'none') {
-        const validBadges = previewDiv.querySelectorAll('.badge.bg-success');
-        if (validBadges.length === 0) {
-            errorMessages.push('Không có sản phẩm hợp lệ nào trong file Excel');
-            isValid = false;
-        }
-    }
-    
-    if (!isValid) {
-        alert('Vui lòng kiểm tra lại thông tin:\n\n' + errorMessages.join('\n'));
-        return false;
-    }
-    
-    return true;
 }
 
-// Confirm submit with duplicate validation
+// Submit form directly without confirmation
 function confirmSubmit() {
-    // First validate form
-    if (!validateForm()) {
+    const productName = document.querySelector('input[name="productName"]');
+    const excelFile = document.getElementById('serialFileInput');
+    const previewDiv = document.getElementById('excelPreview');
+    
+    if (!productName || !excelFile) {
+        alert('Có lỗi xảy ra khi lấy thông tin form');
         return false;
     }
-    
-    const productName = document.querySelector('input[name="productName"]').value;
-    const excelFile = document.getElementById('serialFileInput').files[0];
-    const previewDiv = document.getElementById('excelPreview');
     
     // Check if there are any duplicate serials
     if (previewDiv && previewDiv.style.display !== 'none') {
         const duplicateBadges = previewDiv.querySelectorAll('.badge.bg-danger, .badge.bg-warning');
         if (duplicateBadges.length > 0) {
-            alert('Không thể tạo sản phẩm vì có sản phẩm trùng!\n\nVui lòng:\n- Xóa các sản phẩm trùng trong file Excel\n- Hoặc xóa file và upload file mới\n- Hoặc sử dụng mã sản phẩm khác');
+            alert('Không thể tạo sản phẩm vì có serial trùng!\n\nVui lòng:\n- Xóa các serial trùng trong file Excel\n- Hoặc xóa file và upload file mới\n- Hoặc sử dụng serial khác');
             return false;
         }
         
         // Check if there are any valid serials
         const validBadges = previewDiv.querySelectorAll('.badge.bg-success');
         if (validBadges.length === 0) {
-            alert('Không có sản phẩm hợp lệ nào để thêm!\n\nVui lòng kiểm tra lại file Excel.');
+            alert('Không có serial hợp lệ nào để thêm!\n\nVui lòng kiểm tra lại file Excel.');
             return false;
         }
     }
     
-    let confirmMessage = `Bạn có chắc chắn muốn tạo sản phẩm "${productName}"?`;
-    
-    if (excelFile) {
-        confirmMessage += `\n\nFile Excel "${excelFile.name}" sẽ được xử lý để thêm sản phẩm.`;
-    }
-    
-    const confirmed = confirm(confirmMessage);
-    
-    if (confirmed) {
-        // Show loading state on submit button
-        const submitButton = document.querySelector('button[type="submit"]');
-        if (submitButton) {
-            submitButton.classList.add('btn-loading');
-            submitButton.disabled = true;
-        }
-    }
-    
-    return confirmed;
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Add Product page loaded');
-    
-    // Initialize platform fee to empty state
-    const platformFeeInput = document.getElementById('platformFeeInput');
-    const platformFeeInfo = document.getElementById('platformFeeInfo');
-    if (platformFeeInput && platformFeeInfo) {
-        platformFeeInput.value = '';
-        platformFeeInfo.innerHTML = '';
-    }
-    
-    // Add real-time validation
-    setupRealTimeValidation();
-    
-    // Initial call to update product type options
-    setTimeout(() => {
-        updateProductTypeOptions();
-    }, 100);
-});
-// Setup real-time validation for form fields
-function setupRealTimeValidation() {
-    // Product name validation
-    const productNameInput = document.querySelector('input[name="productName"]');
-    if (productNameInput) {
-        productNameInput.addEventListener('blur', function() {
-            validateField(this, this.value.trim() !== '', 'Tên sản phẩm không được để trống');
-        });
-    }
-    // Price validation
-    const priceInput = document.querySelector('input[name="price"]');
-    if (priceInput) {
-        priceInput.addEventListener('blur', function() {
-            const isValid = this.value && parseFloat(this.value) > 0;
-            validateField(this, isValid, 'Giá sản phẩm phải lớn hơn 0');
-        });
-    }
-    // Category validation
-    const categorySelect = document.querySelector('select[name="categoryId"]');
-    if (categorySelect) {
-        categorySelect.addEventListener('change', function() {
-            validateField(this, this.value !== '', 'Vui lòng chọn phân loại sản phẩm');
-        });
-    }
-    // Product type validation
-    const productTypeSelect = document.querySelector('select[name="productType"]');
-    if (productTypeSelect) {
-        productTypeSelect.addEventListener('change', function() {
-            validateField(this, this.value !== '', 'Vui lòng chọn kiểu sản phẩm');
-        });
-    }
-    // Face value validation
-    const faceValueSelect = document.getElementById('faceValueSelect');
-    if (faceValueSelect) {
-        faceValueSelect.addEventListener('change', function() {
-            const faceValueSection = document.getElementById('faceValueSection');
-            if (faceValueSection && faceValueSection.style.display !== 'none') {
-                validateField(this, this.value !== '', 'Vui lòng chọn mệnh giá');
+    // Show loading state on submit button
+    const submitButton = document.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.classList.add('btn-loading');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang tạo...';
+        
+        // Add timeout to prevent infinite loading
+        setTimeout(() => {
+            if (submitButton.disabled) {
+                console.warn('Form submission timeout - re-enabling button');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Tạo sản phẩm';
+                submitButton.classList.remove('btn-loading');
+                alert('Form submission timeout. Vui lòng thử lại.');
             }
-        });
+        }, 30000); // 30 seconds timeout
     }
-    // Excel file validation
-    const excelFileInput = document.querySelector('input[name="serialFile"]');
-    if (excelFileInput) {
-        excelFileInput.addEventListener('change', function() {
-            const isValid = this.files && this.files.length > 0;
-            validateField(this, isValid, 'Vui lòng upload file Excel');
-        });
-    }
-}
-// Validate individual field and show feedback
-function validateField(field, isValid, errorMessage) {
-    if (isValid) {
-        field.classList.remove('is-invalid');
-        field.classList.add('is-valid');
-    } else {
-        field.classList.remove('is-valid');
-        field.classList.add('is-invalid');
-    }
+    
+    return true; // Always return true to allow form submission
 }
 </script>
 </body>

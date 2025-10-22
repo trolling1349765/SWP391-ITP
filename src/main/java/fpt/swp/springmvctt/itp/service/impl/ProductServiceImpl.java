@@ -60,14 +60,14 @@ public class ProductServiceImpl implements ProductService {
                 importForm.setExcelFile(form.getSerialFile());
                 importForm.setOverrideExisting(false);
                 
-                   ImportResult result = excelImportService.importSerialsFromExcel(importForm);
-                   System.out.println("Imported " + result.getImportedCount() + " serials for product " + savedProduct.getId());
-                   if (result.getErrors().size() > 0) {
-                       System.out.println("Import errors: " + result.getErrors());
-                   }
-                   if (result.getWarnings().size() > 0) {
-                       System.out.println("Import warnings: " + result.getWarnings());
-                   }
+                ImportResult result = excelImportService.importSerialsFromExcel(importForm);
+                System.out.println("Imported " + result.getImportedCount() + " serials for product " + savedProduct.getId());
+                if (result.getErrors().size() > 0) {
+                    System.out.println("Import errors: " + result.getErrors());
+                }
+                if (result.getWarnings().size() > 0) {
+                    System.out.println("Import warnings: " + result.getWarnings());
+                }
                 
                 // Rebuild product quantity after import
                 savedProduct = inventoryService.rebuildProductQuantity(savedProduct.getId());
