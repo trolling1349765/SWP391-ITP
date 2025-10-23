@@ -7,12 +7,13 @@
 <div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
 <div class="container-fluid p-0">
-    <div class="row g-0">
-        <div class="col-md-3 col-lg-2 p-0" style="position:fixed;top:56px;bottom:0;left:0;z-index:1000;">
-            <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
-        </div>
+    <!-- Sidebar Fixed -->
+    <div style="position:fixed;top:56px;bottom:0;left:0;width:70px;z-index:1000;">
+        <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
+    </div>
 
-        <div class="col-md-9 col-lg-10 p-3 ms-auto">
+    <!-- Main Content -->
+    <div style="margin-left:85px;padding:1rem;min-height:calc(100vh - 56px);background:#f8f9fa;max-width:calc(100% - 85px);">
         <div class="card">
             <div class="card-header" th:text="'Cập nhật sản phẩm #' + ${productId}">Cập nhật</div>
             <div class="card-body">
@@ -93,17 +94,19 @@
                     <div class="col-md-6">
                         <label class="form-label">Ảnh mới (tùy chọn)</label>
                         <input type="file" 
-                               th:field="*{file}" 
                                accept="image/*" 
                                class="form-control"
                                id="imageInput"
-                               onchange="previewImage(this)"/>
-                        <small class="text-muted">Upload ảnh mới để thay thế ảnh hiện tại</small>
+                               onchange="uploadNewImage(this)"/>
+                        <small class="text-muted">
+                            <span id="uploadStatus"></span>
+                        </small>
                         
                         <!-- Preview ảnh mới -->
                         <div id="imagePreview" class="mt-3" style="display: none;">
-                            <label class="form-label">Xem trước ảnh mới:</label><br/>
+                            <label class="form-label">Ảnh mới:</label><br/>
                             <img id="previewImg" src="" class="img-thumbnail" style="max-height:200px; max-width:100%;"/>
+                            <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeNewImage()">Xóa</button>
                         </div>
                     </div>
 
@@ -146,7 +149,6 @@
 
                 </form>
             </div>
-        </div>
         </div>
     </div>
 </div>
@@ -234,23 +236,51 @@
         }
     }
 
-    // Preview image before upload
-    function previewImage(input) {
+    // Upload ảnh mới ngay lập tức - NHANH
+    function uploadNewImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        const statusEl = document.getElementById('uploadStatus');
         const preview = document.getElementById('imagePreview');
         const previewImg = document.getElementById('previewImg');
+        const imgInput = document.querySelector('input[name="img"]');
         
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> Đang upload...';
+        preview.style.display = 'none';
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        fetch('/itp/shop/uploadImage', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const imagePath = data.imagePath;
+                imgInput.value = imagePath; // Cập nhật hidden input
+                previewImg.src = imagePath;
                 preview.style.display = 'block';
-            };
-            
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            preview.style.display = 'none';
-        }
+                statusEl.innerHTML = '<i class="fas fa-check-circle text-success"></i> Upload thành công!';
+                console.log('✅ Image updated:', imagePath);
+            } else {
+                statusEl.innerHTML = '<i class="fas fa-times-circle text-danger"></i> ' + data.message;
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            statusEl.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Lỗi upload';
+        });
+    }
+    
+    // Xóa ảnh mới
+    function removeNewImage() {
+        document.getElementById('imageInput').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('uploadStatus').innerHTML = '';
+        // Giữ lại ảnh cũ trong hidden input
     }
 
     // Initialize on page load

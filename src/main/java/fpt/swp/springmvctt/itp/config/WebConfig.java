@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/assets/img/**")
                 .addResourceLocations("classpath:/assets/img/");
-        
+
         registry.addResourceHandler("/assets/ajax/**")
                 .addResourceLocations("classpath:/assets/ajax/");
     }
