@@ -9,6 +9,7 @@ import java.util.List;
 public interface ProductService {
     Product createProduct(Long shopId, ProductForm form); // default HIDDEN
     Product updateProduct(Long productId, ProductForm form);
+    String saveImage(org.springframework.web.multipart.MultipartFile file); // Upload ảnh riêng
     Product changeStatus(Long productId, ProductStatus status);
     Product get(Long id);
     List<Product> listByShop(Long shopId);

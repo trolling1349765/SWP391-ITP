@@ -2,19 +2,54 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head th:replace="~{Included/ShopHeader :: shopHead}">
     <link th:href="@{/assets/css/shop/shop-common.css}" rel="stylesheet">
+    <style>
+        /* Hover effects cho cards */
+        .card:hover {
+            transform: translateY(-2px);
+            transition: all .3s ease;
+        }
+        
+        /* Hover effects cho buttons */
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,.15) !important;
+        }
+        
+        /* Table row hover */
+        .table-hover tbody tr:hover {
+            background-color: #e8f8f5 !important;
+            cursor: pointer;
+        }
+        
+        /* Status select hover */
+        select:hover, select:focus {
+            box-shadow: 0 0 0 0.2rem rgba(26,188,156,.25) !important;
+        }
+        
+        /* Pagination active */
+        .pagination .page-item.active .page-link {
+            background-color: #1abc9c;
+            border-color: #1abc9c;
+        }
+        
+        .pagination .page-link:hover {
+            background-color: #e8f8f5;
+            border-color: #1abc9c;
+            color: #1abc9c;
+        }
+    </style>
 </head>
 <body style="margin:0;padding-top:56px;overflow-x:hidden;">
 <div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
 
 <div class="container-fluid p-0">
-    <div class="row g-0">
-    <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 p-0" style="position:fixed;top:56px;bottom:0;left:0;z-index:1000;">
+    <!-- Sidebar Fixed -->
+    <div style="position:fixed;top:56px;bottom:0;left:0;width:70px;z-index:1000;">
         <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
     </div>
 
-        <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 p-3 ms-auto">
+    <!-- Main Content -->
+    <div style="margin-left:85px;padding:1rem;min-height:calc(100vh - 56px);background:#f8f9fa;max-width:calc(100% - 85px);">
         <!-- Enhanced Alert System -->
         <div th:if="${ok}" class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>
@@ -54,48 +89,129 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Stats Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm" style="border-left:4px solid #1abc9c !important;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-muted small mb-1">Tổng sản phẩm</div>
+                                <h4 class="mb-0 fw-bold" th:text="${totalProducts != null ? totalProducts : 0}">0</h4>
+                            </div>
+                            <div class="text-success" style="font-size:2rem;opacity:.3;">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm" style="border-left:4px solid #28a745 !important;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-muted small mb-1">Đang hoạt động</div>
+                                <h4 class="mb-0 fw-bold text-success" th:text="${products.?[status.name()=='ACTIVE'].size()}">0</h4>
+                            </div>
+                            <div class="text-success" style="font-size:2rem;opacity:.3;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm" style="border-left:4px solid #6c757d !important;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-muted small mb-1">Đang ẩn</div>
+                                <h4 class="mb-0 fw-bold text-secondary" th:text="${products.?[status.name()=='HIDDEN'].size()}">0</h4>
+                            </div>
+                            <div class="text-secondary" style="font-size:2rem;opacity:.3;">
+                                <i class="fas fa-eye-slash"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm" style="border-left:4px solid #dc3545 !important;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-muted small mb-1">Bị khóa</div>
+                                <h4 class="mb-0 fw-bold text-danger" th:text="${products.?[status.name()=='BLOCKED'].size()}">0</h4>
+                            </div>
+                            <div class="text-danger" style="font-size:2rem;opacity:.3;">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div class="d-flex gap-2">
-            <a th:href="@{/shop/addProduct}" class="btn btn-primary">Thêm Sản Phẩm</a>
-            <a th:href="@{/shop/inventory}" class="btn btn-secondary">Quản Lý Kho</a>
+                <a th:href="@{/shop/addProduct}" class="btn btn-sm shadow-sm" style="background:#1abc9c;color:#fff;border:none;">
+                    <i class="fas fa-plus-circle me-1"></i> Thêm Sản Phẩm
+                </a>
+                <a th:href="@{/shop/inventory}" class="btn btn-secondary btn-sm shadow-sm">
+                    <i class="fas fa-warehouse me-1"></i> Quản Lý Kho
+                </a>
             </div>
             
             <!-- Page size selector -->
-            <div class="d-flex align-items-center gap-2">
-                <label class="mb-0 text-muted small">Hiển thị:</label>
-                <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.href='/itp/shop/dashboard?page=1&size=' + this.value">
+            <div class="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded border shadow-sm">
+                <i class="fas fa-list text-muted"></i>
+                <label class="mb-0 text-muted small fw-bold">Hiển thị:</label>
+                <select class="form-select form-select-sm fw-bold" style="width:70px;border-color:#1abc9c;" onchange="window.location.href='/itp/shop/dashboard?page=1&size=' + this.value">
                     <option value="5" th:selected="${pageSize == 5}">5</option>
                     <option value="10" th:selected="${pageSize == 10}">10</option>
                     <option value="20" th:selected="${pageSize == 20}">20</option>
                     <option value="50" th:selected="${pageSize == 50}">50</option>
+                    <option value="100" th:selected="${pageSize == 100}">100</option>
                 </select>
-                <span class="text-muted small">sản phẩm/trang</span>
+                <span class="text-muted small">/ trang</span>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">Danh sách sản phẩm</div>
+        <div class="card shadow-sm">
+            <div class="card-header" style="background:linear-gradient(135deg,#1abc9c 0%,#16a085 100%);color:#fff;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-list"></i>
+                    <h5 class="mb-0">Danh sách sản phẩm</h5>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                     <tr>
-                        <th width="60">STT</th><th>ID</th><th>Ảnh</th><th>Tên</th><th>Mô tả</th>
-                        <th>Giá</th><th>Tồn</th><th>Trạng thái</th><th class="text-nowrap">Thao tác</th>
+                        <th style="width:60px;">STT</th>
+                        <th style="width:100px;min-width:100px;" class="text-center">Ảnh</th>
+                        <th style="width:200px;">Tên</th>
+                        <th style="width:250px;">Mô tả</th>
+                        <th style="width:130px;">Giá</th>
+                        <th style="width:70px;">Tồn</th>
+                        <th style="width:110px;">Trạng thái</th>
+                        <th style="width:300px;" class="text-nowrap">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="p, iterStat : ${products}">
                         <td th:text="${(currentPage - 1) * pageSize + iterStat.index + 1}">1</td>
-                        <td th:text="${p.id}">1</td>
-                        <td>
-                            <img th:if="${p.image}" 
-                                 th:data-src="@{${p.image}}"
-                                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Crect width='56' height='56' fill='%23e9ecef'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23adb5bd' font-size='12'%3ELoading...%3C/text%3E%3C/svg%3E"
-                                 th:onerror="'this.src=\'/itp/assets/img/products/default.jpg\';this.onerror=null;'"
-                                 class="img-thumbnail lazy-img" 
-                                 loading="lazy"
-                                 style="max-height:56px;object-fit:cover;"/>
-                            <span th:unless="${p.image}" class="badge bg-secondary">No image</span>
+                        <td class="text-center">
+                            <div th:if="${p.image}">
+                                <img th:src="@{${p.image}}"
+                                     th:attr="data-original-path=${p.image},data-product-id=${p.id}"
+                                     class="img-thumbnail" 
+                                     style="width:56px;height:56px;object-fit:cover;"
+                                     onerror="console.error('❌ Product #' + this.getAttribute('data-product-id') + ' image failed. DB path:', this.getAttribute('data-original-path'), 'Full URL:', this.src); this.parentElement.innerHTML='<span class=\'badge bg-danger\' title=\'' + this.getAttribute('data-original-path') + '\'>Lỗi ảnh</span>';"
+                                     onload="console.log('✅ Product #' + this.getAttribute('data-product-id') + ' loaded:', this.getAttribute('data-original-path'));"/>
+                            </div>
+                            <span th:unless="${p.image}" class="badge bg-secondary">Chưa có ảnh</span>
                         </td>
                         <td th:text="${p.productName}">Tên</td>
                         <td th:text="${p.description}">Mô tả</td>
@@ -107,19 +223,39 @@
                                 Chưa có serial
                             </div>
                         </td>
-                        <td><span class="badge text-bg-dark" th:text="${p.status}">HIDDEN</span></td>
+                        <td>
+                            <span th:if="${p.status.name()=='ACTIVE'}" class="badge bg-success" style="font-size:.75rem;">
+                                <i class="fas fa-check-circle me-1"></i> ACTIVE
+                            </span>
+                            <span th:if="${p.status.name()=='HIDDEN'}" class="badge bg-secondary" style="font-size:.75rem;">
+                                <i class="fas fa-eye-slash me-1"></i> HIDDEN
+                            </span>
+                            <span th:if="${p.status.name()=='BLOCKED'}" class="badge bg-danger" style="font-size:.75rem;">
+                                <i class="fas fa-ban me-1"></i> BLOCKED
+                            </span>
+                        </td>
                         <td class="text-nowrap">
-                            <a th:href="@{|/shop/updateProduct/${p.id}|}" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <a th:href="@{|/shop/products/${p.id}|}" class="btn btn-sm btn-outline-dark">Chi tiết</a>
+                            <a th:href="@{|/shop/updateProduct/${p.id}|}" class="btn btn-sm btn-outline-primary" style="transition:all .2s;">
+                                <i class="fas fa-edit"></i> Sửa
+                            </a>
+                            <a th:href="@{|/shop/products/${p.id}|}" class="btn btn-sm btn-outline-dark" style="transition:all .2s;">
+                                <i class="fas fa-info-circle"></i> Chi tiết
+                            </a>
 
                             <!-- Đổi trạng thái: ACTIVE/HIDDEN/BLOCKED -->
                             <form th:action="@{|/shop/products/${p.id}/status|}" method="post" class="d-inline-flex align-items-center ms-1">
-                                <select class="form-select form-select-sm" name="status">
-                                    <option value="ACTIVE"  th:selected="${p.status.name()=='ACTIVE'}">ACTIVE</option>
-                                    <option value="HIDDEN"  th:selected="${p.status.name()=='HIDDEN'}">HIDDEN</option>
-                                    <option value="BLOCKED" th:selected="${p.status.name()=='BLOCKED'}">BLOCKED</option>
+                                <select class="form-select form-select-sm fw-bold" name="status" 
+                                        th:style="${p.status.name()=='ACTIVE'} ? 'border-color:#28a745;color:#28a745;' : 
+                                                   (${p.status.name()=='HIDDEN'} ? 'border-color:#6c757d;color:#6c757d;' : 'border-color:#dc3545;color:#dc3545;')">
+                                    <option value="ACTIVE" th:selected="${p.status.name()=='ACTIVE'}" style="color:#28a745;">✓ ACTIVE</option>
+                                    <option value="HIDDEN" th:selected="${p.status.name()=='HIDDEN'}" style="color:#6c757d;">⊝ HIDDEN</option>
+                                    <option value="BLOCKED" th:selected="${p.status.name()=='BLOCKED'}" style="color:#dc3545;">✕ BLOCKED</option>
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-dark ms-2">Đổi</button>
+                                <button type="submit" class="btn btn-sm ms-2"
+                                        th:classappend="${p.status.name()=='ACTIVE'} ? 'btn-success' : 
+                                                         (${p.status.name()=='HIDDEN'} ? 'btn-secondary' : 'btn-danger')">
+                                    <i class="fas fa-sync-alt"></i> Đổi
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -186,7 +322,6 @@
             </nav>
         </div>
 
-        </div>
     </div>
 </div>
 
@@ -215,33 +350,7 @@
     
     // Lazy load images
     function initializeLazyImages() {
-        try {
-            const lazyImages = document.querySelectorAll('.lazy-img');
-            
-            if ('IntersectionObserver' in window) {
-                const imageObserver = new IntersectionObserver((entries, observer) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const img = entry.target;
-                            img.src = img.dataset.src;
-                            img.classList.remove('lazy-img');
-                            imageObserver.unobserve(img);
-                        }
-                    });
-                }, {
-                    rootMargin: '50px' // Load images 50px before they enter viewport
-                });
-                
-                lazyImages.forEach(img => imageObserver.observe(img));
-            } else {
-                // Fallback for browsers without IntersectionObserver
-                lazyImages.forEach(img => {
-                    img.src = img.dataset.src;
-                });
-            }
-        } catch (error) {
-            console.error('Error initializing lazy images:', error);
-        }
+        // Images load directly from /assets/img/shop
     }
 
     function initializeNavigation() {
