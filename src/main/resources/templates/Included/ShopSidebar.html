@@ -5,64 +5,74 @@
     <title>Shop Owner Sidebar</title>
     <style>
         .active {
-            background: #1f2937 !important;
+            background: linear-gradient(135deg,#1abc9c 0%,#16a085 100%) !important;
             color: #ffffff !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 6px rgba(26,188,156,.3) !important;
         }
         .active:hover {
-            background: #374151 !important;
+            background: linear-gradient(135deg,#16a085 0%,#138d75 100%) !important;
+            transform: translateY(-1px);
+        }
+        aside a:not(.active):hover {
+            background: #e8f8f5 !important;
+            color: #16a085 !important;
+            transform: translateY(-1px);
+        }
+        aside a {
+            transition: all .2s ease !important;
         }
     </style>
 </head>
 <body>
 <aside th:fragment="sidebar"
-       style="height:100%;background:#0f172a;color:#e2e8f0;display:flex;flex-direction:column;border-right:1px solid #1f2937;margin:0;padding:0;overflow:hidden;">
-    <div style="display:flex;align-items:center;gap:.5rem;padding:1rem 1.25rem;border-bottom:1px solid #1f2937;">
-        <span style="width:28px;height:28px;border-radius:6px;background:#22c55e;display:inline-block;"></span>
-        <div>
-            <div style="font-weight:700;letter-spacing:.3px;">Item Trading Platform</div>
-            <small style="color:#94a3b8;">Shop Owner Console</small>
+       style="height:100%;background:#f8f9fa;color:#2c3e50;display:flex;flex-direction:column;border-right:1px solid #dee2e6;margin:0;padding:0;overflow:hidden;box-shadow:2px 0 6px rgba(0,0,0,.04);">
+    <div style="display:flex;align-items:center;justify-content:center;padding:.5rem;border-bottom:1px solid #dee2e6;background:linear-gradient(135deg,#1abc9c 0%,#16a085 100%);box-shadow:0 2px 4px rgba(0,0,0,.1);">
+        <div style="width:20px;height:20px;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;color:#1abc9c;font-size:.6rem;font-weight:700;">
+            IT
         </div>
     </div>
 
-    <div style="flex:1;overflow-y:auto;padding:.5rem 0;">
-        <div style="padding:.75rem 1rem .25rem;font-size:.75rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Overview</div>
-        <ul style="list-style:none;margin:0;padding:.25rem;">
-            <li>
+    <div style="flex:1;overflow-y:auto;padding:.2rem 0;">
+        <ul style="list-style:none;margin:0;padding:.1rem .15rem;">
+            <li style="margin-bottom:.15rem;">
                 <a th:href="@{/shop/dashboard}"
                    th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/dashboard')}? ' active'"
-                   style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-radius:.6rem;color:#cbd5e1;text-decoration:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;opacity:.9;">
+                   style="display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.35rem .15rem;border-radius:.3rem;color:#2c3e50;text-decoration:none;font-size:.6rem;transition:all .2s;"
+                   title="Dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
                         <path d="M3 12l9-9 9 9"/><path d="M9 22V12h6v10"/>
                     </svg>
-                    <span>Dashboard</span>
+                    <span style="font-weight:500;font-size:.55rem;">Tổng</span>
                 </a>
             </li>
-            <li>
+            <li style="margin-bottom:.15rem;">
                 <a th:href="@{/shop/addProduct}"
                    th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/addProduct')}? ' active'"
-                   style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-radius:.6rem;color:#cbd5e1;text-decoration:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;opacity:.9;">
+                   style="display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.35rem .15rem;border-radius:.3rem;color:#2c3e50;text-decoration:none;font-size:.6rem;transition:all .2s;"
+                   title="Thêm sản phẩm">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
                         <path d="M12 5v14M5 12h14"/>
                     </svg>
-                    <span>Thêm sản phẩm</span>
+                    <span style="font-weight:500;font-size:.55rem;">Thêm</span>
                 </a>
             </li>
-            <li>
+            <li style="margin-bottom:.15rem;">
                 <a th:href="@{/shop/inventory}"
                    th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/inventory')}? ' active'"
-                   style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-radius:.6rem;color:#cbd5e1;text-decoration:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;opacity:.9;">
+                   style="display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.35rem .15rem;border-radius:.3rem;color:#2c3e50;text-decoration:none;font-size:.6rem;transition:all .2s;"
+                   title="Kho hàng">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
                         <rect x="3" y="4" width="18" height="13" rx="2"/><path d="M16 21H8"/>
                     </svg>
-                    <span>Kho hàng</span>
+                    <span style="font-weight:500;font-size:.55rem;">Kho</span>
                 </a>
             </li>
         </ul>
     </div>
 
-    <div style="padding:.75rem 1rem;border-top:1px solid #1f2937;font-size:.8rem;color:#94a3b8;">
-        <div th:text="${#dates.format(#dates.createNow(),'yyyy')} + ' © ITP'">2025 © ITP</div>
-        <div style="opacity:.8">Seller Sidebar v1.0</div>
+    <div style="padding:.3rem .2rem;border-top:1px solid #dee2e6;font-size:.5rem;color:#95a5a6;text-align:center;background:#f8f9fa;">
+        <div th:text="${#dates.format(#dates.createNow(),'yyyy')}" style="font-weight:500;">2025</div>
     </div>
 </aside>
 </body>

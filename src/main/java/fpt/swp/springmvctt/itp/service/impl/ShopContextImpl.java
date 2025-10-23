@@ -8,7 +8,7 @@ public class ShopContextImpl implements ShopContext {
 
     @Override
     public long currentShopId() {
-        // Tạm thời return shop ID = 1 để test
+
         return 1L;
     }
 }

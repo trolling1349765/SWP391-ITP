@@ -622,6 +622,37 @@ public class ShopController {
         }
     }
     
+    // Upload ảnh riêng - nhanh và có preview
+    @PostMapping("/uploadImage")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> uploadImage(@RequestParam("file") MultipartFile file) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            if (file == null || file.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Vui lòng chọn file ảnh");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Save image using StorageService
+            String imagePath = productService.saveImage(file);
+            
+            response.put("success", true);
+            response.put("message", "Upload ảnh thành công!");
+            response.put("imagePath", imagePath);
+            
+            System.out.println("✅ Image uploaded successfully: " + imagePath);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error uploading image: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Lỗi khi upload ảnh: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
     @PostMapping("/importSerials")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> importSerials(@ModelAttribute ExcelImportForm form) {

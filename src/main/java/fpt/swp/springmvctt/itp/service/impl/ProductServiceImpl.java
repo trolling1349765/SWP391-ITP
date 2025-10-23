@@ -174,4 +174,9 @@ public class ProductServiceImpl implements ProductService {
         //xóa sản phẩm
         productRepository.delete(product);
     }
+    
+    @Override
+    public String saveImage(org.springframework.web.multipart.MultipartFile file) {
+        return storageService.saveProductImage(file);
+    }
 }

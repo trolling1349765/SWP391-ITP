@@ -27,7 +27,6 @@ public class StatusService {
         shop.setStatus(newStatus);
         shop.setUpdateBy(actor);
         shop.setUpdateAt(LocalDateTime.now());
-        // shopRepository.save(shop);
     }
 
     @Transactional
