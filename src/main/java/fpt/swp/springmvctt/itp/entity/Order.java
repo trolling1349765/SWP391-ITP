@@ -42,6 +42,6 @@ public class Order extends BaseEntity {
     private User user;
 
     // One order -> many payment_transactions
-    @OneToOne
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private PaymentTransaction paymentTransaction;
 }

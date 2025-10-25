@@ -1,6 +1,10 @@
 package fpt.swp.springmvctt.itp.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,48 +20,83 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String username;
+    @Size(max = 50, message = "Họ tên không được quá 50 ký tự")
+    @NotBlank(message = "Họ tên không được để trống")
+    private String fullName;
 
-    @Column(unique = true, nullable = false, length = 100)
+    @Column(unique = true, nullable = false, length = 50)
+    @Email(message = "Email không hợp lệ")
+    @NotBlank(message = "Email không được để trống")
     private String email;
 
-    @Column(nullable = false, length = 255)
-    private String password;
-
-    @Column(length = 20)
+    @Column(length = 10)
+    @Pattern(regexp = "^(\\+84|0)[0-9]{9,10}$", message = "Số điện thoại không hợp lệ")
     private String phone;
 
-    // Tiền tệ -> BigDecimal + precision/scale
+    @Column(nullable = false, length = 255)
+    @NotBlank(message = "Mật khẩu không được để trống")
+    @Size(min = 8, message = "Mật khẩu phải có ít nhất 8 ký tự")
+    private String password;
+
+    @Column(unique = true, nullable = false, length = 50)
+    @NotBlank(message = "Tên đăng nhập không được để trống")
+    @Size(min = 3, max = 20, message = "Tên đăng nhập phải có từ 3-20 ký tự")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới")
+    private String username;
+
+    @Column(length = 20)
+    private String provider = "local";  // hoặc "google"
+
+
     @Column(precision = 19, scale = 2, nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
 
     @Column
     private String status;
 
-    //
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id") // FK role_id
-    @ToString.Exclude @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Role role;
+
+    // User là owner của quan hệ OneToOne với Shop:
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", unique = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Shop shop;
+
+    //  UserRestriction
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_restriction_id", unique = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private UserRestriction userRestriction;
 
     // Collections
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @ToString.Exclude @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Order> orders;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @ToString.Exclude @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<ChatMessage> chatMessages;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @ToString.Exclude @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Account> accounts;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @ToString.Exclude @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<PaymentTransaction> paymentTransactions;
 
-    @OneToOne(mappedBy = "user")
-    private Shop shop;
+    @Column(name = "oauth_provider")
+    private String oauthProvider;
+
 }

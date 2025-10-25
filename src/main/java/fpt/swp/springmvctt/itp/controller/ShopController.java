@@ -28,47 +28,7 @@ public class ShopController {
     }
     //
 
-    @GetMapping("/registerDetail/{id}")
-    public String registerDetail(
-            Model model,
-            @PathVariable Long id
-    ) {
-        Shop shop = shopService.findById(id);
-        model.addAttribute("shop", shop);
-        return "shop/shop-detail";
-    }
-    
-    @GetMapping("/registers")
-    public String showRegister(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String shopName,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
-            Model model
-    ) {
-        // Gọi service để lấy các shop có status "inactive" + điều kiện lọc
-        Page<Shop> shops = shopService.filterInactiveShops(shopName, username, fromDate, toDate, page, size);
 
-        if (page < 0) {
-            model.addAttribute("errorMessage", "Page number can not be negative.");
-            page = 0;
-        }
-
-        model.addAttribute("currentPage", shops.getNumber());
-        model.addAttribute("totalPages", shops.getTotalPages());
-        model.addAttribute("totalItems", shops.getTotalElements());
-
-        // Gửi dữ liệu sang view
-        model.addAttribute("shops", shops);
-        model.addAttribute("shopName", shopName);
-        model.addAttribute("username", username);
-        model.addAttribute("fromDate", fromDate);
-        model.addAttribute("toDate", toDate);
-
-        return "admin/register";
-    }
 
     //
     @GetMapping

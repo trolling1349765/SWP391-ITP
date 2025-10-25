@@ -15,5 +15,13 @@ public interface UserRestrictionService {
     UserRestriction save(UserRestriction userRestriction);
     UserRestriction update(Long id, String reason, String status);
     void delete(Long id, String username);
-    Page<UserRestriction> findByFilter(String username, String status, LocalDate fromDate, LocalDate toDate, String deleted, int  page, int size);
+    Page<UserRestriction> findByFilter(
+            String username,
+            String status,
+            LocalDate fromDate,
+            LocalDate toDate,
+            String deleted,
+            int  page,
+            int size
+    );
 }
