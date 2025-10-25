@@ -1,25 +1,91 @@
-/* Sidebar CSS - Basic styles */
+
 .sidebar {
-    background-color: #0f172a;
+    position: sticky;
+    top: 0;
+    height: 100vh;           /* Full chiều cao trang */
+    background: #0f172a;
     color: #e2e8f0;
-    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #1f2937;
+}
+
+/* Cho phép co giãn theo Bootstrap nhưng không tràn */
+.sidebar .sidebar-content {
+    flex: 1;
     overflow-y: auto;
 }
 
-.sidebar-link {
-    color: #e2e8f0;
-    text-decoration: none;
-    padding: 0.75rem 1rem;
-    display: block;
-    transition: all 0.2s ease;
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #1f2937
 }
 
-.sidebar-link:hover {
-    background-color: #374151;
-    color: #ffffff;
+.brand-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #22c55e
 }
 
-.sidebar-link.active {
-    background-color: #3b82f6;
-    color: #ffffff;
+.brand-title {
+    font-weight: 700;
+    letter-spacing: .3px
+}
+
+.scroll {
+    flex: 1;
+    overflow: auto;
+    padding: .5rem 0
+}
+
+.section {
+    padding: .75rem 1rem .25rem;
+    font-size: .75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .06em
+}
+
+.nav {
+    list-style: none;
+    margin: 0;
+    padding: .25rem
+}
+
+.nav a {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem 1rem;
+    border-radius: .6rem;
+    color: #cbd5e1;
+    text-decoration: none
+}
+
+.nav a:hover {
+    background: #0b1220;
+    color: #fff
+}
+
+.nav a.active {
+    background: #1f2937;
+    color: #fff
+}
+
+.icon {
+    width: 18px;
+    height: 18px;
+    opacity: .9
+}
+
+.footer {
+    padding: .75rem 1rem;
+    border-top: 1px solid #1f2937;
+    font-size: .8rem;
+    color: #94a3b8
 }

@@ -6,10 +6,16 @@ import fpt.swp.springmvctt.itp.repository.ShopRepository;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
 import fpt.swp.springmvctt.itp.service.ShopService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +24,8 @@ public class ShopServiceImpl implements ShopService {
 
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
+    @Autowired
+    private ShopRepository shopRepository;
 
     @Override
     public Shop createForUser(Long userId, String shopName) {
@@ -40,6 +48,9 @@ public class ShopServiceImpl implements ShopService {
         userRepository.save(u);
 
         return s;
+    public Page<Shop> findByStatus(String status, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
+        return shopRepository.findByStatus(status, pageable);
     }
 
     @Override
@@ -49,12 +60,22 @@ public class ShopServiceImpl implements ShopService {
         if (shopName != null && !shopName.isBlank()) s.setShopName(shopName);
         if (description != null) s.setDescription(description);
         return shopRepository.save(s);
+    public Shop findById(Long id) {
+        return shopRepository.findById(id).orElse(null);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Shop> getByUser(Long userId) {
         return shopRepository.findByUserId(userId);
+    public Page<Shop> filterInactiveShops(String shopName, String username, LocalDate fromDate,
+                                          LocalDate toDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        if( shopName == "" ) shopName = null;
+        if( username == "" ) username = null;
+        if( fromDate == null ) fromDate = null;
+        if( toDate == null ) toDate = null;
+        return shopRepository.filterShops("inactive", shopName, username, fromDate, toDate, pageable);
     }
 
     @Override

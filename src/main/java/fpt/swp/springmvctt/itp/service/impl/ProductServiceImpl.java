@@ -14,7 +14,9 @@ import fpt.swp.springmvctt.itp.service.StorageService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
 import fpt.swp.springmvctt.itp.service.ExcelImportService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
@@ -31,6 +33,8 @@ public class ProductServiceImpl implements ProductService {
     private final ExcelImportService excelImportService;
 
     @Override
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
     public Product createProduct(Long shopId, ProductForm form) {
         Product p = new Product();
         p.setShopId(shopId);
@@ -51,12 +55,12 @@ public class ProductServiceImpl implements ProductService {
             p.setImage(form.getImg());
             System.out.println("Created product with existing image: " + form.getImg());
         }
-        
+
         // Save product first to get ID
         Product savedProduct = productRepository.save(p);
         System.out.println("✅ Created product ID: " + savedProduct.getId() + " - Name: " + savedProduct.getProductName());
         System.out.println("📝 Detailed Description: " + savedProduct.getDetailedDescription());
-        
+
         // Import serials from Excel file if provided
         System.out.println("🔍 Checking for Excel file...");
         System.out.println("   - form.getSerialFile() = " + (form.getSerialFile() != null ? "NOT NULL" : "NULL"));
@@ -65,7 +69,7 @@ public class ProductServiceImpl implements ProductService {
             System.out.println("   - file.getOriginalFilename() = " + form.getSerialFile().getOriginalFilename());
             System.out.println("   - file.getSize() = " + form.getSerialFile().getSize() + " bytes");
         }
-        
+
         if (form.getSerialFile() != null && !form.getSerialFile().isEmpty()) {
             try {
                 System.out.println("📥 Starting Excel import for product " + savedProduct.getId() + "...");
@@ -73,26 +77,26 @@ public class ProductServiceImpl implements ProductService {
                 importForm.setProductId(savedProduct.getId());
                 importForm.setExcelFile(form.getSerialFile());
                 importForm.setOverrideExisting(false);
-                
+
                 ImportResult result = excelImportService.importSerialsFromExcel(importForm);
                 System.out.println("✅ Import completed!");
                 System.out.println("   - Imported: " + result.getImportedCount());
                 System.out.println("   - Skipped: " + result.getSkippedCount());
                 System.out.println("   - Errors: " + result.getErrors().size());
                 System.out.println("   - Warnings: " + result.getWarnings().size());
-                
+
                 if (result.getErrors().size() > 0) {
                     System.out.println("❌ Import errors: " + result.getErrors());
                 }
                 if (result.getWarnings().size() > 0) {
                     System.out.println("⚠️ Import warnings: " + result.getWarnings());
                 }
-                
+
                 // Rebuild product quantity after import
                 System.out.println("🔄 Rebuilding product quantity...");
                 savedProduct = inventoryService.rebuildProductQuantity(savedProduct.getId());
                 System.out.println("✅ Final availableStock: " + savedProduct.getAvailableStock());
-                
+
             } catch (Exception e) {
                 System.err.println("❌ Error importing serials: " + e.getMessage());
                 e.printStackTrace();
@@ -100,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
         } else {
             System.out.println("⚠️ No Excel file provided - product created without serials");
         }
-        
+
         return savedProduct;
     }
 
@@ -125,30 +129,32 @@ public class ProductServiceImpl implements ProductService {
             System.out.println("Updated product keeping existing image: " + form.getImg());
         }
         return productRepository.save(p);
+    public Product getProductById(Long id) {
+        return productRepository.findById(id).orElse(null);
     }
 
     @Override
     public Product changeStatus(Long productId, ProductStatus status) {
         Product p = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
-        
+
         // Update product status
         p.setStatus(status);
         Product savedProduct = productRepository.save(p);
-        
+
         // CASCADE: Update all serials to match product status
-        List<ProductStore> serials = 
+        List<ProductStore> serials =
             productStoreRepository.findByProductIdOrderByIdDesc(productId);
-        
+
         for (ProductStore serial : serials) {
             serial.setStatus(status);
         }
-        
+
         if (!serials.isEmpty()) {
             productStoreRepository.saveAll(serials);
             System.out.println("Updated " + serials.size() + " serials to status: " + status);
         }
-        
+
         return savedProduct;
     }
 
@@ -163,20 +169,51 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByShopIdOrderByIdDesc(shopId);
     }
 
+    public List<Product> getFeaturedProducts(int limit) {
+        Pageable topN = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "id"));
+        return productRepository.findByStatus("ACTIVE", topN).getContent();
+    }
+
+    // CŨ (giữ lại): mặc định newest -> gọi sang hàm mới
     @Override
     public void delete(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
-        
-        // Xóa tất cả serials (product_stores) trước khi xóa sản phẩm
-        inventoryService.deleteByProductId(id);
-        
-        //xóa sản phẩm
-        productRepository.delete(product);
-    }
-    
-    @Override
-    public String saveImage(org.springframework.web.multipart.MultipartFile file) {
-        return storageService.saveProductImage(file);
-    }
-}
+
+                // Xóa tất cả serials (product_stores) trước khi xóa sản phẩm
+                inventoryService.deleteByProductId(id);
+
+                //xóa sản phẩm
+                productRepository.delete(product);
+                public Page<Product> getProductsPage ( int page, int size, Long categoryId){
+                    return getProductsPage(page, size, categoryId, "newest");
+                }
+
+                // MỚI: hỗ trợ sort linh hoạt
+                @Override
+                public String saveImage (org.springframework.web.multipart.MultipartFile file){
+                    return storageService.saveProductImage(file);
+                    public Page<Product> getProductsPage ( int page, int size, Long categoryId, String sort){
+                        int pageIndex = Math.max(page - 1, 0);
+
+                        // Map sort string -> Sort
+                        Sort sortSpec;
+                        if ("priceAsc".equalsIgnoreCase(sort)) {
+                            sortSpec = Sort.by(Sort.Direction.ASC, "price");
+                        } else if ("priceDesc".equalsIgnoreCase(sort)) {
+                            sortSpec = Sort.by(Sort.Direction.DESC, "price");
+                        } else {
+                            // newest (mặc định)
+                            sortSpec = Sort.by(Sort.Direction.DESC, "id");
+                        }
+
+                        Pageable pageable = PageRequest.of(pageIndex, size, sortSpec);
+
+                        if (categoryId == null) {
+                            // Dùng method mới để Sort qua Pageable
+                            return productRepository.findByStatus("ACTIVE", pageable);
+                        }
+                        return productRepository.findByStatusAndCategory_Id("ACTIVE", categoryId, pageable);
+                    }
+                }
+            }

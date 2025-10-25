@@ -1,52 +1,37 @@
 package fpt.swp.springmvctt.itp.controller;
 
+import fpt.swp.springmvctt.itp.entity.Product;
+import fpt.swp.springmvctt.itp.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @Controller
+@RequestMapping("/")
+@RequiredArgsConstructor
 public class HomeController {
 
-
     // 🏠 Trang chủ người dùng
-    @GetMapping("/")
-    public String homepage(org.springframework.ui.Model model) {
-        model.addAttribute("currentPath", "/");
-        // => src/main/resources/templates/user/Homepage.html
-        return "user/Homepage";
+//    @GetMapping
+//    public String homepage(@RequestParam String message, Model model) {
+//        model.addAttribute("message", message);
+//        // => src/main/resources/templates/user/home.html
+//        return "user/Homepage";
+//    }
+    private final ProductService productService;
+
+    @GetMapping()
+    public String home(@ModelAttribute("success") String successMessage, Model model) {
+        System.out.println("Thông báo: " + successMessage);
+        List<Product> featured = productService.getFeaturedProducts(8); // lấy 8 sp
+        model.addAttribute("featuredProducts", featured);
+        return "user/home";
     }
 
-    // 🧩 Header fragment (để test riêng nếu cần)
-    @GetMapping("/header")
-    public String header() {
-        // => src/main/resources/templates/Included/Header.html
-        return "Included/Header";
-    }
-
-    // 🧩 Footer fragment (để test riêng nếu cần)
-    @GetMapping("/footer")
-    public String footer() {
-        // => src/main/resources/templates/Included/Footer.html
-        return "Included/Footer";
-    }
-
-    // 🧩 Shop Sidebar (nếu bạn muốn kiểm tra riêng)
-    @GetMapping("/shop-sidebar")
-    public String shopSidebar() {
-        // => src/main/resources/templates/Included/ShopSidebar.html
-        return "Included/ShopSidebar";
-    }
-
-    // 🧩 Admin Sidebar (nếu bạn muốn kiểm tra riêng)
-    @GetMapping("/admin-sidebar")
-    public String adminSidebar() {
-        // => src/main/resources/templates/admin/AdminSidebar.html
-        return "admin/AdminSidebar";
-    }
-
-    @GetMapping("/seller")
-    public String sellerEntry() {
-        return "redirect:/seller/dashboard";
-    }
 }
-
-
