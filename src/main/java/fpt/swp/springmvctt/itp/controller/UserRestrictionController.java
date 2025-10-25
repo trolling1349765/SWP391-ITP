@@ -33,6 +33,11 @@ public class UserRestrictionController {
 
         Page<UserRestriction> restrictionPage = userRestrictionService.findByFilter(search, status, fromDate, toDate, deleted, page, size);
 
+        if (page < 0) {
+            model.addAttribute("errorMessage", "Page number can not be negative.");
+            page = 0;
+        }
+
         model.addAttribute("userRestrictions", restrictionPage); // Page<Restriction> nguyên vẹn
         model.addAttribute("currentPage", restrictionPage.getNumber());
         model.addAttribute("totalPages", restrictionPage.getTotalPages());

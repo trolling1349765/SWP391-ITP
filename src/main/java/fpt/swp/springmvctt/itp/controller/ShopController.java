@@ -51,6 +51,10 @@ public class ShopController {
         // Gọi service để lấy các shop có status "inactive" + điều kiện lọc
         Page<Shop> shops = shopService.filterInactiveShops(shopName, username, fromDate, toDate, page, size);
 
+        if (page < 0) {
+            model.addAttribute("errorMessage", "Page number can not be negative.");
+            page = 0;
+        }
 
         model.addAttribute("currentPage", shops.getNumber());
         model.addAttribute("totalPages", shops.getTotalPages());

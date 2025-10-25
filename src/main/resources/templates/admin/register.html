@@ -23,6 +23,10 @@
         </div>
         <!-- Main content -->
         <div class="col-12 col-md-9 col-lg-10 p-4">
+            <h3 th:if="${errorMessage != null}"
+                th:text="${errorMessage}"
+                class="text-danger"></h3>
+
             <form th:action="@{/shop/registers}" method="get">
                 <table class="table table-bordered">
                     <thead>
@@ -44,7 +48,9 @@
 
                         <!-- Shop Name Filter -->
                         <td>
-                            <input type="text" name="shopName" class="form-control" th:value="${shopName}">
+                            <label>
+                                <input type="text" name="shopName" class="form-control" th:value="${shopName}">
+                            </label>
                         </td>
 
                         <td>
@@ -53,13 +59,19 @@
 
                         <!-- User Name Filter -->
                         <td>
-                            <input type="text" name="username" class="form-control" th:value="${username}">
+                            <label>
+                                <input type="text" name="username" class="form-control" th:value="${username}">
+                            </label>
                         </td>
 
                         <!-- Created At Filter -->
                         <td class="d-flex gap-1">
-                            <input type="date" name="fromDate" class="form-control" th:value="${fromDate}">
-                            <input type="date" name="toDate" class="form-control" th:value="${toDate}">
+                            <label>
+                                <input type="date" name="fromDate" class="form-control" th:value="${fromDate}">
+                            </label>
+                            <label>
+                                <input type="date" name="toDate" class="form-control" th:value="${toDate}">
+                            </label>
                         </td>
 
                         <!-- Rating Filter -->
