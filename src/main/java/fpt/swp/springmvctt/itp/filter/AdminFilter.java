@@ -23,7 +23,7 @@ public class AdminFilter implements Filter {
 
         if (role == null || !role.equalsIgnoreCase("ADMIN")) {
             // Nếu không có quyền
-            res.sendRedirect(req.getContextPath() + "/home?message=not_authorized");
+            res.sendRedirect(req.getContextPath() + "/?message=not_authorized");
             return; // không cho đi tiếp
         }
 

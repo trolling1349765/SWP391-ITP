@@ -65,7 +65,7 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("success", "Đăng nhập thành công!");
             session.setAttribute("user", user.get());
             session.setAttribute("role", user.get().getRole().getName());
-            return "redirect:/home";
+            return "redirect:/";
         }
 
         model.addAttribute("error", "Email hoặc mật khẩu không đúng!");
@@ -186,6 +186,6 @@ public class AuthController {
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
         session.invalidate();
         redirectAttributes.addFlashAttribute("success", "Đăng xuất thành công!");
-        return "redirect:/home";
+        return "redirect:/";
     }
 }

@@ -22,7 +22,7 @@ public class SellerFilter implements Filter {
 
         if (role == null || !role.equalsIgnoreCase("SELLER")) {
             // Nếu không có quyền
-            res.sendRedirect(req.getContextPath() + "/home?message=not_authorized");
+            res.sendRedirect(req.getContextPath() + "/?message=not_authorized");
             return; // không cho đi tiếp
         }
 
