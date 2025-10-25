@@ -1,8 +1,10 @@
 package fpt.swp.springmvctt.itp.entity;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -32,14 +34,14 @@ public class Shop extends BaseEntity {
     @Column(length = 60)
     private String shopCode; // mã shop hiển thị ở UI
 
+    @Column(length = 60)
+    private String category;
+
     @Column(precision = 2, scale = 1)
     private BigDecimal rating;
 
     @Column(length = 50)
-    private String status; // active or block
-
-    @Column(length = 255, nullable = false)
-    private String category;
+    private String status;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -50,6 +52,8 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL)
     private List<Product> products;
 
-    @OneToOne(mappedBy = "shop")
+    @OneToOne()
+    @JoinColumn(name = "user_id")
     private User user;
 }
+

@@ -2,16 +2,10 @@ package fpt.swp.springmvctt.itp.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -22,10 +16,10 @@ public abstract class BaseEntity {
     private String createBy;
 
     @Column(name = "create_at" )
-    private LocalDateTime createAt;
+    private LocalDate createAt;
 
     @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    private LocalDate updateAt;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;

@@ -1,14 +1,17 @@
 package fpt.swp.springmvctt.itp.controller;
 import fpt.swp.springmvctt.itp.entity.Shop;
 import fpt.swp.springmvctt.itp.repository.ShopRepository;
+import fpt.swp.springmvctt.itp.service.ShopService;
 import fpt.swp.springmvctt.itp.service.StorageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/shop")
@@ -16,11 +19,18 @@ public class ShopController {
     private final ShopRepository shopRepository;
     private final StorageService storageService;
 
+    @Autowired
+    private ShopService shopService;
+
     public ShopController(ShopRepository shopRepository, StorageService storageService) {
         this.shopRepository = shopRepository;
         this.storageService = storageService;
     }
+    //
 
+
+
+    //
     @GetMapping
     public String viewShop(Model model) {
         Shop shop = new Shop();
@@ -38,7 +48,7 @@ public class ShopController {
         model.addAttribute("lowStock", 10);
         model.addAttribute("outOfStock", 10);
 
-        return "shop/ShopDetails";
+        return "shop-detail";
     }
 
 
