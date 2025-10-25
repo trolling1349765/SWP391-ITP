@@ -8,6 +8,7 @@ import java.time.LocalDate;
 public interface PaymentTransactionService {
 
     public Page<PaymentTransaction> findByFilter(String type,
+                                                 String username,
                                                  LocalDate fromDate,
                                                  LocalDate toDate,
                                                  int  page,
