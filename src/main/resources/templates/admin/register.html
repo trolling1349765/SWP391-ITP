@@ -23,7 +23,7 @@
         </div>
         <!-- Main content -->
         <div class="col-12 col-md-9 col-lg-10 p-4">
-            <form th:action="@{/shop/register}" method="get">
+            <form th:action="@{/shop/registers}" method="get">
                 <table class="table table-bordered">
                     <thead>
                     <tr>
@@ -32,6 +32,8 @@
                         <th>Status</th>
                         <th>User</th>
                         <th>Created At</th>
+                        <th>Is Delete</th>
+                        <th>Delete By</th>
                         <th>Rating</th>
                         <th>Actions</th>
                     </tr>
@@ -77,6 +79,8 @@
                         <td th:text="${shop.status}">Inactive</td>
                         <td th:text="${shop.user != null ? shop.user.username : 'N/A'}">user01</td>
                         <td th:text="${#temporals.format(shop.createAt, 'yyyy-MM-dd')}"></td>
+                        <td th:text="${shop.isDeleted ? 'Yes' : 'No'}"></td>
+                        <td th:text="${shop.isDeleted ? shop.deleteBy : ''}"></td>
                         <td th:text="${shop.rating}">4.5</td>
                         <td>
                             <a th:href="@{'/shop/registerDetail/' + ${shop.id}}"
@@ -99,7 +103,7 @@
                         <!-- Previous -->
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/shop/register(page=${currentPage - 1},
+                               th:href="@{/shop/registers(page=${currentPage - 1},
                                                           shopName=${shopName},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},
@@ -114,7 +118,7 @@
                             th:classappend="${i == currentPage} ? 'active'">
                             <a class="page-link"
                                th:text="${i + 1}"
-                               th:href="@{/shop/register(page=${i},
+                               th:href="@{/shop/registers(page=${i},
                                                           shopName=${shopName},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},
@@ -125,7 +129,7 @@
                         <!-- Next -->
                         <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/shop/register(page=${currentPage + 1},
+                               th:href="@{/shop/registers(page=${currentPage + 1},
                                                           shopName=${shopName},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},

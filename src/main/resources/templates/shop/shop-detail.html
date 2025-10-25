@@ -40,20 +40,19 @@
 
                 <!-- ✅ Trường hợp: Chưa bị xóa + đang inactive → chỉ hiện nút Active -->
                 <span th:if="${!shop.isDeleted
-                   and shop.status.equalsIgnoreCase('inactive')
-                   and session.user != null
-                   and session.user.role.name.equalsIgnoreCase('admin')}">
+                   and shop.status.equalsIgnoreCase('inactive')}">
                     <a th:href="@{'/shop/activate/' + ${shop.id}}" class="btn btn-success px-4">
                         Active
                     </a>
                     <a th:href="@{/shop/registers}" class="btn btn-primary px-4">Back</a>
-                    <a th:href="@{'/shop/delete/' + ${shop.id}}" class="btn btn-primary px-4">Back</a>
+                    <a th:href="@{'/shop/delete/' + ${shop.id}}" class="btn btn-primary px-4">Delete</a>
                 </span>
                 <!-- ✅ Ngược lại → hiện Edit + View Store -->
                 <span th:unless="${!shop.isDeleted
                    and shop.status.equalsIgnoreCase('inactive')
-                   and session.user != null
-                   and session.user.role.name.equalsIgnoreCase('admin')}">
+                   }">
+<!--                    and session.user != null-->
+<!--                   and session.user.role.name.equalsIgnoreCase('admin')-->
                     <a href="#" class="btn btn-primary px-4">Edit</a>
                     <a href="#" class="btn btn-outline-secondary px-4">View Store</a>
                 </span>
