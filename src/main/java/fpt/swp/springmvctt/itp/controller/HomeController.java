@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
-@RequestMapping("/home")
+@RequestMapping("/")
 @RequiredArgsConstructor
 public class HomeController {
 
@@ -21,9 +21,11 @@ public class HomeController {
 //    @GetMapping
 //    public String homepage(@RequestParam String message, Model model) {
 //        model.addAttribute("message", message);
-//        // => src/main/resources/templates/user/Homepage.html
+//        // => src/main/resources/templates/user/home.html
 //        return "user/Homepage";
 //    }
+    private final ProductService productService;
+
     @GetMapping()
     public String home(@ModelAttribute("success") String successMessage, Model model) {
         System.out.println("Thông báo: " + successMessage);
