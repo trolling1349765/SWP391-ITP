@@ -6,19 +6,30 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 @Controller
+@RequestMapping("/home")
 @RequiredArgsConstructor
 public class HomeController {
 
-    private final ProductService productService;
-
-    @GetMapping({"/", "/home"})
-    public String home(Model model) {
+    // 🏠 Trang chủ người dùng
+//    @GetMapping
+//    public String homepage(@RequestParam String message, Model model) {
+//        model.addAttribute("message", message);
+//        // => src/main/resources/templates/user/Homepage.html
+//        return "user/Homepage";
+//    }
+    @GetMapping()
+    public String home(@ModelAttribute("success") String successMessage, Model model) {
+        System.out.println("Thông báo: " + successMessage);
         List<Product> featured = productService.getFeaturedProducts(8); // lấy 8 sp
         model.addAttribute("featuredProducts", featured);
-        return "user/home"; // <== đường dẫn template
+        return "user/home";
     }
+
 }

@@ -28,6 +28,7 @@ public class PaymentTransaction extends BaseEntity {
     private String status;
 
     @OneToOne
+    @JoinColumn(name = "order_id", referencedColumnName = "id")
     private Order order;
 
     @ManyToOne
