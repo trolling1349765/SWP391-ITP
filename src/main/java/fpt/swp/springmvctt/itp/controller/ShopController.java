@@ -68,13 +68,13 @@ public class    ShopController {
         if (sessionUser == null) {
             throw new IllegalStateException("User chưa đăng nhập!");
         }
-
+        
         // Tìm shop theo user_id (tránh lazy loading issue)
         Shop shop = shopRepository.findByUserId(sessionUser.getId())
-                .orElseThrow(() -> new IllegalStateException(
-                        "Tài khoản của bạn chưa có shop. Vui lòng đăng ký shop trước!"
-                ));
-
+            .orElseThrow(() -> new IllegalStateException(
+                "Tài khoản của bạn chưa có shop. Vui lòng đăng ký shop trước!"
+            ));
+        
         return shop.getId();
     }
 
@@ -84,13 +84,13 @@ public class    ShopController {
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(defaultValue = "1") int page,
-                            @RequestParam(defaultValue = "10") int size,
-                            Model model, HttpServletRequest request,
-                            HttpSession session,
-                            RedirectAttributes ra) {
+                           @RequestParam(defaultValue = "10") int size,
+                           Model model, HttpServletRequest request,
+                           HttpSession session,
+                           RedirectAttributes ra) {
         try {
             putCurrentPath(model, request);
-
+            
             // Get shopId from session, handle error gracefully
             Long shopId;
             try {
@@ -188,9 +188,9 @@ public class    ShopController {
 
     @PostMapping("/addProduct")
     public String addProductSubmit(@Valid @ModelAttribute("form") ProductForm form,
-                                   BindingResult bindingResult,
-                                   HttpSession session,
-                                   RedirectAttributes ra) {
+                                    BindingResult bindingResult,
+                                    HttpSession session,
+                                    RedirectAttributes ra) {
 
         // Check for validation errors
         if (bindingResult.hasErrors()) {
@@ -206,9 +206,9 @@ public class    ShopController {
 
             // ProductService already handles Excel import, just show success message with product name
             String successMsg = String.format("Đã tạo sản phẩm '%s' (#%d) thành công! Đã import %d serials.",
-                    created.getProductName(),
-                    created.getId(),
-                    created.getAvailableStock());
+                                            created.getProductName(),
+                                            created.getId(),
+                                            created.getAvailableStock());
             ra.addFlashAttribute("ok", successMsg);
 
             return "redirect:/shop/dashboard";
@@ -253,14 +253,14 @@ public class    ShopController {
             if (status != null) {
                 updated = productService.changeStatus(id, status);
                 String successMsg = String.format("Đã cập nhật sản phẩm '%s' (#%d) → Trạng thái: %s",
-                        updated.getProductName(),
-                        updated.getId(),
-                        status);
+                                                  updated.getProductName(),
+                                                  updated.getId(),
+                                                  status);
                 ra.addFlashAttribute("ok", successMsg);
             } else {
                 String successMsg = String.format("Đã cập nhật sản phẩm '%s' (#%d) thành công!",
-                        updated.getProductName(),
-                        updated.getId());
+                                                  updated.getProductName(),
+                                                  updated.getId());
                 ra.addFlashAttribute("ok", successMsg);
             }
             return "redirect:/shop/dashboard";
@@ -421,12 +421,12 @@ public class    ShopController {
      */
     public boolean isTelecomCard(ProductType productType) {
         return productType != null &&
-                (productType == ProductType.VIETTEL ||
-                        productType == ProductType.MOBIFONE ||
-                        productType == ProductType.VINAPHONE ||
-                        productType == ProductType.VIETTEL_DATA ||
-                        productType == ProductType.MOBIFONE_DATA ||
-                        productType == ProductType.VINAPHONE_DATA);
+               (productType == ProductType.VIETTEL ||
+                productType == ProductType.MOBIFONE ||
+                productType == ProductType.VINAPHONE ||
+                productType == ProductType.VIETTEL_DATA ||
+                productType == ProductType.MOBIFONE_DATA ||
+                productType == ProductType.VINAPHONE_DATA);
     }
 
     /**
@@ -530,9 +530,9 @@ public class    ShopController {
         result.append("Current Categories:\n");
         for (Category cat : categories) {
             result.append("ID: ").append(cat.getId())
-                    .append(", Name: ").append(cat.getCategoryName())
-                    .append(", Description: ").append(cat.getDescription())
-                    .append("\n");
+                  .append(", Name: ").append(cat.getCategoryName())
+                  .append(", Description: ").append(cat.getDescription())
+                  .append("\n");
         }
         return result.toString();
     }
@@ -556,7 +556,7 @@ public class    ShopController {
 
         try {
             Long shopId = getShopIdFromSession(session);
-
+            
             // Kiểm tra sản phẩm
             Product product = productService.get(id);
             System.out.println("Found product: " + product.getProductName() + ", Shop ID: " + product.getShopId());
@@ -625,7 +625,7 @@ public class    ShopController {
     @PostMapping("/previewExcel")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> previewExcel(@RequestParam("file") MultipartFile file,
-                                                            @RequestParam("productType") String productType) {
+                                                           @RequestParam("productType") String productType) {
         Map<String, Object> response = new LinkedHashMap<>();
         try {
             System.out.println("Preview request for file: " + file.getOriginalFilename() + ", productType: " + productType);

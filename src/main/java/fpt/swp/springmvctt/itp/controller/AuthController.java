@@ -22,10 +22,11 @@ public class AuthController {
 
     @GetMapping("/login")
     public String loginPage(Model model) {
-        model.addAttribute("user", new User());
+        model.addAttribute
+                ("user", new User());
         return "login/login";
     }
-
+//
     @PostMapping("/login")
     public String login(@RequestParam String email,
                         @RequestParam String password,
@@ -36,17 +37,20 @@ public class AuthController {
                         RedirectAttributes redirectAttributes) {
 
         if (email == null || email.trim().isEmpty()) {
-            model.addAttribute("error", "Email không được để trống!");
+            model.addAttribute("error",
+                    "Email không được để trống!");
             return "login/login";
         }
 
         if (password == null || password.trim().isEmpty()) {
-            model.addAttribute("error", "Mật khẩu không được để trống!");
+            model.addAttribute("error",
+                    "Mật khẩu không được để trống!");
             return "login/login";
         }
 
         if (!ValidateUtil.isValidEmail(email)) {
-            model.addAttribute("error", "Email không hợp lệ!");
+            model.addAttribute("error",
+                    "Email không hợp lệ!");
             return "login/login";
         }
 
@@ -54,11 +58,12 @@ public class AuthController {
         if (user.isPresent()) {
             session.setAttribute("user", user.get());
 
-            // ✅ Thêm phần GHI NHỚ ĐĂNG NHẬP (Remember Me)
+            //  (Remember Me)
             if (rememberMe != null) { // nếu người dùng có tick chọn checkbox rememberMe
-                Cookie cookie = new Cookie("rememberMe", user.get().getEmail());
+                Cookie cookie = new Cookie("rememberMe",
+                        user.get().getEmail());
                 cookie.setMaxAge(7 * 24 * 60 * 60); // 7 ngày
-                cookie.setPath("/"); // áp dụng cho toàn bộ app
+                cookie.setPath("/");
                 response.addCookie(cookie);
             }
 
@@ -196,4 +201,11 @@ public class AuthController {
         redirectAttributes.addFlashAttribute("success", "Đăng xuất thành công!");
         return "redirect:/";
     }
+
+    //--------------------------Google Auth Con
+
+
+
+
+
 }

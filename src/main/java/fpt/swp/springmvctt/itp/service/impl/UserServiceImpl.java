@@ -1,7 +1,9 @@
 package fpt.swp.springmvctt.itp.service.impl;
 
 import fpt.swp.springmvctt.itp.entity.User;
+import fpt.swp.springmvctt.itp.entity.Role;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
+import fpt.swp.springmvctt.itp.repository.RoleRepository;
 import fpt.swp.springmvctt.itp.service.UserService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private RoleRepository roleRepository;
 
 
     @Override
@@ -145,6 +150,14 @@ public class UserServiceImpl implements UserService {
             user.setCreateAt(LocalDateTime.now());
             user.setCreateBy("oauth_google");
             user.setIsDeleted(false);
+            
+            // ✅ SET DEFAULT ROLE = CUSTOMER cho user OAuth
+            Role customerRole = roleRepository.findByName("CUSTOMER")
+                .orElseGet(() -> roleRepository.findByName("USER")
+                .orElse(null));
+            if (customerRole != null) {
+                user.setRole(customerRole);
+            }
 
             userRepository.save(user);
         } else {
