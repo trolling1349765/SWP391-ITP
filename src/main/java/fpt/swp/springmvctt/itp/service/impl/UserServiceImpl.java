@@ -6,6 +6,9 @@ import fpt.swp.springmvctt.itp.service.UserService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -62,15 +65,16 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-//    @Override
-//    public Page<User> findByFilter(String username, String email, LocalDate fromDate, LocalDate toDate, Boolean isDelete, String status, String role, int page, int size) {
-//        if (username == null || username.isEmpty() || username == "") username = null;
-//        if (email == null || email.isEmpty() || email == "") email = null;
-//        if (isDelete != true && isDelete != false) isDelete = null;
-//        if (status == null || status.isEmpty() || status == "") status = null;
-//        if ("all".equalsIgnoreCase(role) || role == null || role.isEmpty()) role = null;
-//        return userRepository.findByFilter((String username, String email, LocalDate fromDate, LocalDate toDate, Boolean isDelete, String status, String role, int page, int size);
-//    }
+    @Override
+    public Page<User> findByFilter(String username, String email, LocalDate fromDate, LocalDate toDate, Boolean isDelete, String status, String role, int page, int size) {
+        if (username == null || username.isEmpty() || username == "") username = null;
+        if (email == null || email.isEmpty() || email == "") email = null;
+        if (isDelete != true && isDelete != false) isDelete = null;
+        if (status == null || status.isEmpty() || status == "") status = null;
+        if ("all".equalsIgnoreCase(role) || role == null || role.isEmpty()) role = null;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
+        return userRepository.findByFilter(username, email, fromDate, toDate, isDelete, status, role, pageable);
+    }
 
 
     // Lưu tạm token + thời gian hết hạn
@@ -205,6 +209,17 @@ public class UserServiceImpl implements UserService {
         Date expiry = new Date(System.currentTimeMillis() + 60 * 60 * 1000); // 1 giờ
         passwordResetTokens.put(token, new TokenInfo(email, expiry));
         return token;
+    }
+
+    @Override
+    public void setUserAccess(Long id, String status) {
+        userRepository.findById(id).ifPresent(u -> {
+            if ("ACTIVE".equalsIgnoreCase(status.toString())) {
+                u.setStatus("ACTIVE");
+            } else {
+                u.setStatus("INACTIVE");
+            }
+        });
     }
 
     @Override
