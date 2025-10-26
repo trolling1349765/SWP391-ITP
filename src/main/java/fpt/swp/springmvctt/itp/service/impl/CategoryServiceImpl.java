@@ -18,33 +18,13 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             List<Category> categories = categoryRepository.findAll();
             
-            // Check if we have the old incorrect categories and recreate them
-            boolean hasOldCategories = categories.stream()
-                .anyMatch(cat -> cat.getCategoryName().equals("Thẻ điện thoại") || 
-                               cat.getCategoryName().equals("Tài khoản") || 
-                               cat.getCategoryName().equals("Thẻ quà tặng") ||
-                               cat.getCategoryName().equals("Phần mềm") ||
-                               cat.getCategoryName().equals("Game") ||
-                               cat.getCategoryName().equals("Viễn thông") ||
-                               cat.getCategoryName().equals("Tài khoản số") ||
-                               cat.getCategoryName().equals("Quà tặng & Voucher") ||
-                               cat.getCategoryName().equals("Phần mềm & License") ||
-                               cat.getCategoryName().equals("Gaming") ||
-                               cat.getCategoryName().equals("Khác") ||
-                               cat.getCategoryName().equals("Game Card") || 
-                               cat.getCategoryName().equals("Software Key") || 
-                               cat.getCategoryName().equals("Top-up"));
-            
-            // If no categories exist OR we have old incorrect categories, create default ones
-            if (categories.isEmpty() || hasOldCategories) {
-                if (hasOldCategories) {
-                    // Delete old categories first
-                    categoryRepository.deleteAll();
-                }
+            // If no categories exist, create default ones
+            if (categories.isEmpty()) {
                 initializeDefaultCategories();
                 categories = categoryRepository.findAll();
             }
             
+            // Return all categories as-is (Vietnamese names from database)
             return categories;
         } catch (Exception e) {
             return List.of();

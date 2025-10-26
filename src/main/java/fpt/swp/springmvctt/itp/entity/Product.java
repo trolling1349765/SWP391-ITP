@@ -44,4 +44,9 @@ public class Product extends BaseEntity {
 
     @Column(name="image", length=255)
     private String image;                             // /assets/img/xxx
+
+    // === Relations ===
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", insertable = false, updatable = false)
+    private Shop shop;
 }

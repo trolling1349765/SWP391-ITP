@@ -193,13 +193,11 @@
         ]
     };
 
-    // Vietnamese to English category mapping
+    // Vietnamese to English category mapping (from database Vietnamese names)
     const displayNameToCategoryMap = {
-        'Viễn thông': 'TELECOM',
+        'Thẻ điện thoại': 'TELECOM',
         'Tài khoản số': 'DIGITAL_ACCOUNTS',
-        'Quà tặng & Voucher': 'GIFTS_VOUCHERS',
-        'Phần mềm & License': 'SOFTWARE_LICENSES',
-        'Gaming': 'GAMING',
+        'Phần mềm': 'SOFTWARE_LICENSES',
         'Khác': 'OTHER'
     };
 
@@ -215,6 +213,12 @@
         
         const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
         const englishCategoryName = displayNameToCategoryMap[selectedCategoryText];
+        
+        // Debug logging
+        console.log('=== Update Product - Category Selection ===');
+        console.log('Selected Text:', selectedCategoryText);
+        console.log('Mapped English Category:', englishCategoryName);
+        console.log('Available Product Types:', englishCategoryName ? categoryProductTypeMap[englishCategoryName] : 'NOT FOUND');
         
         // Clear existing options
         productTypeSelect.innerHTML = '<option value="">-- Chọn kiểu sản phẩm --</option>';

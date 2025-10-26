@@ -2,12 +2,8 @@ package fpt.swp.springmvctt.itp.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
-import fpt.swp.springmvctt.itp.entity.BaseEntity;
+import java.util.List;
 
 @Entity
 @Table(name="shops",
@@ -18,9 +14,6 @@ public class Shop extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name="user_id", nullable=false)
-    private Long userId;
 
     @Column(name="shop_name", length=100, nullable=false)
     private String shopName;
@@ -36,8 +29,6 @@ public class Shop extends BaseEntity {
 
     @Column(length=255)
     private String category;
-    @Column(length = 50)
-    private String status;
 
     @Column(length=255) private String email;
     @Column(length=20)  private String phone;
@@ -45,16 +36,13 @@ public class Shop extends BaseEntity {
     @Column(length=255) private String img;
     @Column(name="image_url", length=500) private String imageUrl;
     @Column(name="image", length=255)     private String image;
-    @Column(columnDefinition = "TEXT")
-    private String description;
 
     // === Relations ===
-    // One shop -> many products
-
-    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL)
+    // One shop -> many products (relationship handled via shopId in Product)
+    @OneToMany(mappedBy = "shopId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;
 
-    @OneToOne()
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 }

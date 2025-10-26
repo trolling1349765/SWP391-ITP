@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -42,7 +43,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(updated.getPassword());
         user.setPhone(updated.getPhone());
         user.setStatus(updated.getStatus());
-        user.setUpdateAt(LocalDate.now());
+        user.setUpdateAt(LocalDateTime.now());
         user.setRole(updated.getRole());
         return userRepository.save(user);
     }
@@ -51,7 +52,7 @@ public class UserServiceImpl implements UserService {
     public User Login(String emailOrUsername, String password) {
         User user = userRepository.findByEmail(emailOrUsername);
         if (user == null) {
-            user =  userRepository.findByUsername(emailOrUsername);
+            user = userRepository.findByUsername(emailOrUsername).orElse(null);
         }
         if (user != null) {
             if (user.getPassword().equals(password)) {
@@ -117,7 +118,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsername(username).orElse(null);
     }
 
     @Override
@@ -141,7 +142,7 @@ public class UserServiceImpl implements UserService {
             user.setOauthProvider("google");
             user.setProvider("google");
             user.setStatus("ACTIVE");
-            user.setCreateAt(java.time.LocalDate.now());
+            user.setCreateAt(LocalDateTime.now());
             user.setCreateBy("oauth_google");
             user.setIsDeleted(false);
 
@@ -227,6 +228,6 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(){}
     public static void main(String[] args) {
         System.out.println(BCrypt.hashpw("admin123", BCrypt.gensalt()));
-        System.out.println(BCrypt.hashpw("123456..", BCrypt.gensalt()));
+        System.out.println(BCrypt.hashpw("123456", BCrypt.gensalt()));
     }
 }

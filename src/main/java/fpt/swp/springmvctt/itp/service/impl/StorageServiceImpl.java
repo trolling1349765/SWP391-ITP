@@ -43,4 +43,9 @@ public class StorageServiceImpl implements StorageService {
             throw new RuntimeException("Cannot save file", e);
         }
     }
+
+    @Override
+    public String uploadImage(MultipartFile file) {
+        return saveProductImage(file);
+    }
 }

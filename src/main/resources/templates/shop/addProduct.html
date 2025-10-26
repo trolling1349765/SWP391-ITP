@@ -37,7 +37,7 @@
 
                     <div class="col-md-6" th:if="${categories != null}">
                     <label class="form-label">Phân loại sản phẩm</label>
-                    <select th:field="*{categoryId}" class="form-select" onchange="updateProductTypeOptions()">
+                    <select th:field="*{categoryId}" id="categoryId" class="form-select" onchange="updateProductTypeOptions()">
                         <option value="">-- Chọn phân loại (tùy chọn) --</option>
                         <option th:each="c : ${categories}" th:value="${c.id}"
                                 th:text="${@shopController.getCategoryDisplayName(c.categoryName)}">Cat
@@ -397,6 +397,12 @@ function updateProductTypeOptions() {
     const selectedCategoryText = categorySelect.options[selectedIndex].text;
     const selectedCategoryValue = categorySelect.options[selectedIndex].value;
     
+    // Debug logging
+    console.log('=== Category Selection Debug ===');
+    console.log('Selected Index:', selectedIndex);
+    console.log('Selected Text:', selectedCategoryText);
+    console.log('Selected Value:', selectedCategoryValue);
+    
     // Clear existing options except the first one
     productTypeSelect.innerHTML = '<option value="">-- Chọn kiểu sản phẩm --</option>';
     
@@ -405,18 +411,20 @@ function updateProductTypeOptions() {
         return;
     }
     
-    // Map Vietnamese display names to English category names
+    // Map Vietnamese category names (from database) to internal English keys for product type mapping
+    // Database only has Vietnamese: Thẻ điện thoại, Tài khoản số, Phần mềm, Khác
     const displayNameToCategoryMap = {
-        'Viễn thông': 'TELECOM',
+        'Thẻ điện thoại': 'TELECOM',
         'Tài khoản số': 'DIGITAL_ACCOUNTS',
-        'Quà tặng & Voucher': 'GIFTS_VOUCHERS',
-        'Phần mềm & License': 'SOFTWARE_LICENSES',
-        'Gaming': 'GAMING',
+        'Phần mềm': 'SOFTWARE_LICENSES',
         'Khác': 'OTHER'
     };
     
     // Get English category name from Vietnamese display name
     const englishCategoryName = displayNameToCategoryMap[selectedCategoryText];
+    
+    console.log('Mapped English Category:', englishCategoryName);
+    console.log('Available Product Types:', englishCategoryName ? categoryProductTypeMap[englishCategoryName] : 'NOT FOUND');
     
     // Add options based on selected category
     if (englishCategoryName && categoryProductTypeMap[englishCategoryName]) {

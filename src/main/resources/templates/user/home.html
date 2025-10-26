@@ -34,6 +34,7 @@
                                 Uy tín – Chất lượng – Bảo hành.
                             </p>
                             <a th:href="@{/products}" class="btn btn-dark btn-lg">Khám phá ngay</a>
+                            <a th:href="@{/shop/dashboard}" class="btn btn-outline-primary btn-lg ms-2">Shop Dashboard</a>
                         </div>
                         <div class="col-md-6 text-center">
                             <img th:src="@{/img/hero-setup.jpg}" alt="MMO setup" class="img-fluid rounded shadow">
@@ -89,6 +90,29 @@
             </section>
 
 
+            <!-- Seller Section -->
+            <section class="py-5" th:if="${session.user != null and session.user.role.name == 'SELLER'}">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h4 class="mb-0">🏪 Shop Management</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Chào mừng bạn đến với Shop Dashboard! Quản lý sản phẩm, đơn hàng và doanh thu của shop.</p>
+                                    <div class="d-flex gap-2">
+                                        <a th:href="@{/shop/dashboard}" class="btn btn-primary">Shop Dashboard</a>
+                                        <a th:href="@{/shop/addProduct}" class="btn btn-outline-primary">Thêm sản phẩm</a>
+                                        <a th:href="@{/shop/inventory}" class="btn btn-outline-primary">Kho hàng</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Featured Products -->
             <section class="py-5 bg-light">
                 <div class="container">
@@ -101,7 +125,7 @@
                     <div class="row g-4" th:if="${featuredProducts != null and !featuredProducts.isEmpty()}">
                         <div class="col-6 col-md-3" th:each="p : ${featuredProducts}">
                             <div class="card h-100 shadow-sm">
-                                <img th:src="${p.img != null ? p.img : 'https://picsum.photos/seed/placeholder/400/300'}"
+                                <img th:src="${p.image != null ? p.image : 'https://picsum.photos/seed/placeholder/400/300'}"
                                      class="card-img-top" alt="Product Image">
                                 <div class="card-body">
                                     <h6 th:text="${p.productName}" class="card-title mb-2">Tên sản phẩm</h6>

@@ -38,12 +38,12 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "product_id" )
     private Product product;
 
-//    // Many orders -> one user
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-//
-//    // One order -> many payment_transactions
-//    @OneToOne
-//    private PaymentTransaction paymentTransaction;
+    // Many orders -> one user
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    // One order -> many payment_transactions
+    @OneToOne
+    private PaymentTransaction paymentTransaction;
 }

@@ -5,8 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
-
 import java.time.LocalDate;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -14,9 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByShopId(Long shopId);
     boolean existsByShopId(Long shopId);
     User findByEmail(String email);
-    User findByUsername(String username);
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
-
-
 }

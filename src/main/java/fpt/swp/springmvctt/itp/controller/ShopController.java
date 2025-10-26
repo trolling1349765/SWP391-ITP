@@ -41,11 +41,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.time.LocalDate;
 
 @Controller
@@ -59,7 +54,11 @@ public class ShopController {
     private final ExcelImportService excelImportService;
     private final ProductStoreRepository productStoreRepository;
     private final CategoryRepository categoryRepository;
-     // shop demo
+    private final ShopRepository shopRepository;
+    private final StorageService storageService;
+    
+    // shop demo
+    private static final Long SHOP_ID = 1L;
 
     private void putCurrentPath(Model model, HttpServletRequest request) {
         model.addAttribute("currentPath", request != null ? request.getRequestURI() : "");
@@ -456,25 +455,13 @@ public class ShopController {
     }
 
     /**
-     * Helper method to get Vietnamese display name for English category
+     * Helper method to convert Vietnamese category name to display name for frontend
+     * This returns the same Vietnamese name that will be used in JavaScript mapping
      */
     public String getCategoryDisplayName(String categoryName) {
-        switch (categoryName) {
-            case "TELECOM":
-                return "Viễn thông";
-            case "DIGITAL_ACCOUNTS":
-                return "Tài khoản số";
-            case "GIFTS_VOUCHERS":
-                return "Quà tặng & Voucher";
-            case "SOFTWARE_LICENSES":
-                return "Phần mềm & License";
-            case "GAMING":
-                return "Gaming";
-            case "OTHER":
-                return "Khác";
-            default:
-                return categoryName;
-        }
+        // Categories in database are in Vietnamese - return as-is for Thymeleaf display
+        // JavaScript will handle the mapping from Vietnamese to English keys
+        return categoryName;
     }
 
     @PostMapping("/check-serial-duplicates")
@@ -526,12 +513,6 @@ public class ShopController {
         inventoryService.changeSerialStatus(productStoreId, status);
         ra.addFlashAttribute("ok", "Đã đổi trạng thái serial → " + status);
         return "redirect:/shop/products/" + productId + "/serials";
-    @Autowired
-    private ShopService shopService;
-
-    public ShopController(ShopRepository shopRepository, StorageService storageService) {
-        this.shopRepository = shopRepository;
-        this.storageService = storageService;
     }
 
     @DeleteMapping("/products/{id}")

@@ -24,8 +24,6 @@ public class ShopServiceImpl implements ShopService {
 
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
-    @Autowired
-    private ShopRepository shopRepository;
 
     @Override
     public Shop createForUser(Long userId, String shopName) {
@@ -33,21 +31,24 @@ public class ShopServiceImpl implements ShopService {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        if (shopRepository.existsByUserId(userId) || u.getShopId() != null) {
+        if (shopRepository.existsByUserId(userId) || u.getShop() != null) {
             throw new IllegalStateException("User #" + userId + " đã có shop");
         }
 
         Shop s = new Shop();
-        s.setUserId(userId);
+        s.setUser(u);  // Set relationship instead of userId
         s.setShopName(shopName);
         s.setStatus("ACTIVE"); // hoặc HIDDEN tuỳ policy của bạn
         s = shopRepository.save(s);
 
-        // link ngược: user.shop_id = shop.id
-        u.setShopId(s.getId());
+        // link ngược: user.shop = shop
+        u.setShop(s);
         userRepository.save(u);
 
         return s;
+    }
+
+    @Override
     public Page<Shop> findByStatus(String status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
         return shopRepository.findByStatus(status, pageable);
@@ -60,6 +61,9 @@ public class ShopServiceImpl implements ShopService {
         if (shopName != null && !shopName.isBlank()) s.setShopName(shopName);
         if (description != null) s.setDescription(description);
         return shopRepository.save(s);
+    }
+
+    @Override
     public Shop findById(Long id) {
         return shopRepository.findById(id).orElse(null);
     }
@@ -68,6 +72,9 @@ public class ShopServiceImpl implements ShopService {
     @Transactional(readOnly = true)
     public Optional<Shop> getByUser(Long userId) {
         return shopRepository.findByUserId(userId);
+    }
+
+    @Override
     public Page<Shop> filterInactiveShops(String shopName, String username, LocalDate fromDate,
                                           LocalDate toDate, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);

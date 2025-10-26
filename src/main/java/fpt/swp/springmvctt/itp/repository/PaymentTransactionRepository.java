@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {}
 import java.time.LocalDate;
 
 @Repository

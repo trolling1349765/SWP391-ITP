@@ -35,6 +35,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    @Override
     public Product createProduct(Long shopId, ProductForm form) {
         Product p = new Product();
         p.setShopId(shopId);
@@ -129,6 +132,9 @@ public class ProductServiceImpl implements ProductService {
             System.out.println("Updated product keeping existing image: " + form.getImg());
         }
         return productRepository.save(p);
+    }
+
+    @Override
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElse(null);
     }
@@ -171,7 +177,7 @@ public class ProductServiceImpl implements ProductService {
 
     public List<Product> getFeaturedProducts(int limit) {
         Pageable topN = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "id"));
-        return productRepository.findByStatus("ACTIVE", topN).getContent();
+        return productRepository.findByStatus(ProductStatus.ACTIVE, topN).getContent();
     }
 
     // CŨ (giữ lại): mặc định newest -> gọi sang hàm mới
@@ -185,35 +191,40 @@ public class ProductServiceImpl implements ProductService {
 
                 //xóa sản phẩm
                 productRepository.delete(product);
-                public Page<Product> getProductsPage ( int page, int size, Long categoryId){
-                    return getProductsPage(page, size, categoryId, "newest");
-                }
+    }
 
-                // MỚI: hỗ trợ sort linh hoạt
-                @Override
-                public String saveImage (org.springframework.web.multipart.MultipartFile file){
-                    return storageService.saveProductImage(file);
-                    public Page<Product> getProductsPage ( int page, int size, Long categoryId, String sort){
-                        int pageIndex = Math.max(page - 1, 0);
+    @Override
+    public Page<Product> getProductsPage(int page, int size, Long categoryId) {
+        return getProductsPage(page, size, categoryId, "newest");
+    }
 
-                        // Map sort string -> Sort
-                        Sort sortSpec;
-                        if ("priceAsc".equalsIgnoreCase(sort)) {
-                            sortSpec = Sort.by(Sort.Direction.ASC, "price");
-                        } else if ("priceDesc".equalsIgnoreCase(sort)) {
-                            sortSpec = Sort.by(Sort.Direction.DESC, "price");
-                        } else {
-                            // newest (mặc định)
-                            sortSpec = Sort.by(Sort.Direction.DESC, "id");
-                        }
+    // MỚI: hỗ trợ sort linh hoạt
+    @Override
+    public String saveImage(org.springframework.web.multipart.MultipartFile file) {
+        return storageService.saveProductImage(file);
+    }
 
-                        Pageable pageable = PageRequest.of(pageIndex, size, sortSpec);
+    @Override
+    public Page<Product> getProductsPage(int page, int size, Long categoryId, String sort) {
+        int pageIndex = Math.max(page - 1, 0);
 
-                        if (categoryId == null) {
-                            // Dùng method mới để Sort qua Pageable
-                            return productRepository.findByStatus("ACTIVE", pageable);
-                        }
-                        return productRepository.findByStatusAndCategory_Id("ACTIVE", categoryId, pageable);
-                    }
-                }
-            }
+        // Map sort string -> Sort
+        Sort sortSpec;
+        if ("priceAsc".equalsIgnoreCase(sort)) {
+            sortSpec = Sort.by(Sort.Direction.ASC, "price");
+        } else if ("priceDesc".equalsIgnoreCase(sort)) {
+            sortSpec = Sort.by(Sort.Direction.DESC, "price");
+        } else {
+            // newest (mặc định)
+            sortSpec = Sort.by(Sort.Direction.DESC, "id");
+        }
+
+        Pageable pageable = PageRequest.of(pageIndex, size, sortSpec);
+
+        if (categoryId == null) {
+            // Dùng method mới để Sort qua Pageable
+            return productRepository.findByStatus(ProductStatus.ACTIVE, pageable);
+        }
+        return productRepository.findByStatusAndCategoryId(ProductStatus.ACTIVE, categoryId, pageable);
+    }
+}

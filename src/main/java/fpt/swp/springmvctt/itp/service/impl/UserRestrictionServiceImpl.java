@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -45,7 +46,7 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
                 .orElseThrow(() -> new RuntimeException("Not found"));
         entity.setReason(reason);
         entity.setStatus(status);
-        entity.setUpdateAt(LocalDate.now());
+        entity.setUpdateAt(LocalDateTime.now());
         return userRestrictionRepository.save(entity);
     }
 
@@ -56,7 +57,7 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
         if (entity != null) {
             entity.setIsDeleted(true);
             entity.setDeleteBy(username);
-            entity.setUpdateAt(LocalDate.now());
+            entity.setUpdateAt(LocalDateTime.now());
             userRestrictionRepository.save(entity);
         }
     }
