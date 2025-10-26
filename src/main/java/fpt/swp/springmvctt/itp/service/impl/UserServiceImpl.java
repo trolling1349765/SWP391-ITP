@@ -227,7 +227,6 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(){}
     public static void main(String[] args) {
-        System.out.println(BCrypt.hashpw("admin123", BCrypt.gensalt()));
         System.out.println(BCrypt.hashpw("123456", BCrypt.gensalt()));
     }
 }

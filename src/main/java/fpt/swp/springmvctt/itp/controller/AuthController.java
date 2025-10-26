@@ -65,6 +65,14 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("success", "Đăng nhập thành công!");
             session.setAttribute("user", user.get());
             session.setAttribute("role", user.get().getRole().getName());
+
+            if (user.get().getRole().getName().equalsIgnoreCase("ADMIN")) {
+                return "redirect:/admin/dashboard";
+            }
+            if (user.get().getRole().getName().equalsIgnoreCase("SELLER")) {
+                return "redirect:/shop/dashboard";
+            }
+
             return "redirect:/";
         }
 

@@ -12,11 +12,4 @@ public class AdminController {
         // → src/main/resources/templates/admin/AdminDashboard.html
         return "admin/AdminDashboard";
     }
-
-    // 🧩 Admin Sidebar (nếu muốn test riêng)
-    @GetMapping("/admin/sidebar")
-    public String adminSidebar() {
-        // → src/main/resources/templates/admin/AdminSidebar.html
-        return "admin/AdminSidebar";
-    }
 }

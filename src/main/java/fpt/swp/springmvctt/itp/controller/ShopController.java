@@ -7,6 +7,7 @@ import fpt.swp.springmvctt.itp.dto.response.ImportResult;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.ProductStore;
 import fpt.swp.springmvctt.itp.entity.Category;
+import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
 import fpt.swp.springmvctt.itp.entity.enums.ProductType;
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import fpt.swp.springmvctt.itp.service.InventoryService;
 import fpt.swp.springmvctt.itp.service.ProductService;
 import fpt.swp.springmvctt.itp.service.ExcelImportService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,7 +48,7 @@ import java.time.LocalDate;
 @Controller
 @RequestMapping("/shop")
 @RequiredArgsConstructor
-public class ShopController {
+public class    ShopController {
 
     private final ProductService productService;
     private final InventoryService inventoryService;
@@ -56,9 +58,25 @@ public class ShopController {
     private final CategoryRepository categoryRepository;
     private final ShopRepository shopRepository;
     private final StorageService storageService;
-    
-    // shop demo
-    private static final Long SHOP_ID = 1L;
+
+    /**
+     * Helper: Lấy shopId từ session user
+     * Tìm shop qua user_id để tránh LazyInitializationException
+     */
+    private Long getShopIdFromSession(HttpSession session) {
+        User sessionUser = (User) session.getAttribute("user");
+        if (sessionUser == null) {
+            throw new IllegalStateException("User chưa đăng nhập!");
+        }
+
+        // Tìm shop theo user_id (tránh lazy loading issue)
+        Shop shop = shopRepository.findByUserId(sessionUser.getId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Tài khoản của bạn chưa có shop. Vui lòng đăng ký shop trước!"
+                ));
+
+        return shop.getId();
+    }
 
     private void putCurrentPath(Model model, HttpServletRequest request) {
         model.addAttribute("currentPath", request != null ? request.getRequestURI() : "");
@@ -66,11 +84,21 @@ public class ShopController {
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(defaultValue = "1") int page,
-                           @RequestParam(defaultValue = "10") int size,
-                           Model model, HttpServletRequest request,
-                           RedirectAttributes ra) {
+                            @RequestParam(defaultValue = "10") int size,
+                            Model model, HttpServletRequest request,
+                            HttpSession session,
+                            RedirectAttributes ra) {
         try {
             putCurrentPath(model, request);
+
+            // Get shopId from session, handle error gracefully
+            Long shopId;
+            try {
+                shopId = getShopIdFromSession(session);
+            } catch (IllegalStateException e) {
+                ra.addFlashAttribute("error", e.getMessage());
+                return "redirect:/";
+            }
 
             // Input validation
             if (page < 1) page = 1;
@@ -79,7 +107,7 @@ public class ShopController {
             // Get products with error handling
             List<Product> allProducts;
             try {
-                allProducts = productService.listByShop(SHOP_ID);
+                allProducts = productService.listByShop(shopId);
             } catch (Exception e) {
                 ra.addFlashAttribute("error", "Lỗi khi tải danh sách sản phẩm: " + e.getMessage());
                 return "redirect:/shop/dashboard";
@@ -160,8 +188,9 @@ public class ShopController {
 
     @PostMapping("/addProduct")
     public String addProductSubmit(@Valid @ModelAttribute("form") ProductForm form,
-                                    BindingResult bindingResult,
-                                    RedirectAttributes ra) {
+                                   BindingResult bindingResult,
+                                   HttpSession session,
+                                   RedirectAttributes ra) {
 
         // Check for validation errors
         if (bindingResult.hasErrors()) {
@@ -172,13 +201,14 @@ public class ShopController {
         }
 
         try {
-            Product created = productService.createProduct(SHOP_ID, form); // HIDDEN
+            Long shopId = getShopIdFromSession(session);
+            Product created = productService.createProduct(shopId, form); // HIDDEN
 
             // ProductService already handles Excel import, just show success message with product name
             String successMsg = String.format("Đã tạo sản phẩm '%s' (#%d) thành công! Đã import %d serials.",
-                                            created.getProductName(),
-                                            created.getId(),
-                                            created.getAvailableStock());
+                    created.getProductName(),
+                    created.getId(),
+                    created.getAvailableStock());
             ra.addFlashAttribute("ok", successMsg);
 
             return "redirect:/shop/dashboard";
@@ -223,14 +253,14 @@ public class ShopController {
             if (status != null) {
                 updated = productService.changeStatus(id, status);
                 String successMsg = String.format("Đã cập nhật sản phẩm '%s' (#%d) → Trạng thái: %s",
-                                                  updated.getProductName(),
-                                                  updated.getId(),
-                                                  status);
+                        updated.getProductName(),
+                        updated.getId(),
+                        status);
                 ra.addFlashAttribute("ok", successMsg);
             } else {
                 String successMsg = String.format("Đã cập nhật sản phẩm '%s' (#%d) thành công!",
-                                                  updated.getProductName(),
-                                                  updated.getId());
+                        updated.getProductName(),
+                        updated.getId());
                 ra.addFlashAttribute("ok", successMsg);
             }
             return "redirect:/shop/dashboard";
@@ -253,9 +283,10 @@ public class ShopController {
 
     // INVENTORY (serial)
     @GetMapping("/inventory")
-    public String inventory(Model model, HttpServletRequest request) {
+    public String inventory(Model model, HttpServletRequest request, HttpSession session) {
         putCurrentPath(model, request);
-        List<Product> products = productService.listByShop(SHOP_ID);
+        Long shopId = getShopIdFromSession(session);
+        List<Product> products = productService.listByShop(shopId);
 
         // Sắp xếp theo ID tăng dần (từ bé lên lớn)
         products.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
@@ -297,9 +328,10 @@ public class ShopController {
 
     // Add Serial form
     @GetMapping("/addSerial")
-    public String addSerialForm(Model model, HttpServletRequest request) {
+    public String addSerialForm(Model model, HttpServletRequest request, HttpSession session) {
         putCurrentPath(model, request);
-        List<Product> products = productService.listByShop(SHOP_ID);
+        Long shopId = getShopIdFromSession(session);
+        List<Product> products = productService.listByShop(shopId);
 
         // Sắp xếp theo ID tăng dần (từ bé lên lớn)
         products.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
@@ -389,12 +421,12 @@ public class ShopController {
      */
     public boolean isTelecomCard(ProductType productType) {
         return productType != null &&
-               (productType == ProductType.VIETTEL ||
-                productType == ProductType.MOBIFONE ||
-                productType == ProductType.VINAPHONE ||
-                productType == ProductType.VIETTEL_DATA ||
-                productType == ProductType.MOBIFONE_DATA ||
-                productType == ProductType.VINAPHONE_DATA);
+                (productType == ProductType.VIETTEL ||
+                        productType == ProductType.MOBIFONE ||
+                        productType == ProductType.VINAPHONE ||
+                        productType == ProductType.VIETTEL_DATA ||
+                        productType == ProductType.MOBIFONE_DATA ||
+                        productType == ProductType.VINAPHONE_DATA);
     }
 
     /**
@@ -498,9 +530,9 @@ public class ShopController {
         result.append("Current Categories:\n");
         for (Category cat : categories) {
             result.append("ID: ").append(cat.getId())
-                  .append(", Name: ").append(cat.getCategoryName())
-                  .append(", Description: ").append(cat.getDescription())
-                  .append("\n");
+                    .append(", Name: ").append(cat.getCategoryName())
+                    .append(", Description: ").append(cat.getDescription())
+                    .append("\n");
         }
         return result.toString();
     }
@@ -517,19 +549,21 @@ public class ShopController {
 
     @DeleteMapping("/products/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> deleteProduct(@PathVariable Long id, HttpSession session) {
         Map<String, Object> response = new LinkedHashMap<>();
 
         System.out.println("Delete request for product ID: " + id);
 
         try {
+            Long shopId = getShopIdFromSession(session);
+
             // Kiểm tra sản phẩm
             Product product = productService.get(id);
             System.out.println("Found product: " + product.getProductName() + ", Shop ID: " + product.getShopId());
 
             // Kiểm tra sản phẩm có thuộc về shop
-            if (!product.getShopId().equals(SHOP_ID)) {
-                System.out.println("Access denied: Product belongs to shop " + product.getShopId() + ", but current shop is " + SHOP_ID);
+            if (!product.getShopId().equals(shopId)) {
+                System.out.println("Access denied: Product belongs to shop " + product.getShopId() + ", but current shop is " + shopId);
                 response.put("success", false);
                 response.put("message", "Không có quyền xóa sản phẩm này");
                 return ResponseEntity.status(403).body(response);
@@ -591,7 +625,7 @@ public class ShopController {
     @PostMapping("/previewExcel")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> previewExcel(@RequestParam("file") MultipartFile file,
-                                                           @RequestParam("productType") String productType) {
+                                                            @RequestParam("productType") String productType) {
         Map<String, Object> response = new LinkedHashMap<>();
         try {
             System.out.println("Preview request for file: " + file.getOriginalFilename() + ", productType: " + productType);
