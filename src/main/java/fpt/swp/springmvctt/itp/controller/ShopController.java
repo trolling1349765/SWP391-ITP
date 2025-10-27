@@ -426,9 +426,6 @@ public class    ShopController {
                 productType == ProductType.VINAPHONE_DATA);
     }
 
-    /**
-     * Helper method to get product type display name from ProductType
-     */
     public String getSupplierName(ProductType productType) {
         if (productType == null) return "Không xác định";
 
@@ -668,7 +665,7 @@ public class    ShopController {
             response.put("message", "Upload ảnh thành công!");
             response.put("imagePath", imagePath);
 
-            System.out.println("✅ Image uploaded successfully: " + imagePath);
+            System.out.println(" Image uploaded successfully: " + imagePath);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
