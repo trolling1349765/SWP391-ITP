@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(updated.getPassword());
         user.setPhone(updated.getPhone());
         user.setStatus(updated.getStatus());
-        user.setUpdateAt(LocalDateTime.now());
+        user.setUpdateAt(LocalDate.now());
         user.setRole(updated.getRole());
         return userRepository.save(user);
     }
@@ -66,14 +66,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> findByFilter(String username, String email, LocalDate fromDate, LocalDate toDate, Boolean isDelete, String status, String role, int page, int size) {
-        if (username == null || username.isEmpty() || username == "") username = null;
-        if (email == null || email.isEmpty() || email == "") email = null;
-        if (isDelete != true && isDelete != false) isDelete = null;
-        if (status == null || status.isEmpty() || status == "") status = null;
+    public Page<User> findByFilter(
+            String username,
+            String email,
+            LocalDate fromDate,
+            LocalDate toDate,
+            LocalDate fromUpdateDate,
+            LocalDate toUpdateDate,
+            Boolean isDelete,
+            String deleteBy,
+            String status,
+            String role,
+            int page,
+            int size
+    ) {
+        if (username == null || username.isEmpty()) username = null;
+        if (email == null || email.isEmpty()) email = null;
+        if (deleteBy == null || deleteBy.isEmpty() ) deleteBy = null;
+        if (status == null || status.isEmpty()) status = null;
         if ("all".equalsIgnoreCase(role) || role == null || role.isEmpty()) role = null;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
-        return userRepository.findByFilter(username, email, fromDate, toDate, isDelete, status, role, pageable);
+        return userRepository.findByFilter(
+                username,
+                email,
+                fromDate,
+                toDate,
+                fromUpdateDate,
+                toUpdateDate,
+                isDelete,
+                deleteBy,
+                status,
+                role,
+                pageable
+        );
     }
 
 
@@ -146,7 +171,7 @@ public class UserServiceImpl implements UserService {
             user.setOauthProvider("google");
             user.setProvider("google");
             user.setStatus("ACTIVE");
-            user.setCreateAt(LocalDateTime.now());
+            user.setCreateAt(LocalDate.now());
             user.setCreateBy("oauth_google");
             user.setIsDeleted(false);
 
@@ -212,13 +237,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void setUserAccess(Long id, String status) {
+    public void setUserAccess(Long id, String accessStatus) {
         userRepository.findById(id).ifPresent(u -> {
-            if ("ACTIVE".equalsIgnoreCase(status.toString())) {
-                u.setStatus("ACTIVE");
-            } else {
-                u.setStatus("INACTIVE");
-            }
+                u.setStatus(accessStatus);
         });
     }
 

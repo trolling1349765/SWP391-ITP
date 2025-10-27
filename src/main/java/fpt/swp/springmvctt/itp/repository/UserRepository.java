@@ -28,7 +28,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
       AND (:status IS NULL OR u.status = :status)
       AND (:startDate IS NULL OR u.createAt >= :startDate)
       AND (:endDate IS NULL OR u.createAt <= :endDate)
+      AND (:fromUpdateDate IS NULL OR u.updateAt >= :fromUpdateDate)
+      AND (:toUpdateDate IS NULL OR u.updateAt <= :toUpdateDate)
       AND (:isDelete IS NULL OR u.isDeleted = :isDelete)
+      AND (:deleteBy IS NULL OR u.deleteBy = :deleteBy)
       AND (:email IS NULL OR u.email LIKE CONCAT('%', :email, '%'))
       AND (:role IS NULL OR u.role.name = :role)
       ORDER BY u.id DESC
@@ -37,7 +40,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
                             @Param("email") String email,
                             @Param("startDate") LocalDate startDate,
                             @Param("endDate") LocalDate endDate,
+                            @Param("fromUpdateDate") LocalDate fromUpdateDate,
+                            @Param("toUpdateDate") LocalDate toUpdateDate,
                             @Param("isDelete") Boolean isDelete,
+                            @Param("deleteBy") String deteleBy,
                             @Param("status") String status,
                             @Param("role") String role,
                             Pageable pageable);

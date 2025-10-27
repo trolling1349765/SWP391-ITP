@@ -16,7 +16,10 @@ public interface UserService {
             String email,
             LocalDate fromDate,
             LocalDate toDate,
+            LocalDate fromUpdateDate,
+            LocalDate toUpdateDate,
             Boolean isDelete,
+            String deleteBy,
             String status,
             String role,
             int page,
@@ -33,6 +36,6 @@ public interface UserService {
     void sendPasswordResetEmail(String email);
     boolean resetPassword(String token, String newPassword);
     String generatePasswordResetToken(String email);
-    void setUserAccess(Long id, String status);
+    void setUserAccess(Long id, String accessStatus);
     boolean isValidPasswordResetToken(String token);
 }

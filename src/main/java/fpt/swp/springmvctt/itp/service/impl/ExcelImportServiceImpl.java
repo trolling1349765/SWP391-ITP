@@ -1,7 +1,6 @@
 package fpt.swp.springmvctt.itp.service.impl;
 
 import fpt.swp.springmvctt.itp.dto.request.ExcelImportForm;
-import fpt.swp.springmvctt.itp.dto.request.StockForm;
 import fpt.swp.springmvctt.itp.dto.response.ImportResult;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.ProductStore;
@@ -10,7 +9,6 @@ import fpt.swp.springmvctt.itp.entity.enums.ProductType;
 import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.repository.ProductStoreRepository;
 import fpt.swp.springmvctt.itp.service.ExcelImportService;
-import fpt.swp.springmvctt.itp.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -25,6 +23,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,7 +40,6 @@ public class ExcelImportServiceImpl implements ExcelImportService {
 
     private final ProductRepository productRepository;
     private final ProductStoreRepository productStoreRepository;
-    private final InventoryService inventoryService;
 
     @Override
     public ImportResult importSerialsFromExcel(ExcelImportForm form) {
@@ -172,8 +170,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     // Information để trống hoặc dùng product name
                     productStore.setInfomation(product != null ? product.getProductName() : "");
                     productStore.setStatus(ProductStatus.HIDDEN);
-                    productStore.setCreateAt(LocalDateTime.now());
-                    productStore.setUpdateAt(LocalDateTime.now());
+                    productStore.setCreateAt(LocalDate.now());
+                    productStore.setUpdateAt(LocalDate.now());
                     
                     ProductStore saved = productStoreRepository.save(productStore);
                     dbImportedCount++;
@@ -296,8 +294,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     productStore.setFaceValue((BigDecimal) serialData.get("faceValue"));
                     productStore.setInfomation((String) serialData.get("information"));
                     productStore.setStatus(ProductStatus.HIDDEN);
-                    productStore.setCreateAt(LocalDateTime.now());
-                    productStore.setUpdateAt(LocalDateTime.now());
+                    productStore.setCreateAt(LocalDate.now());
+                    productStore.setUpdateAt(LocalDate.now());
                     
                     productStoreRepository.save(productStore);
                     dbImportedCount++;
@@ -419,7 +417,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     
                     productStore.setInfomation(serialNode.get("information").asText());
                     productStore.setStatus(ProductStatus.HIDDEN);
-                    productStore.setCreateAt(LocalDateTime.now());
+                    productStore.setCreateAt(LocalDate.now());
                     
                     productStoreRepository.save(productStore);
                     importedCount++;

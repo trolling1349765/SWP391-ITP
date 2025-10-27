@@ -26,13 +26,16 @@ public class UserController {
 
     @GetMapping("/users")
     public String users(
-            @RequestParam String username,
-            @RequestParam String email,
-            @RequestParam LocalDate fromDate,
-            @RequestParam LocalDate toDate,
-            @RequestParam Boolean deleted,
-            @RequestParam String status,
-            @RequestParam String role,
+            @RequestParam(required = false, defaultValue = "") String username,
+            @RequestParam(required = false, defaultValue = "") String email,
+            @RequestParam(required = false, defaultValue = "") LocalDate fromDate,
+            @RequestParam(required = false, defaultValue = "") LocalDate toDate,
+            @RequestParam(required = false, defaultValue = "") LocalDate fromUpdateDate,
+            @RequestParam(required = false, defaultValue = "") LocalDate toUpdateDate,
+            @RequestParam(required = false, defaultValue = "") Boolean deleted,
+            @RequestParam(required = false, defaultValue = "") String deleteBy,
+            @RequestParam(required = false, defaultValue = "") String status,
+            @RequestParam(required = false, defaultValue = "") String role,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Model model
@@ -42,7 +45,10 @@ public class UserController {
                 email,
                 fromDate,
                 toDate,
+                fromUpdateDate,
+                toUpdateDate,
                 deleted,
+                deleteBy,
                 status,
                 role,
                 page,
@@ -63,7 +69,10 @@ public class UserController {
         model.addAttribute("status", status);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
+        model.addAttribute("fromUpdateDate", fromUpdateDate);
+        model.addAttribute("toUpdateDate", toUpdateDate);
         model.addAttribute("deleted", deleted);
+        model.addAttribute("deleteBy", deleteBy);
         model.addAttribute("role", role);
         return "admin/users";
     }
