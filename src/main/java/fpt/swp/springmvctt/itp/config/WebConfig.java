@@ -21,6 +21,9 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/assets/ajax/**")
                 .addResourceLocations("classpath:/assets/ajax/");
+
+        registry.addResourceHandler("/assets/css/**")
+                .addResourceLocations("classpath:/assets/css/");
     }
 
     @Bean
