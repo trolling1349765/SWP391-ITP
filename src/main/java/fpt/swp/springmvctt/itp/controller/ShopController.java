@@ -59,10 +59,7 @@ public class    ShopController {
     private final ShopRepository shopRepository;
     private final StorageService storageService;
 
-    /**
-     * Helper: Lấy shopId từ session user
-     * Tìm shop qua user_id để tránh LazyInitializationException
-     */
+
     private Long getShopIdFromSession(HttpSession session) {
         User sessionUser = (User) session.getAttribute("user");
         if (sessionUser == null) {
@@ -91,7 +88,7 @@ public class    ShopController {
         try {
             putCurrentPath(model, request);
             
-            // Get shopId from session, handle error gracefully
+            // Get shopId from session
             Long shopId;
             try {
                 shopId = getShopIdFromSession(session);
@@ -486,10 +483,8 @@ public class    ShopController {
         }
     }
 
-    /**
-     * Helper method to convert Vietnamese category name to display name for frontend
-     * This returns the same Vietnamese name that will be used in JavaScript mapping
-     */
+
+
     public String getCategoryDisplayName(String categoryName) {
         // Categories in database are in Vietnamese - return as-is for Thymeleaf display
         // JavaScript will handle the mapping from Vietnamese to English keys
@@ -654,7 +649,7 @@ public class    ShopController {
         }
     }
 
-    // Upload ảnh riêng - nhanh và có preview
+    // Upload ảnh riêng
     @PostMapping("/uploadImage")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> uploadImage(@RequestParam("file") MultipartFile file) {
@@ -677,7 +672,7 @@ public class    ShopController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.err.println("❌ Error uploading image: " + e.getMessage());
+            System.err.println(" Error uploading image: " + e.getMessage());
             e.printStackTrace();
             response.put("success", false);
             response.put("message", "Lỗi khi upload ảnh: " + e.getMessage());
