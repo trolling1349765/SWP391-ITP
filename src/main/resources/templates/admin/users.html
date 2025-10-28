@@ -108,8 +108,8 @@
                                     <a th:href="@{'/admin/users/' + ${user.id}}" class="btn btn-success btn-sm">
                                         <i class="bi bi-plus-circle"></i> Details
                                     </a>
-                                    <form th:action="@{/admin/users/delete}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa dòng này?');">
-                                        <input type="hidden" name="id" th:value="${user.id}">
+                                    <form th:action="@{/admin/users/delete/{id}(id=${user.id})}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa dòng này?');">
+                                        <input type="hidden" name="_method" value="delete">
                                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                     </form>
                                 </td>

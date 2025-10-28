@@ -38,6 +38,7 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size,
             Model model
     ) {
+        Boolean delete = deleted.isEmpty() ? null : deleted.equals("true");
         Page<User> userpage = userService.findByFilter(
                 username,
                 email,
@@ -45,7 +46,7 @@ public class UserController {
                 toDate,
                 fromUpdateDate,
                 toUpdateDate,
-                deleted.equals("true"),
+                delete,
                 deleteBy,
                 status,
                 role,
@@ -75,9 +76,16 @@ public class UserController {
         return "admin/users";
     }
 
+    @GetMapping("/users/{id}")
+    public String user(@PathVariable("id") Long id, Model model) {
+        User user = userService.findById(id);
+        model.addAttribute("user", user);
+        return "admin/user";
+    }
+
     @DeleteMapping("/users/delete/{id}")
     public String deleteUser(@PathVariable("id") Long id, Model model) {
-
+        userService.delete(id);
         return "redirect:/admin/users";
     }
 }

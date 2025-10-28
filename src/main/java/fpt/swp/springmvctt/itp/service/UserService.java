@@ -38,4 +38,6 @@ public interface UserService {
     String generatePasswordResetToken(String email);
     void setUserAccess(Long id, String accessStatus);
     boolean isValidPasswordResetToken(String token);
+
+    void delete(Long id);
 }

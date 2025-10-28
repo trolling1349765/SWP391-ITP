@@ -3,6 +3,8 @@ package fpt.swp.springmvctt.itp.service.impl;
 import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
 import fpt.swp.springmvctt.itp.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private HttpServletRequest httpServletRequest;
 
 
     @Override
@@ -248,6 +252,20 @@ public class UserServiceImpl implements UserService {
     public boolean isValidPasswordResetToken(String token) {
         TokenInfo tokenInfo = passwordResetTokens.get(token);
         return tokenInfo != null && tokenInfo.expiry.after(new Date());
+    }
+
+    @Override
+    public void delete(Long id) {
+        HttpSession session = httpServletRequest.getSession();
+        User user = (User) session.getAttribute("user");
+        String username = user.getUsername();
+         user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            user.setIsDeleted(true);
+            user.setDeleteBy(username);
+            user.setUpdateBy(LocalDate.now().toString());
+            userRepository.save(user);
+        }
     }
 
     // Lớp phụ để lưu email + hạn token
