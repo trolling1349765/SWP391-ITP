@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{Included/ShopHeader :: shopHead}">
+    <link rel="stylesheet" th:href="@{/assets/css/shop/addProduct.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/shop/excel-processing.css}">
+</head>
+<body style="margin:0;padding-top:56px;overflow-x:hidden;">
+<div th:replace="~{Included/ShopHeader :: shopHeader}"></div>
+
+<div class="container-fluid p-0">
+    <!-- Sidebar Fixed -->
+    <div style="position:fixed;top:56px;bottom:0;left:0;width:70px;z-index:1000;">
+        <aside th:replace="~{Included/ShopSidebar :: sidebar}"></aside>
+    </div>
+
+    <!-- Main Content -->
+    <div style="margin-left:85px;padding:1rem;min-height:calc(100vh - 56px);background:#f8f9fa;max-width:calc(100% - 85px);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h4 class="mb-0">Thêm sản phẩm</h4>
+                <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
+            </div>
+
+            <form th:action="@{/shop/addProduct}" th:object="${form}" method="post" enctype="multipart/form-data"
+                  class="row g-3">
+
+                    <div class="col-md-8">
+                        <label class="form-label">Tên sản phẩm</label>
+                        <input th:field="*{productName}" class="form-control" placeholder="Nhập tên..." required/>
+                    </div>
+
+                    <div class="col-md-4">
+                    <label class="form-label">Giá <span class="text-danger">*</span></label>
+                    <input th:field="*{price}" id="priceInput" type="number" min="0" step="0.01" class="form-control"
+                           placeholder="0.00" required/>
+                    <small class="text-muted">Giá này sẽ được tự động điền khi chọn mệnh giá</small>
+                    </div>
+
+                    <div class="col-md-6" th:if="${categories != null}">
+                    <label class="form-label">Phân loại sản phẩm</label>
+                    <select th:field="*{categoryId}" id="categoryId" class="form-select" onchange="updateProductTypeOptions()">
+                        <option value="">-- Chọn phân loại (tùy chọn) --</option>
+                        <option th:each="c : ${categories}" th:value="${c.id}"
+                                th:text="${@shopController.getCategoryDisplayName(c.categoryName)}">Cat
+                        </option>
+                        </select>
+                    </div>
+                    <input th:if="${categories == null}" type="hidden" th:field="*{categoryId}"/>
+
+                <div class="col-md-6">
+                    <label class="form-label">Kiểu sản phẩm <span class="text-danger">*</span></label>
+                    <select th:field="*{productType}" id="productTypeSelect" class="form-select" required
+                            onchange="updateProductTypeGuide()">
+                        <option value="">-- Chọn kiểu sản phẩm --</option>
+                        <!-- Options will be populated dynamically based on category selection -->
+                    </select>
+                </div>
+
+                <div class="col-md-6" id="faceValueSection" style="display: none;">
+                    <label class="form-label">Mệnh giá <span class="text-danger">*</span></label>
+                    <select id="faceValueSelect" name="faceValue" class="form-select"
+                            onchange="updatePriceFromFaceValue()">
+                        <option value="">-- Chọn mệnh giá --</option>
+                        <option value="10000">10,000 ₫</option>
+                        <option value="20000">20,000 ₫</option>
+                        <option value="50000">50,000 ₫</option>
+                        <option value="100000">100,000 ₫</option>
+                        <option value="200000">200,000 ₫</option>
+                        <option value="500000">500,000 ₫</option>
+                        <option value="custom">Tùy chỉnh</option>
+                    </select>
+                </div>
+
+                <!-- Business Fields -->
+                <div class="col-md-6">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <input name="supplier" type="text" class="form-control" placeholder="Tên nhà cung cấp"/>
+                    <small class="text-muted">Tên công ty/nhà cung cấp sản phẩm</small>
+                    </div>
+
+                    <div class="col-md-6">
+                    <label class="form-label">Phí sàn (%)</label>
+                    <input name="platformFee" type="number" min="0" max="50" step="0.1" class="form-control"
+                           placeholder="0" value="0" id="platformFeeInput" readonly/>
+                    <small class="text-muted">Phí sàn tự động theo loại sản phẩm</small>
+                    <div id="platformFeeInfo" class="mt-1"></div>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Mô tả ngắn</label>
+                    <textarea th:field="*{description}" class="form-control" rows="2"
+                              placeholder="Mô tả ngắn gọn về sản phẩm"></textarea>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Mô tả chi tiết</label>
+                    <textarea th:field="*{detailedDescription}" class="form-control" rows="4"
+                              placeholder="Mô tả chi tiết về sản phẩm, tính năng, cách sử dụng..."></textarea>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Ảnh sản phẩm</label>
+                    <input type="file" class="form-control" accept="image/*" id="imageFile" onchange="uploadImageNow(this)"/>
+                    <input type="hidden" th:field="*{img}" id="imagePathInput"/>
+                    <small class="text-muted">
+                        <span id="uploadStatus"></span>
+                    </small>
+                    
+                    <!-- Preview Container -->
+                    <div id="imagePreviewBox" style="display:none;" class="mt-2">
+                        <img id="imagePreviewImg" src="" style="max-height:150px;" class="img-thumbnail"/>
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeImage()">Xóa</button>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Thông tin sản phẩm</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">Bắt buộc upload file Excel để nhập mã sản phẩm</p>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">File Excel chứa mã sản phẩm</label>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/shop/addProductTemplate}" class="btn btn-outline-primary btn-sm">
+                                            Tải Template
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                onclick="clearFileInput()">
+                                            Xóa File
+                                        </button>
+                                    </div>
+                                </div>
+                                <input th:field="*{serialFile}" type="file" class="form-control" accept=".xlsx,.xls"
+                                       id="serialFileInput" onchange="previewExcelFile(this)"/>
+                                <small class="text-muted">Upload file Excel theo template chuẩn</small>
+                                <div id="fileInfo" class="mt-2"></div>
+
+                                <!-- Excel Preview Table -->
+                                <div id="excelPreview" class="mt-3" style="display: none;">
+                                    <div class="card border-warning">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h6 class="mb-0">Danh sách các sản phẩm sẽ được thêm vào</h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-hover mb-0">
+                                                    <thead class="table-dark">
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Serial Code</th>
+                                                        <th>Secret Code</th>
+                                                        <th>Trạng thái</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody id="excelPreviewBody">
+                                                    <!-- Dynamic content will be inserted here -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="card-footer bg-light">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    Tổng cộng: <span id="totalSerials">0</span> Các sản phẩm sẽ được thêm vào
+                                                    sản phẩm này
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                    </div>
+
+                            <!-- Import Results Display -->
+                            <div id="importResults" class="mb-3" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"> Kết quả Import</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="importSummary" class="row g-2 mb-3"></div>
+                                        <div id="importDetails" class="row g-2 mb-3"></div>
+
+                                        <!-- Serial List Table -->
+                                        <div id="serialListSection" class="mt-3" style="display: none;">
+                                            <div class="card border-info">
+                                                <div class="card-header bg-info text-white">
+                                                    <h6 class="mb-0">Danh Sách sản phẩm Đã Import</h6>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover mb-0">
+                                                            <thead class="table-dark">
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Serial Code</th>
+                                                                <th>Secret Code</th>
+                                                                <th>Status</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody id="serialListBody">
+                                                            <!-- Dynamic content will be inserted here -->
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                    </div>
+
+                                        <!-- Validation Check Table -->
+                                        <div id="validationTableSection" class="mt-3" style="display: none;">
+                                            <div class="card border-warning">
+                                                <div class="card-header bg-warning text-dark">
+                                                    <h6 class="mb-0">🔍 Bảng Kiểm Tra Validation</h6>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover mb-0">
+                                                            <thead class="table-warning">
+                                                            <tr>
+                                                                <th>Dòng</th>
+                                                                <th>Serial Code</th>
+                                                                <th>Validation</th>
+                                                                <th>Lỗi</th>
+                                                                <th>Cảnh Báo</th>
+                                                                <th>Trạng Thái</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody id="validationTableBody">
+                                                            <!-- Dynamic content will be inserted here -->
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                            <div class="alert alert-info">
+                                <h6>Hướng dẫn tạo file Excel:</h6>
+                                <div class="phone-card-guide" style="display: none;">
+                                    <strong>Thẻ điện thoại (CHỈ 2 CỘT):</strong>
+                                    <ul class="mb-0">
+                                        <li><strong>Serial Code:</strong> Mã thẻ điện thoại (VD: 1234567890123456)</li>
+                                        <li><strong>Secret Code:</strong> Mã PIN thẻ (VD: ABCD1234)</li>
+                                    </ul>
+                                    <small class="text-muted">✓ Mệnh giá và thông tin lấy từ form bên trên</small>
+                                </div>
+
+                                <div class="email-account-guide" style="display: none;">
+                                    <strong>Tài khoản email (CHỈ 2 CỘT):</strong>
+                                    <ul class="mb-0">
+                                        <li><strong>Serial Code:</strong> Email address (VD: user123@gmail.com)</li>
+                                        <li><strong>Secret Code:</strong> Password (VD: password123)</li>
+                                    </ul>
+                                    <small class="text-muted">✓ Giá bán lấy từ trường "Giá" bên trên</small>
+                                </div>
+                                <div class="gift-card-guide" style="display: none;">
+                                    <strong>Thẻ quà tặng (CHỈ 2 CỘT):</strong>
+                                    <ul class="mb-0">
+                                        <li><strong>Serial Code:</strong> Mã thẻ quà tặng</li>
+                                        <li><strong>Secret Code:</strong> Pin code (nếu có)</li>
+                                    </ul>
+                                    <small class="text-muted">✓ Mệnh giá lấy từ trường "Giá" bên trên</small>
+                                </div>
+                                <div class="software-key-guide" style="display: none;">
+                                    <strong>Key phần mềm (CHỈ 2 CỘT):</strong>
+                                    <ul class="mb-0">
+                                        <li><strong>Serial Code:</strong> License key (VD: XXXXX-XXXXX-XXXXX)</li>
+                                        <li><strong>Secret Code:</strong> Activation code (nếu có)</li>
+                                    </ul>
+                                    <small class="text-muted">✓ Giá bán lấy từ trường "Giá" bên trên</small>
+                                </div>
+                                <div class="default-guide">
+                                    <ol class="mb-0">
+                                        <li><strong>Excel CHỈ CẦN 2 CỘT:</strong> Serial Code và Secret Code</li>
+                                        <li>Giá và thông tin sẽ tự động lấy từ form</li>
+                                        <li>Download template Excel → Upload file → Tạo sản phẩm</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Tạo sản phẩm</button>
+                        <a th:href="@{/shop/dashboard}" class="btn btn-secondary">Hủy</a>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+// AddProduct specific JavaScript functions
+
+// Platform fee configuration by product type (Fixed rates)
+const platformFeeConfig = {
+    // Telecom cards - Lower fee (2-5%)
+    'VIETTEL': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
+    'MOBIFONE': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
+    'VINAPHONE': { fee: 3, description: 'Thẻ điện thoại - Phí thấp' },
+    'VIETTEL_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
+    'MOBIFONE_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
+    'VINAPHONE_DATA': { fee: 3, description: 'Gói data - Phí thấp' },
+    
+    // Digital accounts - Medium fee (5-10%)
+    'EMAIL': { fee: 7, description: 'Tài khoản email - Phí trung bình' },
+    'SOCIAL': { fee: 7, description: 'Social media - Phí trung bình' },
+    'STREAMING': { fee: 7, description: 'Streaming - Phí trung bình' },
+    'APP': { fee: 7, description: 'Ứng dụng - Phí trung bình' },
+    
+    // Gift cards - Medium fee (5-12%)
+    'GIFT': { fee: 8, description: 'Thẻ quà tặng - Phí trung bình' },
+    'VOUCHER': { fee: 8, description: 'Voucher - Phí trung bình' },
+    'COUPON': { fee: 8, description: 'Coupon - Phí trung bình' },
+    'PROMO': { fee: 8, description: 'Mã khuyến mãi - Phí trung bình' },
+    
+    // Software licenses - Higher fee (8-15%)
+    'SOFTWARE': { fee: 12, description: 'Key phần mềm - Phí cao' },
+    'LICENSE': { fee: 12, description: 'License key - Phí cao' },
+    'ACTIVATION': { fee: 12, description: 'Mã kích hoạt - Phí cao' },
+    'SUBSCRIPTION': { fee: 12, description: 'Subscription - Phí cao' },
+    
+    // Gaming - Variable fee (5-20%)
+    'GAME_ACC': { fee: 10, description: 'Tài khoản game - Phí biến động' },
+    'GAME_ITEM': { fee: 10, description: 'Item game - Phí biến động' },
+    'GAME_CURRENCY': { fee: 10, description: 'Tiền tệ game - Phí biến động' },
+    'GAME_CODE': { fee: 10, description: 'Gift code game - Phí biến động' },
+    
+    // Other - Default fee (5-10%)
+    'OTHER': { fee: 7, description: 'Khác - Phí mặc định' }
+};
+
+// Category to ProductType mapping (Categories in English, ProductTypes in Vietnamese)
+const categoryProductTypeMap = {
+    // TELECOM (Viễn thông)
+    'TELECOM': [
+        { value: 'VIETTEL', text: 'Thẻ Viettel' },
+        { value: 'MOBIFONE', text: 'Thẻ Mobifone' },
+        { value: 'VINAPHONE', text: 'Thẻ Vinaphone' },
+        { value: 'VIETTEL_DATA', text: 'Gói data Viettel' },
+        { value: 'MOBIFONE_DATA', text: 'Gói data Mobifone' },
+        { value: 'VINAPHONE_DATA', text: 'Gói data Vinaphone' }
+    ],
+    // DIGITAL_ACCOUNTS (Tài khoản số)
+    'DIGITAL_ACCOUNTS': [
+        { value: 'EMAIL', text: 'Tài khoản email' },
+        { value: 'SOCIAL', text: 'Tài khoản social media' },
+        { value: 'STREAMING', text: 'Tài khoản streaming' },
+        { value: 'APP', text: 'Tài khoản ứng dụng' }
+    ],
+    // GIFTS_VOUCHERS (Quà tặng & Voucher)
+    'GIFTS_VOUCHERS': [
+        { value: 'GIFT', text: 'Thẻ quà tặng' },
+        { value: 'VOUCHER', text: 'Voucher' },
+        { value: 'COUPON', text: 'Coupon' },
+        { value: 'PROMO', text: 'Mã khuyến mãi' }
+    ],
+    // SOFTWARE_LICENSES (Phần mềm & License)
+    'SOFTWARE_LICENSES': [
+        { value: 'SOFTWARE', text: 'Key phần mềm' },
+        { value: 'LICENSE', text: 'License key' },
+        { value: 'ACTIVATION', text: 'Mã kích hoạt' },
+        { value: 'SUBSCRIPTION', text: 'Subscription' }
+    ],
+    // GAMING (Gaming)
+    'GAMING': [
+        { value: 'GAME_ACC', text: 'Tài khoản game' },
+        { value: 'GAME_ITEM', text: 'Item game' },
+        { value: 'GAME_CURRENCY', text: 'Tiền tệ game' },
+        { value: 'GAME_CODE', text: 'Gift code game' }
+    ],
+    // OTHER (Khác)
+    'OTHER': [
+        { value: 'OTHER', text: 'Khác' }
+    ]
+};
+
+// Handle category selection change
+function updateProductTypeOptions() {
+    const categorySelect = document.getElementById('categoryId');
+    const productTypeSelect = document.getElementById('productTypeSelect');
+    
+    if (!categorySelect || !productTypeSelect) {
+        return;
+    }
+    
+    const selectedIndex = categorySelect.selectedIndex;
+    const selectedCategoryText = categorySelect.options[selectedIndex].text;
+    const selectedCategoryValue = categorySelect.options[selectedIndex].value;
+    
+    // Debug logging
+    console.log('=== Category Selection Debug ===');
+    console.log('Selected Index:', selectedIndex);
+    console.log('Selected Text:', selectedCategoryText);
+    console.log('Selected Value:', selectedCategoryValue);
+    
+    // Clear existing options except the first one
+    productTypeSelect.innerHTML = '<option value="">-- Chọn kiểu sản phẩm --</option>';
+    
+    // If no category selected, return
+    if (selectedIndex === 0 || !selectedCategoryValue) {
+        return;
+    }
+    
+    // Map Vietnamese category names (from database) to internal English keys for product type mapping
+    // Database only has Vietnamese: Thẻ điện thoại, Tài khoản số, Phần mềm, Khác
+    const displayNameToCategoryMap = {
+        'Thẻ điện thoại': 'TELECOM',
+        'Tài khoản số': 'DIGITAL_ACCOUNTS',
+        'Phần mềm': 'SOFTWARE_LICENSES',
+        'Khác': 'OTHER'
+    };
+    
+    // Get English category name from Vietnamese display name
+    const englishCategoryName = displayNameToCategoryMap[selectedCategoryText];
+    
+    console.log('Mapped English Category:', englishCategoryName);
+    console.log('Available Product Types:', englishCategoryName ? categoryProductTypeMap[englishCategoryName] : 'NOT FOUND');
+    
+    // Add options based on selected category
+    if (englishCategoryName && categoryProductTypeMap[englishCategoryName]) {
+        categoryProductTypeMap[englishCategoryName].forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.text;
+            productTypeSelect.appendChild(optionElement);
+        });
+    }
+    
+    // Reset product type guide
+    updateProductTypeGuide();
+}
+
+// Handle product type selection
+function updateProductTypeGuide() {
+    const productType = document.querySelector('select[name="productType"]').value;
+    const faceValueSection = document.getElementById('faceValueSection');
+    const faceValueSelect = document.getElementById('faceValueSelect');
+    const priceInput = document.getElementById('priceInput');
+    const platformFeeInput = document.getElementById('platformFeeInput');
+    const platformFeeInfo = document.getElementById('platformFeeInfo');
+    
+    // Hide all guides first
+    faceValueSection.style.display = 'none';
+    
+    // Clear platform fee info
+    if (platformFeeInfo) {
+        platformFeeInfo.innerHTML = '';
+    }
+    
+    // Clear platform fee input
+    if (platformFeeInput) {
+        platformFeeInput.value = '';
+    }
+    
+    if (!productType) {
+        return;
+    }
+    
+    // Show face value section for telecom products
+    if (['VIETTEL', 'MOBIFONE', 'VINAPHONE', 'VIETTEL_DATA', 'MOBIFONE_DATA', 'VINAPHONE_DATA'].includes(productType)) {
+        faceValueSection.style.display = 'block';
+    }
+    
+    // Update platform fee
+    if (platformFeeConfig[productType]) {
+        const config = platformFeeConfig[productType];
+        if (platformFeeInput) {
+            platformFeeInput.value = config.fee;
+        }
+        if (platformFeeInfo) {
+            platformFeeInfo.innerHTML = `<small class="text-info">${config.description}</small>`;
+        }
+    }
+}
+
+// Initialize event listener for category change
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for DOM to be fully ready
+    setTimeout(function() {
+        const categorySelect = document.getElementById('categoryId');
+        const productTypeSelect = document.getElementById('productTypeSelect');
+        
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function() {
+                updateProductTypeOptions();
+            });
+            
+            // Also try onchange attribute as backup
+            categorySelect.setAttribute('onchange', 'updateProductTypeOptions()');
+            
+            // Initial call
+            updateProductTypeOptions();
+        }
+        
+    }, 100); // Wait 100ms
+    
+    // Initialize platform fee to empty state
+    const platformFeeInput = document.getElementById('platformFeeInput');
+    const platformFeeInfo = document.getElementById('platformFeeInfo');
+    if (platformFeeInput && platformFeeInfo) {
+        platformFeeInput.value = '';
+        platformFeeInfo.innerHTML = '';
+    }
+});
+
+// Preview Excel file with loading states
+function previewExcelFile(input) {
+    const file = input.files[0];
+    if (!file) {
+        hideExcelPreview();
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            parseExcelFile(jsonData);
+            
+        } catch (error) {
+            showExcelPreviewError('Lỗi đọc file Excel: ' + error.message);
+        }
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
+
+// Parse Excel file and show preview
+function parseExcelFile(data) {
+    if (data.length < 2) {
+        showExcelPreviewError('File Excel không có dữ liệu hoặc định dạng không đúng');
+        return;
+    }
+    
+    const headers = data[0];
+    const expectedHeaders = ['Serial Code', 'Secret Code'];
+    
+    // Check if headers match expected format
+    if (!expectedHeaders.every(header => headers.includes(header))) {
+        showExcelPreviewError('File Excel không đúng định dạng. Cần có các cột: ' + expectedHeaders.join(', '));
+        return;
+    }
+    
+    const serials = [];
+    let validCount = 0;
+    let errorCount = 0;
+    let duplicateCount = 0;
+    
+    for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        if (row.length < 2) continue;
+        
+        const serialCode = row[0] ? String(row[0]).trim() : '';
+        const secretCode = row[1] ? String(row[1]).trim() : '';
+        
+        if (serialCode && secretCode) {
+            // Check for duplicates within the file
+            const isDuplicateInFile = serials.some(s => s.serialCode === serialCode);
+            
+            serials.push({
+                serialCode: serialCode,
+                secretCode: secretCode,
+                status: isDuplicateInFile ? 'duplicate' : 'ready'
+            });
+            
+            if (isDuplicateInFile) {
+                duplicateCount++;
+            } else {
+                validCount++;
+            }
+        } else {
+            serials.push({
+                serialCode: serialCode || '',
+                secretCode: secretCode || '',
+                status: 'error'
+            });
+            errorCount++;
+        }
+    }
+    
+    if (serials.length === 0) {
+        showExcelPreviewError('Không tìm thấy dữ liệu mã sản phẩm nào trong file Excel');
+        return;
+    }
+    
+    // Check duplicates in database
+    checkSerialDuplicates(serials, validCount, errorCount, duplicateCount);
+}
+
+// Check serial duplicates in database
+function checkSerialDuplicates(serials, validCount, errorCount, duplicateCount) {
+    const validSerials = serials.filter(s => s.status === 'ready');
+    
+    if (validSerials.length === 0) {
+        showExcelPreview(serials, validCount, errorCount, duplicateCount);
+        return;
+    }
+    
+    // Send AJAX request to check duplicates
+    const serialCodes = validSerials.map(s => s.serialCode);
+    
+    fetch('/itp/shop/check-serial-duplicates', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(serialCodes)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update serial status based on database check
+        serials.forEach(serial => {
+            if (serial.status === 'ready' && data.duplicates.includes(serial.serialCode)) {
+                serial.status = 'duplicate_db';
+            }
+        });
+        
+        const dbDuplicateCount = data.duplicates.length;
+        const finalValidCount = validCount - dbDuplicateCount;
+        
+        showExcelPreview(serials, finalValidCount, errorCount, duplicateCount, dbDuplicateCount);
+    })
+    .catch(error => {
+        console.error('Error checking duplicates:', error);
+        showExcelPreview(serials, validCount, errorCount, duplicateCount);
+    });
+}
+
+// Show Excel preview table
+function showExcelPreview(serials, validCount, errorCount, duplicateCount = 0, dbDuplicateCount = 0) {
+    const previewDiv = document.getElementById('excelPreview');
+    if (!previewDiv) return;
+    
+    // Update submit button state
+    updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount);
+    
+    let tableHTML = `
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Danh sách sản phẩm sẽ được thêm vào</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>STT</th>
+                                <th>Serial Code</th>
+                                <th>Secret Code</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+    
+    serials.forEach((serial, index) => {
+        let statusBadge;
+        switch(serial.status) {
+            case 'ready':
+                statusBadge = '<span class="badge bg-success">Sẵn sàng</span>';
+                break;
+            case 'duplicate':
+                statusBadge = '<span class="badge bg-warning">Trùng trong file</span>';
+                break;
+            case 'duplicate_db':
+                statusBadge = '<span class="badge bg-danger">Trùng trong DB</span>';
+                break;
+            case 'error':
+            default:
+                statusBadge = '<span class="badge bg-danger">Có lỗi</span>';
+                break;
+        }
+        
+        tableHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${serial.serialCode}</td>
+                <td>${serial.secretCode}</td>
+                <td>${statusBadge}</td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    Tổng cộng: ${serials.length} serials sẽ được thêm vào
+                    ${validCount > 0 ? ` (${validCount} hợp lệ)` : ''}
+                    ${errorCount > 0 ? ` (${errorCount} có lỗi)` : ''}
+                </small>
+            </div>
+        </div>
+    `;
+    
+    previewDiv.innerHTML = tableHTML;
+    previewDiv.style.display = 'block';
+}
+
+// Show Excel preview error
+function showExcelPreviewError(message) {
+    const previewDiv = document.getElementById('excelPreview');
+    if (!previewDiv) return;
+    
+    previewDiv.innerHTML = `
+        <div class="alert alert-danger mt-3">
+            <strong>Lỗi:</strong> ${message}
+        </div>
+    `;
+    previewDiv.style.display = 'block';
+}
+
+// Hide Excel preview
+function hideExcelPreview() {
+    const previewDiv = document.getElementById('excelPreview');
+    if (previewDiv) {
+        previewDiv.style.display = 'none';
+        previewDiv.innerHTML = '';
+    }
+}
+
+// Update submit button state based on serial validation
+function updateSubmitButtonState(validCount, duplicateCount, dbDuplicateCount) {
+    const submitButton = document.querySelector('button[type="submit"]');
+    const totalDuplicates = duplicateCount + dbDuplicateCount;
+    
+    if (!submitButton) return;
+    
+    if (totalDuplicates > 0) {
+        // Disable submit button if there are duplicates
+        submitButton.disabled = true;
+        submitButton.classList.remove('btn-primary');
+        submitButton.classList.add('btn-secondary');
+        submitButton.title = `Không thể submit vì có ${totalDuplicates} sản phẩm trùng`;
+        
+        // Add warning message
+        let warningMsg = document.getElementById('submitWarning');
+        if (!warningMsg) {
+            warningMsg = document.createElement('div');
+            warningMsg.id = 'submitWarning';
+            warningMsg.className = 'alert alert-warning mt-2';
+            submitButton.parentNode.appendChild(warningMsg);
+        }
+        warningMsg.innerHTML = ` Không thể tạo sản phẩm vì có ${totalDuplicates} Mã sản phẩm trùng. Vui lòng sửa file Excel.`;
+    } else if (validCount > 0) {
+        // Enable submit button if there are valid serials
+        submitButton.disabled = false;
+        submitButton.classList.remove('btn-secondary');
+        submitButton.classList.add('btn-primary');
+        submitButton.title = `Có thể tạo sản phẩm với ${validCount} mã sản phẩm hợp lệ`;
+        
+        // Remove warning message
+        const warningMsg = document.getElementById('submitWarning');
+        if (warningMsg) {
+            warningMsg.remove();
+        }
+    } else {
+        // Disable if no valid serials
+        submitButton.disabled = true;
+        submitButton.classList.remove('btn-primary');
+        submitButton.classList.add('btn-secondary');
+        submitButton.title = 'Không có sản phẩm hợp lệ nào';
+        
+        // Add warning message
+        let warningMsg = document.getElementById('submitWarning');
+        if (!warningMsg) {
+            warningMsg = document.createElement('div');
+            warningMsg.id = 'submitWarning';
+            warningMsg.className = 'alert alert-warning mt-2';
+            submitButton.parentNode.appendChild(warningMsg);
+        }
+        warningMsg.innerHTML = ' Không có sản phẩm hợp lệ nào để tạo.';
+    }
+}
+
+// Clear Excel file input
+function clearFileInput() {
+    const fileInput = document.getElementById('serialFileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const previewDiv = document.getElementById('excelPreview');
+    
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    if (fileInfo) {
+        fileInfo.innerHTML = '';
+    }
+    
+    if (previewDiv) {
+        previewDiv.style.display = 'none';
+        previewDiv.innerHTML = '';
+    }
+    
+    // Reset submit button state
+    const submitButton = document.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.classList.remove('btn-secondary');
+        submitButton.classList.add('btn-primary');
+        submitButton.title = '';
+    }
+    
+    // Remove warning message
+    const warningMsg = document.getElementById('submitWarning');
+    if (warningMsg) {
+        warningMsg.remove();
+    }
+}
+
+// Update price from face value selection
+function updatePriceFromFaceValue() {
+    const faceValueSelect = document.getElementById('faceValueSelect');
+    const priceInput = document.getElementById('priceInput');
+    
+    if (!faceValueSelect || !priceInput) {
+        return;
+    }
+    
+    const selectedValue = faceValueSelect.value;
+    
+    if (selectedValue === 'custom') {
+        // Show custom price input
+        priceInput.readOnly = false;
+        priceInput.placeholder = 'Nhập giá tùy chỉnh';
+        priceInput.value = '';
+    } else if (selectedValue && selectedValue !== '') {
+        // Set price from face value
+        priceInput.value = selectedValue;
+        priceInput.readOnly = false; // Allow editing
+    } else {
+        // Clear price
+        priceInput.value = '';
+        priceInput.readOnly = false;
+        priceInput.placeholder = 'Nhập giá sản phẩm';
+    }
+}
+
+// Upload ảnh ngay lập tức khi chọn file - NHANH
+function uploadImageNow(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const statusEl = document.getElementById('uploadStatus');
+    const previewBox = document.getElementById('imagePreviewBox');
+    const previewImg = document.getElementById('imagePreviewImg');
+    const imagePathInput = document.getElementById('imagePathInput');
+    
+    // Hiển thị đang upload
+    statusEl.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> Đang upload ảnh...';
+    previewBox.style.display = 'none';
+    
+    // Upload bằng AJAX
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    fetch('/itp/shop/uploadImage', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Upload thành công
+            const imagePath = data.imagePath;
+            imagePathInput.value = imagePath; // Lưu path vào hidden input
+            previewImg.src = imagePath; // Hiển thị preview
+            previewBox.style.display = 'block';
+            statusEl.innerHTML = '<i class="fas fa-check-circle text-success"></i> Upload thành công!';
+            console.log('✅ Image uploaded:', imagePath);
+        } else {
+            statusEl.innerHTML = '<i class="fas fa-times-circle text-danger"></i> ' + data.message;
+        }
+    })
+    .catch(error => {
+        console.error('Upload error:', error);
+        statusEl.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Lỗi upload ảnh';
+    });
+}
+
+// Xóa ảnh
+function removeImage() {
+    document.getElementById('imageFile').value = '';
+    document.getElementById('imagePathInput').value = '';
+    document.getElementById('imagePreviewBox').style.display = 'none';
+    document.getElementById('uploadStatus').innerHTML = '';
+}
+
+// Submit form directly without confirmation
+function confirmSubmit() {
+    const productName = document.querySelector('input[name="productName"]');
+    const excelFile = document.getElementById('serialFileInput');
+    const previewDiv = document.getElementById('excelPreview');
+    
+    if (!productName || !excelFile) {
+        alert('Có lỗi xảy ra khi lấy thông tin form');
+        return false;
+    }
+    
+    // Check if there are any duplicate serials
+    if (previewDiv && previewDiv.style.display !== 'none') {
+        const duplicateBadges = previewDiv.querySelectorAll('.badge.bg-danger, .badge.bg-warning');
+        if (duplicateBadges.length > 0) {
+            alert('Không thể tạo sản phẩm vì có serial trùng!\n\nVui lòng:\n- Xóa các serial trùng trong file Excel\n- Hoặc xóa file và upload file mới\n- Hoặc sử dụng serial khác');
+            return false;
+        }
+        
+        // Check if there are any valid serials
+        const validBadges = previewDiv.querySelectorAll('.badge.bg-success');
+        if (validBadges.length === 0) {
+            alert('Không có sản phẩm hợp lệ nào để thêm!\n\nVui lòng kiểm tra lại file Excel.');
+            return false;
+        }
+    }
+    
+    // Show loading state on submit button
+    const submitButton = document.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.classList.add('btn-loading');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang tạo...';
+        
+        // Add timeout to prevent infinite loading
+        setTimeout(() => {
+            if (submitButton.disabled) {
+                console.warn('Form submission timeout - re-enabling button');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Tạo sản phẩm';
+                submitButton.classList.remove('btn-loading');
+                alert('Form submission timeout. Vui lòng thử lại.');
+            }
+        }, 30000); // 30 seconds timeout
+    }
+    
+    return true;
+}
+</script>
+</body>
+</html>

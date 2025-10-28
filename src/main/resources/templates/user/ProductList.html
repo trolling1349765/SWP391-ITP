@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Tất cả sản phẩm | ITP System</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .product-card { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: #fff; transition: all 0.2s ease; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .product-img { width: 100%; height: 200px; object-fit: cover; }
+        .product-body { padding: 1rem; }
+        .product-price { font-weight: 700; color: #0ea5e9; }
+        .product-footer { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; }
+        .cat-filter .btn { margin-right: .5rem; margin-bottom: .5rem; }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="~{/Included/Header :: header}"></div>
+
+<div class="container py-5">
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+            <li class="breadcrumb-item active">Tất cả sản phẩm</li>
+        </ol>
+    </nav>
+
+    <!-- Tiêu đề + Sort theo giá -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold">Tất cả sản phẩm</h2>
+
+        <!-- Form sort: chỉ có Giá tăng dần / Giá giảm dần -->
+        <form class="d-flex align-items-center" method="get" th:action="@{/products}">
+            <!-- giữ state trang & filter -->
+            <input type="hidden" name="page" th:value="${currentPage}" />
+            <input type="hidden" name="size" th:value="${size}" />
+            <input type="hidden" name="categoryId" th:value="${selectedCategoryId}" />
+
+            <select class="form-select w-auto" name="sort" onchange="this.form.submit()">
+                <option th:value="'priceAsc'"  th:selected="${sort == 'priceAsc'}">Giá tăng dần</option>
+                <option th:value="'priceDesc'" th:selected="${sort == 'priceDesc'}">Giá giảm dần</option>
+            </select>
+        </form>
+    </div>
+
+    <!-- Bộ lọc Category nạp từ DB -->
+    <div class="mb-4 cat-filter">
+        <!-- Nút "Tất cả" (xóa lọc) -->
+        <a class="btn btn-sm"
+           th:classappend="${selectedCategoryId} == null ? 'btn-primary' : 'btn-outline-secondary'"
+           th:href="@{'/products'(page=1, size=${size}, sort=${sort})}">
+            Tất cả
+        </a>
+
+        <!-- Render các category -->
+        <a class="btn btn-sm"
+           th:each="c : ${categories}"
+           th:text="${c.categoryName}"
+           th:classappend="${selectedCategoryId} == ${c.id} ? 'btn-primary' : 'btn-outline-secondary'"
+           th:href="@{'/products'(page=1, size=${size}, categoryId=${c.id}, sort=${sort})}">
+        </a>
+    </div>
+
+    <!-- Grid (có dữ liệu) -->
+    <div class="row g-4" th:if="${products != null and !#lists.isEmpty(products)}">
+        <div class="col-md-3" th:each="product : ${products}">
+            <div class="product-card position-relative">
+
+                <!-- Ảnh: fallback khi null/empty -->
+                <img th:src="${product.img} ?: 'https://picsum.photos/seed/placeholder/400/300'"
+                     alt="Ảnh sản phẩm" class="product-img"/>
+
+                <div class="product-body">
+                    <h6 class="fw-bold mb-1" th:text="${product.productName}">Tên sản phẩm</h6>
+
+                    <!-- Hiển thị category của sản phẩm nếu có -->
+                    <div class="mb-1 text-muted small" th:if="${product.category != null}">
+                        <span class="badge text-bg-light" th:text="${product.category.categoryName}">Danh mục</span>
+                    </div>
+
+                    <div class="product-price mb-1">
+                        <span th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + '₫'">0₫</span>
+                    </div>
+
+                    <div class="product-footer">
+                        <span>Shop: </span>
+                        <a th:if="${product.shop != null}"
+                           th:text="${product.shop.shopName}"
+                           th:href="@{'/shop/details/' + ${product.shop.id}}"
+                           style="text-decoration:none;color:#0ea5e9;">Tên shop</a>
+                        <span th:if="${product.shop == null}">ITP Marketplace</span>
+                    </div>
+
+                    <a th:href="@{'/product/' + ${product.id}}"
+                       class="btn btn-sm btn-outline-primary mt-2 w-100">
+                        Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trạng thái rỗng (khi lọc không có kết quả) -->
+    <div class="text-center py-5 text-muted"
+         th:if="${products == null or #lists.isEmpty(products)}">
+        <h5 class="mb-3">Không có sản phẩm trong danh mục đã chọn.</h5>
+        <a class="btn btn-primary btn-sm"
+           th:href="@{'/products'(page=1, size=${size}, sort=${sort})}">
+            Xóa lọc & xem tất cả
+        </a>
+    </div>
+
+    <!-- Pagination (3-number window, chỉ hiện khi có dữ liệu) -->
+    <nav aria-label="Page navigation" class="mt-5"
+         th:if="${products != null and !#lists.isEmpty(products) and totalPages > 1}">
+        <ul class="pagination justify-content-center">
+
+            <!-- Prev -->
+            <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
+                <a class="page-link"
+                   th:href="@{'/products'(page=${currentPage - 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}"
+                   aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <!-- Ellipsis trước -->
+            <li class="page-item" th:if="${startPage > 1}">
+                <a class="page-link"
+                   th:href="@{'/products'(page=${1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
+            </li>
+            <li class="page-item disabled" th:if="${startPage > 2}">
+                <span class="page-link">…</span>
+            </li>
+
+            <!-- Window 3 số -->
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                th:classappend="${i == currentPage} ? ' active'">
+                <a class="page-link"
+                   th:text="${i}"
+                   th:href="@{'/products'(page=${i}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
+            </li>
+
+            <!-- Ellipsis sau -->
+            <li class="page-item disabled" th:if="${endPage < totalPages - 1}">
+                <span class="page-link">…</span>
+            </li>
+            <li class="page-item" th:if="${endPage < totalPages}">
+                <a class="page-link"
+                   th:text="${totalPages}"
+                   th:href="@{'/products'(page=${totalPages}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">0</a>
+            </li>
+
+            <!-- Next -->
+            <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
+                <a class="page-link"
+                   th:href="@{'/products'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}"
+                   aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+</div>
+
+<!-- Footer -->
+<div th:replace="~{/Included/Footer :: footer}"></div>
+</body>
+</html>

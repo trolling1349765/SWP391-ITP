@@ -1,7 +1,9 @@
 package fpt.swp.springmvctt.itp.controller;
 
+import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.entity.UserRestriction;
 import fpt.swp.springmvctt.itp.service.UserRestrictionService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @Controller
-@RequestMapping("/admin/user-restriction")
+@RequestMapping("/admin/restrictions")
 public class UserRestrictionController {
 
     @Autowired
@@ -30,6 +32,11 @@ public class UserRestrictionController {
             Model model) {
 
         Page<UserRestriction> restrictionPage = userRestrictionService.findByFilter(search, status, fromDate, toDate, deleted, page, size);
+
+        if (page < 0) {
+            model.addAttribute("errorMessage", "Page number can not be negative.");
+            page = 0;
+        }
 
         model.addAttribute("userRestrictions", restrictionPage); // Page<Restriction> nguyên vẹn
         model.addAttribute("currentPage", restrictionPage.getNumber());
@@ -59,19 +66,25 @@ public class UserRestrictionController {
     @PostMapping()
     public String create(@ModelAttribute("newRestriction") UserRestriction restriction) {
         userRestrictionService.save(restriction);
-        return "redirect:/admin/user-restriction";
+        return "redirect:/admin/restrictions";
     }
 
     // ✅ Cập nhật (PUT)
     @PutMapping("/edit/{id}")
-    public String update(@PathVariable Long id, @ModelAttribute UserRestriction restriction) {
-        userRestrictionService.update(id, restriction);
-        return "redirect:/admin/user-restriction";
+    public String update(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason,
+            @RequestParam(required = false) String status
+                         ) {
+        userRestrictionService.update(id, reason, status);
+
+        return "redirect:/admin/restrictions";
     }
 
     @DeleteMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
-        userRestrictionService.delete(id);
-        return "redirect:/admin/user-restriction";
+    public String delete(@PathVariable Long id, HttpSession session) {
+         User user =  (User) session.getAttribute("user");
+        userRestrictionService.delete(id, user.getUsername());
+        return "redirect:/admin/restrictions";
     }
 }

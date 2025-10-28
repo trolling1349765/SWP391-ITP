@@ -38,6 +38,7 @@ public interface UserRestrictionRepository extends JpaRepository<UserRestriction
       AND (:startDate IS NULL OR ur.createAt >= :startDate)
       AND (:endDate IS NULL OR ur.createAt <= :endDate)
       AND (:deleted IS NULL OR ur.isDeleted = :deleted)
+      ORDER BY ur.id DESC
 """)
     Page<UserRestriction> findByFilter(
             @Param("username") String username,
