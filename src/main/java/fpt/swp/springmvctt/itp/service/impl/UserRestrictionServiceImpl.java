@@ -46,7 +46,7 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
                 .orElseThrow(() -> new RuntimeException("Not found"));
         entity.setReason(reason);
         entity.setStatus(status);
-        entity.setUpdateAt(LocalDateTime.now());
+        entity.setUpdateAt(LocalDate.now());
         return userRestrictionRepository.save(entity);
     }
 
@@ -57,7 +57,7 @@ public class UserRestrictionServiceImpl implements UserRestrictionService {
         if (entity != null) {
             entity.setIsDeleted(true);
             entity.setDeleteBy(username);
-            entity.setUpdateAt(LocalDateTime.now());
+            entity.setUpdateAt(LocalDate.now());
             userRestrictionRepository.save(entity);
         }
     }

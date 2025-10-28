@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -172,8 +173,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     // Information để trống hoặc dùng product name
                     productStore.setInfomation(product != null ? product.getProductName() : "");
                     productStore.setStatus(ProductStatus.HIDDEN);
-                    productStore.setCreateAt(LocalDateTime.now());
-                    productStore.setUpdateAt(LocalDateTime.now());
+                    productStore.setCreateAt(LocalDate.now());
+                    productStore.setUpdateAt(LocalDate.now());
                     
                     ProductStore saved = productStoreRepository.save(productStore);
                     dbImportedCount++;
@@ -296,8 +297,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     productStore.setFaceValue((BigDecimal) serialData.get("faceValue"));
                     productStore.setInfomation((String) serialData.get("information"));
                     productStore.setStatus(ProductStatus.HIDDEN);
-                    productStore.setCreateAt(LocalDateTime.now());
-                    productStore.setUpdateAt(LocalDateTime.now());
+                    productStore.setCreateAt(LocalDate.now());
+                    productStore.setUpdateAt(LocalDate.now());
                     
                     productStoreRepository.save(productStore);
                     dbImportedCount++;
@@ -419,7 +420,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     
                     productStore.setInfomation(serialNode.get("information").asText());
                     productStore.setStatus(ProductStatus.HIDDEN);
-                    productStore.setCreateAt(LocalDateTime.now());
+                    productStore.setCreateAt(LocalDate.now());
                     
                     productStoreRepository.save(productStore);
                     importedCount++;

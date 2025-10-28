@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ public class StatusService {
         var shop = shopRepository.findById(shopId).orElseThrow();
         shop.setStatus(newStatus);
         shop.setUpdateBy(actor);
-        shop.setUpdateAt(LocalDateTime.now());
+        shop.setUpdateAt(LocalDate.now());
     }
 
     @Transactional
@@ -38,6 +39,6 @@ public class StatusService {
         // Convert String to ProductStatus enum
         p.setStatus(ProductStatus.valueOf(newStatus));
         p.setUpdateBy(actor);
-        p.setUpdateAt(LocalDateTime.now());
+        p.setUpdateAt(LocalDate.now());
     }
 }

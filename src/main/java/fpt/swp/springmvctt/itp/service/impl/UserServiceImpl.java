@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(updated.getPassword());
         user.setPhone(updated.getPhone());
         user.setStatus(updated.getStatus());
-        user.setUpdateAt(LocalDateTime.now());
+        user.setUpdateAt(LocalDate.now());
         user.setRole(updated.getRole());
         return userRepository.save(user);
     }
@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
             user.setOauthProvider("google");
             user.setProvider("google");
             user.setStatus("ACTIVE");
-            user.setCreateAt(LocalDateTime.now());
+            user.setCreateAt(LocalDate.now());
             user.setCreateBy("oauth_google");
             user.setIsDeleted(false);
             

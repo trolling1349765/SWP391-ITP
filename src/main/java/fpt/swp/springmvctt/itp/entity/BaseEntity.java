@@ -15,9 +15,9 @@ import java.time.LocalDate;
 @Getter @Setter
 public abstract class BaseEntity {
     @Column(name="create_at")
-    private LocalDateTime createAt;
+    private LocalDate createAt;
     @Column(name="update_at")
-    private LocalDateTime updateAt;
+    private LocalDate updateAt;
     @Column(name="is_deleted")
     private Boolean isDeleted;
     @Column(name="create_by")
@@ -29,10 +29,10 @@ public abstract class BaseEntity {
 
     @PrePersist protected void onCreate() {
         if (createAt == null)
-            createAt = LocalDateTime.now();
+            createAt = LocalDate.now();
         if (isDeleted == null)
             isDeleted = false;
     }
     @PreUpdate  protected void onUpdate() {
-        updateAt = LocalDateTime.now(); }
+        updateAt = LocalDate.now(); }
 }
