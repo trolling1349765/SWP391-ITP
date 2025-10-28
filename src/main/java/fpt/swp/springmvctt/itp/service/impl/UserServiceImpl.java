@@ -238,8 +238,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void setUserAccess(Long id, String accessStatus) {
-        userRepository.findById(id).ifPresent(u -> {
+        userRepository.findById(id).ifPresent((User u) -> {
                 u.setStatus(accessStatus);
+                userRepository.save(u);
         });
     }
 

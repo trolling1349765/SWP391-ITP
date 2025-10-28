@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import fpt.swp.springmvctt.itp.repository.ShopRepository;
 
@@ -32,7 +30,7 @@ public class UserController {
             @RequestParam(required = false, defaultValue = "") LocalDate toDate,
             @RequestParam(required = false, defaultValue = "") LocalDate fromUpdateDate,
             @RequestParam(required = false, defaultValue = "") LocalDate toUpdateDate,
-            @RequestParam(required = false, defaultValue = "") Boolean deleted,
+            @RequestParam(required = false, defaultValue = "") String deleted,
             @RequestParam(required = false, defaultValue = "") String deleteBy,
             @RequestParam(required = false, defaultValue = "") String status,
             @RequestParam(required = false, defaultValue = "") String role,
@@ -47,7 +45,7 @@ public class UserController {
                 toDate,
                 fromUpdateDate,
                 toUpdateDate,
-                deleted,
+                deleted.equals("true"),
                 deleteBy,
                 status,
                 role,
@@ -77,4 +75,9 @@ public class UserController {
         return "admin/users";
     }
 
+    @DeleteMapping("/users/delete/{id}")
+    public String deleteUser(@PathVariable("id") Long id, Model model) {
+
+        return "redirect:/admin/users";
+    }
 }
