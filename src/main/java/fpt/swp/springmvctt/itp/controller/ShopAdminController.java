@@ -16,7 +16,7 @@ import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/admin")
-public class ShopRegisterController {
+public class ShopAdminController {
 
     @Autowired
     ShopService shopService;
@@ -61,5 +61,39 @@ public class ShopRegisterController {
         model.addAttribute("toDate", toDate);
 
         return "admin/register";
+    }
+
+    @GetMapping("/shops")
+    public String shops(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String shopName,
+            @RequestParam(required = false) String createBy,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) String deleted,
+            @RequestParam(required = false) String deleteby,
+            @RequestParam(required = false) String updateAt,
+            Model model
+    ){
+        Page<Shop> shops = shopService.filterInactiveShops(shopName, createBy, fromDate, toDate, page, size);
+
+        if (page < 0) {
+            model.addAttribute("errorMessage", "Page number can not be negative.");
+            page = 0;
+        }
+
+        model.addAttribute("currentPage", shops.getNumber());
+        model.addAttribute("totalPages", shops.getTotalPages());
+        model.addAttribute("totalItems", shops.getTotalElements());
+
+        // Gửi dữ liệu sang view
+        model.addAttribute("shops", shops);
+        model.addAttribute("shopName", shopName);
+        model.addAttribute("createBy", createBy);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+
+        return "admin/shops";
     }
 }
