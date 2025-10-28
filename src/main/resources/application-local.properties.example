@@ -1,0 +1,23 @@
+# ====== LOCAL CONFIGURATION TEMPLATE ======
+# Copy this file to: application-local.properties
+# Then fill in your actual credentials
+# DO NOT commit application-local.properties!
+
+# Google OAuth Configuration
+google.clientSecret=your_google_client_secret_here
+google.clientId=your_google_client_id_here
+google.redirectUri=http://localhost:8080/itp/oauth2/callback/google
+
+# Database Password
+spring.datasource.password=your_mysql_password_here
+
+# Cloudinary Configuration
+cloudinary.cloud_name=your_cloud_name
+cloudinary.api_key=your_api_key
+cloudinary.api_secret=your_api_secret
+
+# Gmail SMTP Configuration
+spring.mail.username=your_email@gmail.com
+spring.mail.password=your_gmail_app_password
+app.mail.from=your_email@gmail.com
+
