@@ -51,15 +51,26 @@
                                 <td th:text="${config.isDeleted} ? 'Yes' : 'No'"></td>
                                 <td th:text="${config.deleteBy}"></td>
                                 <td>
-                                    <a th:href="@{/admin/configs/update/{id}(id=${config.id})}"
-                                       class="btn btn-primary" th:text="Update"></a>
-                                    <form
-                                            th:action="@{/admin/configs/delete/{id}(id=${config.id})}"
-                                            method="post"
-                                            onsubmit="return confirm('Bạn có chắc chắn muốn xóa cấu hình này?');">
-                                        <input type="hidden" name="_method" value="delete"/>
-                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                    </form>
+                                    <span th:if="${!config.isDeleted}">
+                                        <a th:href="@{/admin/configs/update/{id}(id=${config.id})}"
+                                            class="btn btn-primary" th:text="Update"></a>
+                                        <form
+                                                th:action="@{/admin/configs/delete/{id}(id=${config.id})}"
+                                                method="post"
+                                                onsubmit="return confirm('Bạn có chắc chắn muốn xóa cấu hình này?');">
+                                            <input type="hidden" name="_method" value="delete"/>
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </span>
+                                    <span th:if="${config.isDeleted}">
+                                        <form
+                                                th:action="@{/admin/configs/reborn/{id}(id=${config.id})}"
+                                                method="post"
+                                                onsubmit="return confirm('Khôi phục cấu hình này?');">
+                                            <input type="hidden" name="_method" value="put"/>
+                                            <button type="submit" class="btn btn-danger">Restore</button>
+                                        </form>
+                                    </span>
                                 </td>
                             </tr>
                             </tbody>
