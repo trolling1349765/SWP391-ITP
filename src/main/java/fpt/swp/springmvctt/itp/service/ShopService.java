@@ -16,5 +16,11 @@ public interface ShopService {
     public Page<Shop> findByStatus(String status, int  page, int size);
     public Shop findById(Long id);
     Page<Shop> filterInactiveShops(String shopName, String username, LocalDate fromDate, LocalDate toDate, int page, int size);
+
+    Page<Shop> findByFilter(String shopName, String createBy, LocalDate fromDate, LocalDate toDate, LocalDate fromUpdateDate, LocalDate toUpdateDate, Boolean deleted, String deleteBy, String status, int page, int size);
+
+    void delete(Long id);
+
+    void activateShop(Long id);
 //    public Page<Shop> findByFilter(String status, int page, int size, Pageable pageable);
 }

@@ -5,6 +5,8 @@ import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.repository.ShopRepository;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
 import fpt.swp.springmvctt.itp.service.ShopService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,8 @@ public class ShopServiceImpl implements ShopService {
 
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
+    @Autowired
+    private HttpServletRequest httpServletRequest;
 
     @Override
     public Shop createForUser(Long userId, String shopName) {
@@ -83,6 +87,59 @@ public class ShopServiceImpl implements ShopService {
         if( fromDate == null ) fromDate = null;
         if( toDate == null ) toDate = null;
         return shopRepository.filterShops("inactive", shopName, username, fromDate, toDate, pageable);
+    }
+
+    @Override
+    public Page<Shop> findByFilter(
+            String shopName,
+            String createBy,
+            LocalDate fromDate,
+            LocalDate toDate,
+            LocalDate fromUpdateDate,
+            LocalDate toUpdateDate,
+            Boolean deleted,
+            String deleteBy,
+            String status,
+            int page,
+            int size
+    ) {
+        if (shopName == null || shopName.isEmpty()) shopName = null;
+        if (createBy == null || createBy.isEmpty()) createBy = null;
+        if (deleteBy == null || deleteBy.isEmpty() ) deleteBy = null;
+        if (status == null || status.isEmpty()) status = null;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
+        return shopRepository.findByFilter(
+                shopName,
+                createBy,
+                fromDate,
+                toDate,
+                fromUpdateDate,
+                toUpdateDate,
+                deleted,
+                deleteBy,
+                status,
+                pageable
+        );
+    }
+
+    @Override
+    public void delete(Long id) {
+        HttpSession session = httpServletRequest.getSession();
+        User user = (User) session.getAttribute("user");
+        shopRepository.findById(id).ifPresent((shop) ->{
+            shop.setDeleteBy(user.getUsername());
+            shop.setUpdateAt(LocalDate.now());
+            shop.setIsDeleted(true);
+            shopRepository.save(shop);
+        });
+    }
+
+    @Override
+    public void activateShop(Long id) {
+        shopRepository.findById(id).ifPresent((shop) ->{
+            shop.setStatus("ACTIVE");
+            shopRepository.save(shop);
+        });
     }
 
     @Override

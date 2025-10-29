@@ -32,4 +32,29 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
                            @Param("toDate") LocalDate toDate,
                            Pageable pageable);
 
+    @Query("""
+        SELECT u
+    FROM Shop u
+    WHERE (:shopName IS NULL OR u.shopName LIKE CONCAT('%', :shopName, '%'))
+      AND (:createBy IS NULL OR u.createBy LIKE CONCAT('%', :createBy, '%'))
+      AND (:startDate IS NULL OR u.createAt >= :startDate)
+      AND (:endDate IS NULL OR u.createAt <= :endDate)
+      AND (:fromUpdateDate IS NULL OR u.updateAt >= :fromUpdateDate)
+      AND (:toUpdateDate IS NULL OR u.updateAt <= :toUpdateDate)
+      AND (:isDelete IS NULL OR u.isDeleted = :isDelete)
+      AND (:deleteBy IS NULL OR u.deleteBy LIKE CONCAT('%', :deleteBy, '%'))
+      AND (:status IS NULL OR u.status LIKE CONCAT('%', :status, '%'))
+      ORDER BY u.id DESC
+    """)
+    Page<Shop> findByFilter(@Param("shopName") String shopName,
+                            @Param("createBy") String createBy,
+                            @Param("startDate") LocalDate startDate,
+                            @Param("endDate") LocalDate endDate,
+                            @Param("fromUpdateDate") LocalDate fromUpdateDate,
+                            @Param("toUpdateDate") LocalDate toUpdateDate,
+                            @Param("isDelete") Boolean isDelete,
+                            @Param("deleteBy") String deteleBy,
+                            @Param("status") String status,
+                            Pageable pageable);
+
 }

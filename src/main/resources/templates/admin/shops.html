@@ -22,93 +22,131 @@
             <aside th:insert="~{Included/AdminSidebar :: adminSidebar (currentPath)}"></aside>
         </div>
         <!-- Main content -->
-        <div class="col-12 col-md-9 col-lg-10 p-4">
-            <h3 th:if="${errorMessage != null}"
-                th:text="${errorMessage}"
-                class="text-danger"></h3>
+        <div class="col-12 col-md-9 col-lg-10 p-0">
+            <!-- 🧾 Table -->
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <h3 th:if="${errorMessage != null}"
+                            th:text="${errorMessage}"
+                            class="text-danger"></h3>
 
-            <form th:action="@{/admin/registers}" method="get">
-                <table class="table table-bordered">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Shop Name</th>
-                        <th>Status</th>
-                        <th>User</th>
-                        <th>Created At</th>
-                        <th>Is Delete</th>
-                        <th>Delete By</th>
-                        <th>Rating</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td></td>
+                        <form th:action="@{/admin/shops}" method="get">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Shop Name</th>
+                                    <th>Status</th>
+                                    <th>Owner</th>
+                                    <th>Created At</th>
+                                    <th>Deleted</th>
+                                    <th>Delete By</th>
+                                    <th>Update At</th>
+                                    <th>Rating</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td></td>
 
-                        <!-- Shop Name Filter -->
-                        <td>
-                            <label>
-                                <input type="text" name="shopName" class="form-control" th:value="${shopName}">
-                            </label>
-                        </td>
+                                    <!-- Shop Name Filter -->
+                                    <td>
+                                        <label>
+                                            <input type="text" name="shopName" class="form-control"
+                                                   th:value="${shopName}">
+                                        </label>
+                                    </td>
 
-                        <td>
+                                    <td>
+                                        <select class="form-select form-select-sm" name="status">
+                                            <option value="">All</option>
+                                            <option value="ACTIVE" th:selected="${status.equalsIgnoreCase('ACTIVE')}">
+                                                ACTIVE
+                                            </option>
+                                            <option value="INACTIVE"
+                                                    th:selected="${status.equalsIgnoreCase('INACTIVE')}">INACTIVE
+                                            </option>
+                                        </select>
+                                    </td>
 
-                        </td>
+                                    <!-- User Name Filter -->
+                                    <td>
+                                        <label>
+                                            <input type="text" name="username" class="form-control"
+                                                   th:value="${username}">
+                                        </label>
+                                    </td>
 
-                        <!-- User Name Filter -->
-                        <td>
-                            <label>
-                                <input type="text" name="username" class="form-control" th:value="${username}">
-                            </label>
-                        </td>
+                                    <!-- Created At Filter -->
+                                    <td class="d-flex gap-1">
+                                        <div class="d-flex flex-column gap-1">
+                                            <div><input type="date" name="fromDate" th:value="${fromDate}"
+                                                        class="form-control form-control-sm"></div>
+                                            <div><input type="date" name="toDate" th:value="${toDate}"
+                                                        class="form-control form-control-sm"></div>
+                                        </div>
+                                    </td>
 
-                        <!-- Created At Filter -->
-                        <td class="d-flex gap-1">
-                            <label>
-                                <input type="date" name="fromDate" class="form-control" th:value="${fromDate}">
-                            </label>
-                            <label>
-                                <input type="date" name="toDate" class="form-control" th:value="${toDate}">
-                            </label>
-                        </td>
+                                    <!-- Delete Filter -->
+                                    <td>
+                                        <select class="form-select form-select-sm" name="deleted">
+                                            <option value="">All</option>
+                                            <option value="true" th:selected="${deleted == 'true'}">YES</option>
+                                            <option value="false" th:selected="${deleted == 'false'}">NO</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="deleteBy" th:value="${deleteBy}"
+                                               placeholder="Search name"
+                                               class="form-control form-control-sm"></td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-1">
+                                            <div><input type="date" name="fromUpdateDate" th:value="${fromUpdateDate}"
+                                                        class="form-control form-control-sm"></div>
+                                            <div><input type="date" name="toUpdateDate" th:value="${toUpdateDate}"
+                                                        class="form-control form-control-sm"></div>
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                    <td>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+                                        <button type="reset" class="btn btn-sm btn-outline-secondary">Clear</button>
+                                    </td>
+                                </tr>
 
-                        <!-- Rating Filter -->
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                                <!-- Hiển thị danh sách shop -->
+                                <tr th:each="shop : ${shops}">
+                                    <td th:text="${shop.id}">1</td>
+                                    <td th:text="${shop.shopName}">Shop A</td>
+                                    <td th:text="${shop.status}">Inactive</td>
+                                    <td th:text="${shop.createBy}">seller A</td>
+                                    <td th:text="${#temporals.format(shop.createAt, 'yyyy-MM-dd')}"></td>
+                                    <td th:text="${shop.isDeleted ? 'Yes' : 'No'}"></td>
+                                    <td th:text="${shop.isDeleted ? shop.deleteBy : ''}"></td>
+                                    <td th:text="${shop.updateAt}"></td>
+                                    <td th:text="${shop.rating}">4.5</td>
+                                    <td>
+                                        <a th:href="@{'/admin/shopDetail/' + ${shop.id}}"
+                                           class="btn btn-success btn-sm">Details</a>
+                                        <form th:action="@{/admin/shops/delete/{id}(id=${shop.id})}" method="post"
+                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa dòng này?');">
+                                            <input type="hidden" name="_method" value="delete">
+                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
 
-
-                        <td>
-                            <button class="btn btn-primary btn-sm" type="submit">Filter</button>
-                            <button type="reset" class="btn btn-secondary btn-sm">Clear</button>
-                        </td>
-                    </tr>
-
-                    <!-- Hiển thị danh sách shop -->
-                    <tr th:each="shop : ${shops}">
-                        <td th:text="${shop.id}">1</td>
-                        <td th:text="${shop.shopName}">Shop A</td>
-                        <td th:text="${shop.status}">Inactive</td>
-                        <td th:text="${shop.user != null ? shop.user.username : 'N/A'}">user01</td>
-                        <td th:text="${#temporals.format(shop.createAt, 'yyyy-MM-dd')}"></td>
-                        <td th:text="${shop.isDeleted ? 'Yes' : 'No'}"></td>
-                        <td th:text="${shop.isDeleted ? shop.deleteBy : ''}"></td>
-                        <td th:text="${shop.rating}">4.5</td>
-                        <td>
-                            <a th:href="@{'/admin/registerDetail/' + ${shop.id}}"
-                               class="btn btn-success btn-sm">Details</a>
-                        </td>
-                    </tr>
-
-                    <!-- Không có dữ liệu -->
-                    <tr th:if="${#lists.isEmpty(shops)}">
-                        <td colspan="8" class="text-center">No shops found</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </form>
+                                <!-- Không có dữ liệu -->
+                                <tr th:if="${#lists.isEmpty(shops)}">
+                                    <td colspan="8" class="text-center">No shops found</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <!-- 📄 Pagination -->
             <div class="mt-3">
                 <nav th:if="${totalPages > 1}" aria-label="Page navigation">
@@ -117,11 +155,16 @@
                         <!-- Previous -->
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/admin/registers(page=${currentPage - 1},
+                               th:href="@{/admin/shops(page=${currentPage - 1},
                                                           shopName=${shopName},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},
-                                                         username=${username})}">
+                                                         createBy=${createBy},
+                                                         status=${status},
+                                                         deleted=${deleted},
+                                                         deleteBy=${deleteBy},
+                                                         fromUpdateDate=${fromUpdateDate},
+                                                         toUpdateDate=${toUpdateDate})}">
                                 Previous
                             </a>
                         </li>
@@ -132,22 +175,32 @@
                             th:classappend="${i == currentPage} ? 'active'">
                             <a class="page-link"
                                th:text="${i + 1}"
-                               th:href="@{/admin/registers(page=${i},
+                               th:href="@{/admin/shops(page=${i},
                                                           shopName=${shopName},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},
-                                                         username=${username})}">
+                                                         createBy=${createBy},
+                                                         status=${status},
+                                                         deleted=${deleted},
+                                                         deleteBy=${deleteBy},
+                                                         fromUpdateDate=${fromUpdateDate},
+                                                         toUpdateDate=${toUpdateDate})}">
                             </a>
                         </li>
 
                         <!-- Next -->
                         <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/admin/registers(page=${currentPage + 1},
+                               th:href="@{/admin/shops(page=${currentPage + 1},
                                                           shopName=${shopName},
                                                           fromDate=${fromDate},
                                                           toDate=${toDate},
-                                                         username=${username})}">
+                                                         createBy=${createBy},
+                                                         status=${status},
+                                                         deleted=${deleted},
+                                                         deleteBy=${deleteBy},
+                                                         fromUpdateDate=${fromUpdateDate},
+                                                         toUpdateDate=${toUpdateDate})}">
                                 Next
                             </a>
                         </li>
