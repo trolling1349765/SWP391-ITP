@@ -127,6 +127,7 @@
                                     <td th:text="${shop.updateAt}"></td>
                                     <td th:text="${shop.rating}">4.5</td>
                                     <td>
+                                        <div>
                                         <a th:href="@{'/admin/shopDetail/' + ${shop.id}}"
                                            class="btn btn-success btn-sm">Details</a>
                                         <form th:action="@{/admin/shops/delete/{id}(id=${shop.id})}" method="post"
@@ -134,6 +135,7 @@
                                             <input type="hidden" name="_method" value="delete">
                                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                         </form>
+                                        </div>
                                     </td>
                                 </tr>
 
