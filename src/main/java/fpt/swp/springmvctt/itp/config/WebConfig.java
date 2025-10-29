@@ -30,6 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
         return new HiddenHttpMethodFilter();
     }
+
     @Bean
     public FilterRegistrationBean<AdminFilter> adminFilter() {
         FilterRegistrationBean<AdminFilter> registration = new FilterRegistrationBean<>();

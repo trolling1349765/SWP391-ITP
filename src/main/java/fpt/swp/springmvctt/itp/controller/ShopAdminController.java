@@ -126,14 +126,14 @@ public class ShopAdminController {
         return "admin/shops";
     }
 
-    @GetMapping("/shops/detail/{id}")
+    @GetMapping("/shops/shopDetail/{id}")
     public String shopDetail(@PathVariable Long id, Model model) {
         Shop shop = shopService.findById(id);
         model.addAttribute("shop", shop);
         return "shop/shop-homepage";
     }
 
-    @DeleteMapping("/registers/delete/{id}")
+    @DeleteMapping("/shops/delete/{id}")
     public String deleteShop(@PathVariable Long id, Model model) {
         shopService.delete(id);
         return "redirect:/admin/shops";
