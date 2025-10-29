@@ -72,5 +72,6 @@ public class ConfigSettingController {
             @PathVariable Long id
     ) {
         configurationService.reborn(id);
+        return "redirect:/admin/configs";
     }
 }
