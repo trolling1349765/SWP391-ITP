@@ -11,17 +11,20 @@ public interface UserService {
     User findById(Long id);
     User update(Long id, User userRestriction);
     User Login(String emailOrUsername, String password);
-//    Page<User> findByFilter(
-//            String username,
-//            String email,
-//            LocalDate fromDate,
-//            LocalDate toDate,
-//            Boolean isDelete,
-//            String status,
-//            String role,
-//            int page,
-//            int size
-//    );
+    Page<User> findByFilter(
+            String username,
+            String email,
+            LocalDate fromDate,
+            LocalDate toDate,
+            LocalDate fromUpdateDate,
+            LocalDate toUpdateDate,
+            Boolean isDelete,
+            String deleteBy,
+            String status,
+            String role,
+            int page,
+            int size
+    );
     Optional<User> login(String email, String password);
     void register(User user);
     boolean existsByEmail(String email);
@@ -33,6 +36,8 @@ public interface UserService {
     void sendPasswordResetEmail(String email);
     boolean resetPassword(String token, String newPassword);
     String generatePasswordResetToken(String email);
-
+    void setUserAccess(Long id, String accessStatus);
     boolean isValidPasswordResetToken(String token);
+
+    void delete(Long id);
 }

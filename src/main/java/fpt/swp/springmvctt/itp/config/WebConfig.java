@@ -21,6 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/assets/ajax/**")
                 .addResourceLocations("classpath:/assets/ajax/");
+
         registry.addResourceHandler("/assets/css/**")
                 .addResourceLocations("classpath:/assets/css/");
     }
@@ -29,6 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
         return new HiddenHttpMethodFilter();
     }
+
     @Bean
     public FilterRegistrationBean<AdminFilter> adminFilter() {
         FilterRegistrationBean<AdminFilter> registration = new FilterRegistrationBean<>();

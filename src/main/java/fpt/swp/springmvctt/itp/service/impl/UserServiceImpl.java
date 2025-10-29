@@ -5,22 +5,31 @@ import fpt.swp.springmvctt.itp.entity.Role;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
 import fpt.swp.springmvctt.itp.repository.RoleRepository;
 import fpt.swp.springmvctt.itp.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private HttpServletRequest httpServletRequest;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -34,6 +43,7 @@ public class UserServiceImpl implements UserService {
                         () -> new RuntimeException("User not found")
                 );
     }
+
 
 
     @Override
@@ -64,15 +74,41 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-//    @Override
-//    public Page<User> findByFilter(String username, String email, LocalDate fromDate, LocalDate toDate, Boolean isDelete, String status, String role, int page, int size) {
-//        if (username == null || username.isEmpty() || username == "") username = null;
-//        if (email == null || email.isEmpty() || email == "") email = null;
-//        if (isDelete != true && isDelete != false) isDelete = null;
-//        if (status == null || status.isEmpty() || status == "") status = null;
-//        if ("all".equalsIgnoreCase(role) || role == null || role.isEmpty()) role = null;
-//        return userRepository.findByFilter((String username, String email, LocalDate fromDate, LocalDate toDate, Boolean isDelete, String status, String role, int page, int size);
-//    }
+    @Override
+    public Page<User> findByFilter(
+            String username,
+            String email,
+            LocalDate fromDate,
+            LocalDate toDate,
+            LocalDate fromUpdateDate,
+            LocalDate toUpdateDate,
+            Boolean isDelete,
+            String deleteBy,
+            String status,
+            String role,
+            int page,
+            int size
+    ) {
+        if (username == null || username.isEmpty()) username = null;
+        if (email == null || email.isEmpty()) email = null;
+        if (deleteBy == null || deleteBy.isEmpty() ) deleteBy = null;
+        if (status == null || status.isEmpty()) status = null;
+        if ("all".equalsIgnoreCase(role) || role == null || role.isEmpty()) role = null;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
+        return userRepository.findByFilter(
+                username,
+                email,
+                fromDate,
+                toDate,
+                fromUpdateDate,
+                toUpdateDate,
+                isDelete,
+                deleteBy,
+                status,
+                role,
+                pageable
+        );
+    }
 
 
     // Lưu tạm token + thời gian hết hạn
@@ -159,7 +195,6 @@ public class UserServiceImpl implements UserService {
 
             userRepository.save(user);
         } else {
-            // Email đã tồn tại, cập nhật oauth provider nếu chưa có
             if (user.getOauthProvider() == null) {
                 user.setOauthProvider("google");
                 user.setProvider("google");
@@ -191,8 +226,11 @@ public class UserServiceImpl implements UserService {
             message.setText("Xin chào,\n\nBạn đã yêu cầu đặt lại mật khẩu.\n" +
                     "Nhấn vào liên kết sau để tạo mật khẩu mới:\n" + resetLink +
                     "\n\nLiên kết này sẽ hết hạn sau 1 giờ.\n\nTrân trọng,\nITP Team");
+
             mailSender.send(message);
+            System.out.println("✅ Đã gửi email đặt lại mật khẩu tới: " + email);
         } catch (Exception e) {
+            System.err.println("❌ Gửi email thất bại: " + e.getMessage());
             throw new RuntimeException("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau!");
         }
     }
@@ -217,9 +255,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void setUserAccess(Long id, String accessStatus) {
+        userRepository.findById(id).ifPresent((User u) -> {
+                u.setStatus(accessStatus);
+                userRepository.save(u);
+        });
+    }
+
+    @Override
     public boolean isValidPasswordResetToken(String token) {
         TokenInfo tokenInfo = passwordResetTokens.get(token);
         return tokenInfo != null && tokenInfo.expiry.after(new Date());
+    }
+
+    @Override
+    public void delete(Long id) {
+        HttpSession session = httpServletRequest.getSession();
+        User user = (User) session.getAttribute("user");
+        String username = user.getUsername();
+         user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            user.setIsDeleted(true);
+            user.setDeleteBy(username);
+            user.setUpdateAt(LocalDate.now());
+            userRepository.save(user);
+        }
     }
 
     // Lớp phụ để lưu email + hạn token
@@ -231,5 +291,11 @@ public class UserServiceImpl implements UserService {
             this.email = email;
             this.expiry = expiry;
         }
+    }
+
+
+    public UserServiceImpl(){}
+    public static void main(String[] args) {
+        System.out.println(BCrypt.hashpw("123456", BCrypt.gensalt()));
     }
 }

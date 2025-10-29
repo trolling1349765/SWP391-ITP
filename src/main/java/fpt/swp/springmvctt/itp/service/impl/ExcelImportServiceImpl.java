@@ -1,7 +1,6 @@
 package fpt.swp.springmvctt.itp.service.impl;
 
 import fpt.swp.springmvctt.itp.dto.request.ExcelImportForm;
-import fpt.swp.springmvctt.itp.dto.request.StockForm;
 import fpt.swp.springmvctt.itp.dto.response.ImportResult;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.ProductStore;
@@ -10,7 +9,6 @@ import fpt.swp.springmvctt.itp.entity.enums.ProductType;
 import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.repository.ProductStoreRepository;
 import fpt.swp.springmvctt.itp.service.ExcelImportService;
-import fpt.swp.springmvctt.itp.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -42,7 +40,6 @@ public class ExcelImportServiceImpl implements ExcelImportService {
 
     private final ProductRepository productRepository;
     private final ProductStoreRepository productStoreRepository;
-    private final InventoryService inventoryService;
 
     @Override
     public ImportResult importSerialsFromExcel(ExcelImportForm form) {

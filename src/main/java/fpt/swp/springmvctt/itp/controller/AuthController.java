@@ -68,8 +68,8 @@ public class AuthController {
             }
 
             redirectAttributes.addFlashAttribute("success", "Đăng nhập thành công!");
-            session.setAttribute("user", user.get());
             session.setAttribute("role", user.get().getRole().getName());
+            userService.setUserAccess(user.get().getId(), "ACTIVE");
 
             if (user.get().getRole().getName().equalsIgnoreCase("ADMIN")) {
                 return "redirect:/admin/dashboard";
@@ -197,6 +197,8 @@ public class AuthController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        userService.setUserAccess(user.getId(), "INACTIVE");
         session.invalidate();
         redirectAttributes.addFlashAttribute("success", "Đăng xuất thành công!");
         return "redirect:/";
