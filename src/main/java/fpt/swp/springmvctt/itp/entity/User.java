@@ -55,7 +55,7 @@ public class User extends BaseEntity {
     private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id") // FK role_id
+    @JoinColumn(name = "role_id")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Role role;

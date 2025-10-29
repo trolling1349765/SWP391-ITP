@@ -7,23 +7,21 @@ import fpt.swp.springmvctt.itp.repository.RoleRepository;
 import fpt.swp.springmvctt.itp.service.UserService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private RoleRepository roleRepository;
 
@@ -36,7 +34,6 @@ public class UserServiceImpl implements UserService {
                         () -> new RuntimeException("User not found")
                 );
     }
-
 
 
     @Override
@@ -103,6 +100,11 @@ public class UserServiceImpl implements UserService {
         user.setPassword(hashedPassword);
         user.setStatus("ACTIVE");
         user.setProvider("local");
+
+        Role customerRole = roleRepository.findByName("CUSTOMER")
+                .orElseThrow(() -> new RuntimeException("Role CUSTOMER không tồn tại trong hệ thống"));
+        user.setRole(customerRole);
+
         userRepository.save(user);
     }
 
@@ -150,17 +152,14 @@ public class UserServiceImpl implements UserService {
             user.setCreateAt(LocalDate.now());
             user.setCreateBy("oauth_google");
             user.setIsDeleted(false);
-            
-            // ✅ SET DEFAULT ROLE = CUSTOMER cho user OAuth
+
             Role customerRole = roleRepository.findByName("CUSTOMER")
-                .orElseGet(() -> roleRepository.findByName("USER")
-                .orElse(null));
-            if (customerRole != null) {
-                user.setRole(customerRole);
-            }
+                    .orElseThrow(() -> new RuntimeException("Role CUSTOMER không tồn tại trong hệ thống"));
+            user.setRole(customerRole);
 
             userRepository.save(user);
         } else {
+            // Email đã tồn tại, cập nhật oauth provider nếu chưa có
             if (user.getOauthProvider() == null) {
                 user.setOauthProvider("google");
                 user.setProvider("google");
@@ -192,11 +191,8 @@ public class UserServiceImpl implements UserService {
             message.setText("Xin chào,\n\nBạn đã yêu cầu đặt lại mật khẩu.\n" +
                     "Nhấn vào liên kết sau để tạo mật khẩu mới:\n" + resetLink +
                     "\n\nLiên kết này sẽ hết hạn sau 1 giờ.\n\nTrân trọng,\nITP Team");
-
             mailSender.send(message);
-            System.out.println("✅ Đã gửi email đặt lại mật khẩu tới: " + email);
         } catch (Exception e) {
-            System.err.println("❌ Gửi email thất bại: " + e.getMessage());
             throw new RuntimeException("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau!");
         }
     }
@@ -235,11 +231,5 @@ public class UserServiceImpl implements UserService {
             this.email = email;
             this.expiry = expiry;
         }
-    }
-
-
-    public UserServiceImpl(){}
-    public static void main(String[] args) {
-        System.out.println(BCrypt.hashpw("123456", BCrypt.gensalt()));
     }
 }

@@ -34,7 +34,9 @@
                                 Uy tín – Chất lượng – Bảo hành.
                             </p>
                             <a th:href="@{/products}" class="btn btn-dark btn-lg">Khám phá ngay</a>
-                            <a th:href="@{/shop/dashboard}" class="btn btn-outline-primary btn-lg ms-2">Shop Dashboard</a>
+                            <a th:href="@{/customer/shop/list}" class="btn btn-outline-dark btn-lg ms-2">Xem Shop</a>
+                            <a th:href="@{/shop/dashboard}" class="btn btn-outline-primary btn-lg ms-2"
+                               th:if="${session.user != null and session.user.role.name == 'SELLER'}">Shop Dashboard</a>
                         </div>
                         <div class="col-md-6 text-center">
                             <img th:src="@{/img/hero-setup.jpg}" alt="MMO setup" class="img-fluid rounded shadow">

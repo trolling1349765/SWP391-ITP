@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${product.productName} + ' | Chi tiết sản phẩm'">Chi tiết sản phẩm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .product-image {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .product-price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .product-name {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .stock-badge {
+            font-size: 1rem;
+            padding: 8px 16px;
+        }
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-row {
+            display: flex;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            width: 150px;
+            flex-shrink: 0;
+        }
+        .info-value {
+            color: #212529;
+        }
+        .btn-buy {
+            font-size: 1.1rem;
+            padding: 12px 32px;
+        }
+        .shop-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .shop-info a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .shop-info a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+        }
+        .description-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .sticky-buy {
+            position: sticky;
+            top: 20px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- Header -->
+<div th:replace="~{/Included/Header :: header}"></div>
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/products}" class="text-decoration-none">Sản phẩm</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${product.productName}">Product Name</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Left Column - Product Image -->
+        <div class="col-lg-5">
+            <div class="text-center">
+                <img th:src="${product.image != null ? product.image : 'https://via.placeholder.com/500x400?text=No+Image'}"
+                     th:alt="${product.productName}"
+                     class="product-image">
+            </div>
+        </div>
+
+        <!-- Right Column - Product Info -->
+        <div class="col-lg-7">
+            <div class="sticky-buy">
+                <!-- Product Name -->
+                <h1 class="product-name" th:text="${product.productName}">Product Name</h1>
+
+                <!-- Shop Info -->
+                <div class="shop-info" th:if="${product.shop != null}">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-store fa-2x me-3"></i>
+                        <div>
+                            <div class="small opacity-75">Được bán bởi</div>
+                            <a th:href="@{/customer/shop/{id}(id=${product.shop.id})}"
+                               class="h5 mb-0"
+                               th:text="${product.shop.shopName}">
+                                Shop Name
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price -->
+                <div class="product-price mb-3">
+                    <span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">0</span>₫
+                </div>
+
+                <!-- Stock Status -->
+                <div class="mb-4">
+                    <span th:if="${product.availableStock > 10}"
+                          class="badge bg-success stock-badge">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Còn hàng (<span th:text="${product.availableStock}">0</span> sản phẩm)
+                    </span>
+                    <span th:if="${product.availableStock > 0 and product.availableStock <= 10}"
+                          class="badge bg-warning stock-badge">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Sắp hết hàng (còn <span th:text="${product.availableStock}">0</span>)
+                    </span>
+                    <span th:if="${product.availableStock == 0}"
+                          class="badge bg-danger stock-badge">
+                        <i class="fas fa-times-circle me-1"></i>
+                        Hết hàng
+                    </span>
+                </div>
+
+                <!-- Short Description -->
+                <div class="info-card" th:if="${product.description != null and !#strings.isEmpty(product.description)}">
+                    <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Mô tả ngắn</h5>
+                    <p class="mb-0" th:text="${product.description}">Product description</p>
+                </div>
+
+                <!-- Product Info -->
+                <div class="info-card">
+                    <h5 class="mb-3"><i class="fas fa-list text-primary me-2"></i>Thông tin sản phẩm</h5>
+
+                    <div class="info-row">
+                        <div class="info-label">Mã sản phẩm:</div>
+                        <div class="info-value" th:text="'#' + ${product.id}">ID</div>
+                    </div>
+
+                    <div class="info-row" th:if="${product.productType != null}">
+                        <div class="info-label">Loại sản phẩm:</div>
+                        <div class="info-value" th:text="${product.productType.displayName}">Type</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">Trạng thái:</div>
+                        <div class="info-value">
+                            <span class="badge"
+                                  th:classappend="${product.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                                  th:text="${product.status.name() == 'ACTIVE' ? 'Đang bán' : 'Không khả dụng'}">
+                                Status
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">Kho còn:</div>
+                        <div class="info-value fw-bold" th:text="${product.availableStock} + ' sản phẩm'">0</div>
+                    </div>
+                </div>
+
+                <!-- Buy Button -->
+                <div class="d-grid gap-2 mb-3">
+                    <button class="btn btn-danger btn-buy"
+                            th:disabled="${product.availableStock == 0 or product.status.name() != 'ACTIVE'}"
+                            onclick="alert('Chức năng mua hàng đang được phát triển!')">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        <span th:if="${product.availableStock > 0 and product.status.name() == 'ACTIVE'}">Mua ngay</span>
+                        <span th:if="${product.availableStock == 0}">Hết hàng</span>
+                        <span th:if="${product.availableStock > 0 and product.status.name() != 'ACTIVE'}">Không khả dụng</span>
+                    </button>
+                </div>
+
+                <!-- Additional Actions -->
+                <div class="row g-2">
+                    <div class="col-6">
+                        <button class="btn btn-outline-primary w-100" onclick="alert('Chức năng thêm vào giỏ hàng đang được phát triển!')">
+                            <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-secondary w-100" onclick="alert('Chức năng yêu thích đang được phát triển!')">
+                            <i class="far fa-heart me-2"></i>Yêu thích
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Share Buttons -->
+                <div class="mt-3 text-center">
+                    <small class="text-muted me-2">Chia sẻ:</small>
+                    <a href="#" class="btn btn-sm btn-outline-primary me-1"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="btn btn-sm btn-outline-secondary"><i class="fas fa-link"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Description Section -->
+    <div class="row mt-5" th:if="${product.detailedDescription != null and !#strings.isEmpty(product.detailedDescription)}">
+        <div class="col-12">
+            <div class="description-section">
+                <h3 class="mb-4">
+                    <i class="fas fa-file-alt text-primary me-2"></i>Mô tả chi tiết
+                </h3>
+                <div th:utext="${product.detailedDescription}">
+                    Detailed description here...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products (Optional - can be implemented later) -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="description-section">
+                <h3 class="mb-4">
+                    <i class="fas fa-boxes text-primary me-2"></i>Sản phẩm liên quan
+                </h3>
+                <p class="text-muted text-center py-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Chức năng hiển thị sản phẩm liên quan đang được phát triển
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Products Button -->
+    <div class="row mt-4 mb-5">
+        <div class="col-12 text-center">
+            <a th:href="@{/products}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách sản phẩm
+            </a>
+            <a th:href="@{/customer/shop/{id}(id=${product.shop.id})}"
+               th:if="${product.shop != null}"
+               class="btn btn-outline-primary btn-lg ms-2">
+                <i class="fas fa-store me-2"></i>Xem thêm sản phẩm của shop
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div th:replace="~{/Included/Footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
