@@ -38,7 +38,12 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size,
             Model model
     ) {
+        if (page < 0) {
+            model.addAttribute("errorMessage", "Page number can not be negative.");
+            page = 0;
+        }
         Boolean delete = deleted.isEmpty() ? null : deleted.equals("true");
+
         Page<User> userpage = userService.findByFilter(
                 username,
                 email,
@@ -52,11 +57,6 @@ public class UserController {
                 role,
                 page,
                 size);
-
-        if (page < 0) {
-            model.addAttribute("errorMessage", "Page number can not be negative.");
-            page = 0;
-        }
 
         model.addAttribute("users", userpage);
         model.addAttribute("currentPage", userpage.getNumber());

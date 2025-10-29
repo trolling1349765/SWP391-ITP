@@ -18,8 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -263,7 +261,7 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             user.setIsDeleted(true);
             user.setDeleteBy(username);
-            user.setUpdateBy(LocalDate.now().toString());
+            user.setUpdateAt(LocalDate.now());
             userRepository.save(user);
         }
     }

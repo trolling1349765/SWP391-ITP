@@ -44,17 +44,20 @@
                    and session.user != null
                    and session.user.role.name.equalsIgnoreCase('ADMIN')
                    }">
-                    <a th:href="@{'/shop/activate/' + ${shop.id}}" class="btn btn-success px-4">
+                    <a th:href="@{'/admin/registers/activate/' + ${shop.id}}" class="btn btn-success px-4">
                         Active
                     </a>
                     <a th:href="@{/shop/registers}" class="btn btn-primary px-4">Back</a>
-                    <a th:href="@{'/shop/delete/' + ${shop.id}}" class="btn btn-primary px-4">Delete</a>
+                    <form th:action="@{/admin/registers/delete/{id}(id=${shop.id})}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa dòng này?');">
+                                        <input type="hidden" name="_method" value="delete">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
                 </span>
                 <!-- ✅ Ngược lại → hiện Edit + View Store -->
-                <span th:unless="${!shop.isDeleted
-                   and shop.status.equalsIgnoreCase('INACTIVE')
+                <span th:if="${!shop.isDeleted
+                   and shop.status.equalsIgnoreCase('ACTIVE')
                    and session.user != null
-                   and session.user.role.name.equalsIgnoreCase('ADMIN')
+                   and session.user.role.name.equalsIgnoreCase('SELLER')
                    }">
 
                     <a href="#" class="btn btn-primary px-4">Edit</a>
@@ -154,7 +157,7 @@
         <div class="card-body row row-cols-1 row-cols-md-4 g-4">
             <div th:each="product : ${shop.products}" class="col">
                 <div class="card h-100 text-center border-0 shadow-sm">
-                    <img th:src="${product.img}" class="card-img-top" alt="Product image">
+                    <img th:src="" class="card-img-top" alt="Product image">
                     <div class="card-body">
                         <h5 class="card-title" th:text="${product.productName}">Product Name</h5>
                         <p class="text-muted mb-1" th:text="${product.price}">Price</p>
