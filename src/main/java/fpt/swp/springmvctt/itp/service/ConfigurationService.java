@@ -13,4 +13,6 @@ public interface ConfigurationService {
     Configuration findById(Long id);
 
     void update(Long id, String configKey, String configValue);
+
+    void reborn(Long id);
 }

@@ -46,6 +46,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
         configurationRepository.findById(id).ifPresent((configuration) ->{
+            if (configuration.getIsDeleted()) return;
             configuration.setDeleteBy(user.getUsername());
             configuration.setUpdateAt(LocalDate.now());
             configuration.setIsDeleted(true);
@@ -65,6 +66,17 @@ public class ConfigurationServiceImpl implements ConfigurationService {
            configuration.setConfigValue(configValue);
            configuration.setUpdateAt(LocalDate.now());
            configurationRepository.save(configuration);
+        });
+    }
+
+    @Override
+    public void reborn(Long id) {
+        configurationRepository.findById(id).ifPresent((configuration) ->{
+            if (!configuration.getIsDeleted()) return;
+            configuration.setIsDeleted(false);
+            configuration.setUpdateAt(LocalDate.now());
+            configuration.setDeleteBy(null);
+            configurationRepository.save(configuration);
         });
     }
 

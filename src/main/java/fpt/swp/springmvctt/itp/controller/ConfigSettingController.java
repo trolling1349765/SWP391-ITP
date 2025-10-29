@@ -66,4 +66,12 @@ public class ConfigSettingController {
         configurationService.update(id, configKey, configValue);
         return "redirect:/admin/configs";
     }
+
+    @PutMapping("/configs/reborn/{id}")
+    public String rebornConfig(
+            @PathVariable Long id
+    ) {
+        configurationService.reborn(id);
+        return "redirect:/admin/configs";
+    }
 }
