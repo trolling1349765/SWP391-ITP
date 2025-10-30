@@ -43,7 +43,7 @@ public class Product extends BaseEntity {
     private Integer availableStock = 0;              // tổng tồn
 
     @Column(name="image", length=255)
-    private String image;                             // /assets/img/xxx
+    private String image;                             // /assets/img/xxx\\
 
     // === Relations ===
     @ManyToOne(fetch = FetchType.LAZY)
