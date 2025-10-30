@@ -81,6 +81,12 @@
         <div id="shopNav" class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
+                    <a th:href="@{/}" class="nav-link text-white-50 fw-semibold"
+                       style="transition:all .2s;">
+                       <i class="fas fa-arrow-left me-1"></i> Về trang chủ
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a th:href="@{/shop/dashboard}" class="nav-link text-white-50 fw-semibold"
                        th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/dashboard')}? ' active text-white'"
                        style="transition:all .2s;">
@@ -101,22 +107,48 @@
                        <i class="fas fa-warehouse me-1"></i> Kho hàng
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a th:href="@{/shop/profile}" class="nav-link text-white-50 fw-semibold"
+                       th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/profile')}? ' active text-white'"
+                       style="transition:all .2s;">
+                       <i class="fas fa-store me-1"></i> Hồ sơ Shop
+                    </a>
+                </li>
             </ul>
             
             <div class="d-flex align-items-center gap-3 text-white-50">
                 <div class="d-none d-lg-flex align-items-center gap-2">
                     <i class="fas fa-store"></i>
-                    <small class="fw-semibold">Shop #1</small>
+                    <small class="fw-semibold" th:text="${shop != null ? shop.shopName : 'Shop'}">Shop</small>
                 </div>
                 <div class="dropdown">
-                    <a class="btn btn-sm btn-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle"></i> Admin
+                    <a class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                        <img th:if="${shop != null && shop.imageUrl != null && shop.imageUrl != ''}" 
+                             th:src="${'/itp' + shop.imageUrl}" 
+                             alt="Shop Logo" 
+                             class="rounded-circle"
+                             style="width: 28px; height: 28px; object-fit: cover;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                        <i th:if="${shop == null || shop.imageUrl == null || shop.imageUrl == ''}" class="fas fa-user-circle"></i>
+                        <span th:text="${shop != null ? shop.shopName : 'Admin'}">Admin</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Thông tin</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Cài đặt</a></li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/shop/profile}">
+                                <i class="fas fa-user me-2"></i>Thông tin Shop
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/shop/profile}">
+                                <i class="fas fa-cog me-2"></i>Cài đặt
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                        <li>
+                            <a class="dropdown-item text-danger" th:href="@{/logout}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
