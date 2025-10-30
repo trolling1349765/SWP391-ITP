@@ -8,6 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @Controller
 @RequestMapping("/admin")
 public class ConfigSettingController {
@@ -19,14 +21,30 @@ public class ConfigSettingController {
     public String showConfigs(
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "") String configKey,
+            @RequestParam(required = false, defaultValue = "")LocalDate toDate,
+            @RequestParam(required = false, defaultValue = "")LocalDate fromDate,
+            @RequestParam(required = false, defaultValue = "") String deleted,
             Model model
     ) {
-        Page<Configuration> configs = configurationService.findAll(page, size);
+        if (page < 0) {
+            model.addAttribute("errorMessage", "Page number can not be negative.");
+            page = 0;
+        }
+        Boolean delete = deleted.isEmpty() ? null : deleted.equals("true");
+
+        Page<Configuration> configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
 
         model.addAttribute("configs", configs);
         model.addAttribute("currentPage", configs.getNumber());
         model.addAttribute("totalItems", configs.getTotalElements());
         model.addAttribute("totalPages", configs.getTotalPages());
+
+
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("configKey", configKey);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("deleted", deleted);
         return "admin/configs";
     }
 
