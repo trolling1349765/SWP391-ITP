@@ -59,22 +59,19 @@ public class    ShopController {
     private final ShopRepository shopRepository;
     private final StorageService storageService;
 
-    /**
-     * Helper: Lấy shopId từ session user
-     * Tìm shop qua user_id để tránh LazyInitializationException
-     */
+
     private Long getShopIdFromSession(HttpSession session) {
         User sessionUser = (User) session.getAttribute("user");
         if (sessionUser == null) {
             throw new IllegalStateException("User chưa đăng nhập!");
         }
-
+        
         // Tìm shop theo user_id (tránh lazy loading issue)
         Shop shop = shopRepository.findByUserId(sessionUser.getId())
-                .orElseThrow(() -> new IllegalStateException(
-                        "Tài khoản của bạn chưa có shop. Vui lòng đăng ký shop trước!"
-                ));
-
+            .orElseThrow(() -> new IllegalStateException(
+                "Tài khoản của bạn chưa có shop. Vui lòng đăng ký shop trước!"
+            ));
+        
         return shop.getId();
     }
 

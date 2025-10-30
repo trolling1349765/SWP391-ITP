@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AdminController {
 
-    // 🧭 Admin Dashboard chính
+    //  Admin Dashboard chính
     @GetMapping("/admin/dashboard")
     public String adminDashboard() {
         // → src/main/resources/templates/admin/AdminDashboard.html
