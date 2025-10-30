@@ -30,19 +30,14 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3">
-                        <label class="form-label">Product Type:</label>
-                        <select class="form-select" id="productTypeFilter" onchange="filterInventory()">
-                            <option value="">All Types</option>
-                            <option value="VIETTEL">📱 Thẻ Viettel</option>
-                            <option value="MOBIFONE">📱 Thẻ Mobifone</option>
-                            <option value="VINAPHONE">📱 Thẻ Vinaphone</option>
-                            <option value="VIETTEL_DATA">📶 Gói data Viettel</option>
-                            <option value="MOBIFONE_DATA">📶 Gói data Mobifone</option>
-                            <option value="VINAPHONE_DATA">📶 Gói data Vinaphone</option>
-                            <option value="EMAIL">💳 Tài khoản Email</option>
-                            <option value="GIFT">🎁 Thẻ quà tặng</option>
-                            <option value="SOFTWARE">🔑 Key phần mềm</option>
-                            <option value="OTHER">📦 Khác</option>
+                        <label class="form-label">Category:</label>
+                        <select class="form-select" id="categoryFilter" onchange="filterInventory()">
+                            <option value="">All Categories</option>
+                            <option th:each="cat : ${allCategories}" 
+                                    th:value="${cat.id}" 
+                                    th:text="${cat.categoryName}">
+                                Category Name
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -75,9 +70,6 @@
                     <div class="col-12">
                         <button class="btn btn-secondary" onclick="clearFilters()">
                             <i class="fas fa-times"></i> Clear Filters
-                        </button>
-                        <button class="btn btn-primary" onclick="exportFilteredData()">
-                            <i class="fas fa-download"></i> Export Filtered
                         </button>
                     </div>
                 </div>
@@ -134,54 +126,40 @@
                 <table class="table table-striped align-middle mb-0">
                     <thead>
                     <tr>
-                        <th width="60">STT</th>
-                        <th>ID</th>
+                        <th width="60" class="text-center">STT</th>
                         <th>Tên sản phẩm</th>
                         <th>Giá</th>
-                        <th>Tồn kho</th>
-                        <th>Trạng thái</th>
-                        <th class="text-nowrap">Thao tác</th>
+                        <th class="text-center">Tồn kho</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="p, iterStat : ${products}" 
-                        th:data-product-type="${p.productType.name()}"
+                    <tr th:each="p, iterStat : ${products}"
+                        th:data-category-id="${p.categoryId}"
                         th:data-face-value="${p.price.intValue()}"
                         th:data-stock="${stockMap[p.id]}"
                         th:data-product-name="${p.productName.toLowerCase()}">
-                        <td th:text="${iterStat.index + 1}">1</td>
-                        <td th:text="${p.id}">1</td>
+                        <td class="text-center" th:text="${iterStat.index + 1}">1</td>
                         <td>
                             <strong th:text="${p.productName}">Tên</strong>
                             <br>
                             <small class="text-muted" th:text="${p.productType.displayName}">Product Type</small>
                         </td>
                         <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0</td>
-                        <td>
-                            <!-- Total stock with color coding -->
-                            <div class="fw-bold">
-                                <span th:if="${stockMap[p.id] > 10}" class="badge text-bg-success" th:text="${stockMap[p.id]}">100</span>
-                                <span th:if="${stockMap[p.id] > 0 && stockMap[p.id] <= 10}" class="badge text-bg-warning" th:text="${stockMap[p.id]}">5</span>
-                                <span th:if="${stockMap[p.id] == 0}" class="badge text-bg-danger" th:text="${stockMap[p.id]}">0</span>
-                            </div>
-                            <!-- Stock by batches -->
-                            <div th:if="${batchMap[p.id] != null && !batchMap[p.id].isEmpty()}" class="small text-muted mt-1">
-                                <div th:each="batch : ${batchMap[p.id]}" class="d-flex justify-content-between">
-                                    <span th:text="${#numbers.formatDecimal(batch.key, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
-                                    <span class="badge bg-light text-dark" th:text="${batch.value}">0</span>
-                                </div>
-                            </div>
-                            <div th:if="${batchMap[p.id] == null || batchMap[p.id].isEmpty()}" class="text-muted small">
-                                Chưa có serial
-                            </div>
+                        <td class="text-center">
+                            <!-- Total stock with color coding only -->
+                            <span th:if="${stockMap[p.id] > 10}" class="badge text-bg-success fs-6" th:text="${stockMap[p.id]}">100</span>
+                            <span th:if="${stockMap[p.id] > 0 && stockMap[p.id] <= 10}" class="badge text-bg-warning fs-6" th:text="${stockMap[p.id]}">5</span>
+                            <span th:if="${stockMap[p.id] == 0}" class="badge text-bg-danger fs-6" th:text="${stockMap[p.id]}">0</span>
                         </td>
-                        <td>
+                        <td class="text-center">
                             <span class="badge" 
                                   th:classappend="${p.status.name()=='ACTIVE'} ? 'text-bg-success' : 
                                                  (${p.status.name()=='HIDDEN'} ? 'text-bg-secondary' : 'text-bg-danger')"
                                   th:text="${p.status}">HIDDEN</span>
                         </td>
-                        <td class="text-nowrap">
+                        <td class="text-center text-nowrap">
                             <div class="btn-group" role="group">
                                 <a th:href="@{|/shop/products/${p.id}|}" class="btn btn-sm btn-outline-info">Chi tiết</a>
                                 <a th:href="@{|/shop/updateProduct/${p.id}|}" class="btn btn-sm btn-outline-primary">Sửa</a>
@@ -192,6 +170,7 @@
                     </tbody>
                 </table>
             </div>
+            <!-- Pagination will be inserted here by JavaScript -->
         </div>
 
     </div>
@@ -308,7 +287,7 @@
     
     // Filtering Functions
     function filterInventory() {
-        const productTypeFilter = document.getElementById('productTypeFilter').value;
+        const categoryFilter = document.getElementById('categoryFilter').value;
         const faceValueFilter = document.getElementById('faceValueFilter').value;
         const stockStatusFilter = document.getElementById('stockStatusFilter').value;
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
@@ -317,15 +296,15 @@
         let visibleCount = 0;
         
         rows.forEach(row => {
-            const productType = row.getAttribute('data-product-type');
+            const categoryId = row.getAttribute('data-category-id');
             const faceValue = row.getAttribute('data-face-value');
             const stock = parseInt(row.getAttribute('data-stock'));
             const productName = row.getAttribute('data-product-name');
             
             let showRow = true;
             
-            // Filter by product type
-            if (productTypeFilter && productType !== productTypeFilter) {
+            // Filter by category
+            if (categoryFilter && categoryId !== categoryFilter) {
                 showRow = false;
             }
             
@@ -358,12 +337,17 @@
             }
         });
         
-        // Update counter
+        // Update counter and refresh pagination
         updateVisibleCount(visibleCount, rows.length);
+        
+        // Refresh pagination after filtering
+        if (typeof refreshPagination === 'function') {
+            setTimeout(() => refreshPagination(), 100);
+        }
     }
     
     function clearFilters() {
-        document.getElementById('productTypeFilter').value = '';
+        document.getElementById('categoryFilter').value = '';
         document.getElementById('faceValueFilter').value = '';
         document.getElementById('stockStatusFilter').value = '';
         document.getElementById('searchInput').value = '';
@@ -374,6 +358,11 @@
         });
         
         updateVisibleCount(rows.length, rows.length);
+        
+        // Refresh pagination after clearing filters
+        if (typeof refreshPagination === 'function') {
+            setTimeout(() => refreshPagination(), 100);
+        }
     }
     
     function updateVisibleCount(visible, total) {
@@ -394,32 +383,6 @@
         }
     }
     
-    function exportFilteredData() {
-        const visibleRows = document.querySelectorAll('tbody tr[style=""]');
-        let csvContent = "ID,Product Name,Product Type,Price,Stock,Status\n";
-        
-        visibleRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 6) {
-                const id = cells[1].textContent;
-                const name = cells[2].textContent.replace(/\n/g, ' ').trim();
-                const price = cells[3].textContent;
-                const stock = cells[4].textContent;
-                const status = cells[5].textContent;
-                
-                csvContent += `"${id}","${name}","${price}","${stock}","${status}"\n`;
-            }
-        });
-        
-        // Download CSV
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'filtered_inventory_' + new Date().toISOString().split('T')[0] + '.csv';
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
     
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -429,6 +392,7 @@
 </script>
 
 <script th:src="@{/assets/js/shop/shop-common.js}"></script>
+<script th:src="@{/assets/js/inventory-pagination.js}"></script>
 
 </body>
 </html>
