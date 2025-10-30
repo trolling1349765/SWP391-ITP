@@ -27,7 +27,7 @@ public class ProductRequest {
     private String status;
 
     @Size(max = 500, message = "Image URL too long")
-    private String img;
+    private String image;
 
     @NotNull(message = "Category is required")
     private Long categoryId;
