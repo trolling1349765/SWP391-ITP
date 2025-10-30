@@ -163,7 +163,7 @@
                             <div class="btn-group" role="group">
                                 <a th:href="@{|/shop/products/${p.id}|}" class="btn btn-sm btn-outline-info">Chi tiết</a>
                                 <a th:href="@{|/shop/updateProduct/${p.id}|}" class="btn btn-sm btn-outline-primary">Sửa</a>
-                                <button class="btn btn-sm btn-outline-danger" th:onclick="'deleteProduct(' + ${p.id} + ')'">Xóa</button>
+                                <button class="btn btn-sm btn-outline-danger delete-product-btn" th:data-product-id="${p.id}">Xóa</button>
                             </div>
                         </td>
                     </tr>
@@ -180,48 +180,48 @@
 
 <script>
     function deleteProduct(productId) {
-        console.log('deleteProduct called with ID:', productId);
+        if (typeof bootstrap === 'undefined') {
+            alert('Lỗi: Bootstrap chưa được tải. Vui lòng reload trang.');
+            return;
+        }
         
-        //
         const modalHtml = `
-            <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+            <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteConfirmModalLabel">Xác nhận xóa sản phẩm</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Xác nhận xóa sản phẩm</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
                         <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa sản phẩm #${productId} không?</p>
-                            <p class="text-danger"><strong>Hành động này không thể hoàn tác!</strong></p>
-                    </div>
+                            <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>#${productId}</strong> không?</p>
+                            <p class="text-danger mb-0"><strong>Hành động này không thể hoàn tác!</strong></p>
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                             <button type="button" class="btn btn-danger" onclick="confirmDelete(${productId})">Xóa</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
         `;
         
-        // Xóa modal cũ nếu có
         const existingModal = document.getElementById('deleteConfirmModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
+        if (existingModal) existingModal.remove();
         
-        // Thêm modal mới vào body
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         
-        // Hiển thị modal
         const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
         modal.show();
     }
     
     function confirmDelete(productId) {
-        console.log('confirmDelete called with ID:', productId);
+        const modalElement = document.getElementById('deleteConfirmModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
         
-        // Gửi AJAX request để xóa sản phẩm
+        showAlert('info', 'Đang xóa sản phẩm...');
+        
         fetch(`/itp/shop/products/${productId}`, {
             method: 'DELETE',
             headers: {
@@ -230,59 +230,39 @@
             }
         })
         .then(response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-            
-            if (response.ok) {
-                return response.json().catch(() => ({})); // Parse JSON if possible, otherwise empty object
+            if (response.ok || response.status === 200) {
+                return response.json().catch(() => ({ success: true }));
             } else {
-                return response.text().then(text => {
-                    console.log('Error response text:', text);
-                    throw new Error(`HTTP ${response.status}: ${text}`);
-                });
+                throw new Error(`Server trả về lỗi ${response.status}`);
             }
         })
-        .then(data => {
-            console.log('Response data:', data);
-            
-            // Đóng modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
-            modal.hide();
-            
-            // Hiển thị thông báo thành công
+        .then(() => {
             showAlert('success', 'Đã xóa sản phẩm thành công!');
-            
-            // Reload trang sau 1 giây
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
+            setTimeout(() => location.reload(), 1000);
         })
         .catch(error => {
-            console.error('Full error:', error);
-            showAlert('danger', 'Có lỗi xảy ra: ' + error.message);
+            showAlert('danger', 'Lỗi: ' + error.message);
         });
     }
     
     function showAlert(type, message) {
+        const existingAlerts = document.querySelectorAll('.alert.custom-alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
         const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            <div class="alert alert-${type} alert-dismissible fade show custom-alert position-fixed top-0 start-50 translate-middle-x mt-3" 
+                 role="alert" style="z-index: 9999; min-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         `;
         
-        // Thêm alert vào đầu container
-        const container = document.querySelector('.col-md-9.col-lg-10');
-        container.insertAdjacentHTML('afterbegin', alertHtml);
+        document.body.insertAdjacentHTML('beforeend', alertHtml);
         
-        // Tự động ẩn alert sau 5 giây
         setTimeout(() => {
-            const alert = container.querySelector('.alert');
-            if (alert) {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            }
-        }, 5000);
+            const alert = document.querySelector('.alert.custom-alert');
+            if (alert) alert.remove();
+        }, 3000);
     }
     
     // Filtering Functions
@@ -340,10 +320,12 @@
         // Update counter and refresh pagination
         updateVisibleCount(visibleCount, rows.length);
         
-        // Refresh pagination after filtering
-        if (typeof refreshPagination === 'function') {
-            setTimeout(() => refreshPagination(), 100);
-        }
+        // Refresh pagination after filtering (wait for display updates)
+        setTimeout(() => {
+            if (typeof refreshPagination === 'function') {
+                refreshPagination();
+            }
+        }, 50);
     }
     
     function clearFilters() {
@@ -360,9 +342,11 @@
         updateVisibleCount(rows.length, rows.length);
         
         // Refresh pagination after clearing filters
-        if (typeof refreshPagination === 'function') {
-            setTimeout(() => refreshPagination(), 100);
-        }
+        setTimeout(() => {
+            if (typeof refreshPagination === 'function') {
+                refreshPagination();
+            }
+        }, 50);
     }
     
     function updateVisibleCount(visible, total) {
@@ -384,9 +368,26 @@
     }
     
     
+    // Function to attach delete button listeners
+    function attachDeleteListeners() {
+        document.querySelectorAll('.delete-product-btn').forEach(btn => {
+            btn.removeEventListener('click', handleDelete); // Remove old listener
+            btn.addEventListener('click', handleDelete);
+        });
+    }
+    
+    function handleDelete(event) {
+        const productId = this.getAttribute('data-product-id');
+        deleteProduct(productId);
+    }
+    
+    // Make it global so pagination can call it
+    window.attachDeleteListeners = attachDeleteListeners;
+    
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         updateVisibleCount(document.querySelectorAll('tbody tr').length, document.querySelectorAll('tbody tr').length);
+        attachDeleteListeners();
     });
     
 </script>
