@@ -108,6 +108,10 @@
                                     <a th:href="@{'/admin/users/' + ${user.id}}" class="btn btn-success btn-sm">
                                         <i class="bi bi-plus-circle"></i> Details
                                     </a>
+                                    <form th:action="@{/admin/users/delete/{id}(id=${user.id})}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa dòng này?');">
+                                        <input type="hidden" name="_method" value="delete">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(users.content)}">
@@ -122,7 +126,6 @@
             <div class="mt-3">
                 <nav th:if="${totalPages > 1}" aria-label="Page navigation">
                     <ul class="pagination pagination-sm justify-content-center gap-1">
-
                         <!-- Previous -->
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                             <form th:action="@{/admin/users}" method="get">
@@ -159,7 +162,10 @@
                                 <input type="hidden" name="toUpdateDate" th:value="${toUpdateDate}">
                                 <input type="hidden" name="deleted" th:value="${deleted}">
                                 <input type="hidden" name="deleteBy" th:value="${deleteBy}">
-                                <button type="submit" class="page-link border-0 bg-transparent" th:text="${i + 1}"></button>
+                                <button type="submit"
+                                        class="page-link border-0 bg-transparent"
+                                        th:text="${i + 1}">
+                                </button>
                             </form>
                         </li>
 
@@ -181,7 +187,6 @@
                                 <button type="submit" class="page-link border-0 bg-transparent">&raquo;</button>
                             </form>
                         </li>
-
                     </ul>
                 </nav>
             </div>

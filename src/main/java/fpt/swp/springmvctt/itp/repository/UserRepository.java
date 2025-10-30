@@ -31,7 +31,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
       AND (:fromUpdateDate IS NULL OR u.updateAt >= :fromUpdateDate)
       AND (:toUpdateDate IS NULL OR u.updateAt <= :toUpdateDate)
       AND (:isDelete IS NULL OR u.isDeleted = :isDelete)
-      AND (:deleteBy IS NULL OR u.deleteBy = :deleteBy)
+      AND (:deleteBy IS NULL OR u.deleteBy LIKE CONCAT('%', :deleteBy,'%'))
       AND (:email IS NULL OR u.email LIKE CONCAT('%', :email, '%'))
       AND (:role IS NULL OR u.role.name = :role)
       ORDER BY u.id DESC
