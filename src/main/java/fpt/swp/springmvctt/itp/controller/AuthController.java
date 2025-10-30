@@ -70,7 +70,7 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("success", "Đăng nhập thành công!");
             session.setAttribute("user", user.get());
             
-            // ✅ FIX: Check null role trước khi gọi getName()
+            //  FIX: Check null role trước khi gọi getName()
             String roleName = (user.get().getRole() != null) ? user.get().getRole().getName() : "CUSTOMER";
             session.setAttribute("role", roleName);
 
