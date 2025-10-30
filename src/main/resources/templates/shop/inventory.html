@@ -246,22 +246,39 @@
     }
     
     function showAlert(type, message) {
+        // Remove existing alerts
         const existingAlerts = document.querySelectorAll('.alert.custom-alert');
         existingAlerts.forEach(alert => alert.remove());
         
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show custom-alert position-fixed top-0 start-50 translate-middle-x mt-3" 
-                 role="alert" style="z-index: 9999; min-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+        // Create alert element
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            min-width: 400px;
+            max-width: 600px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 16px;
+            font-weight: 500;
         `;
         
-        document.body.insertAdjacentHTML('beforeend', alertHtml);
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
         
+        document.body.appendChild(alertDiv);
+        
+        // Auto remove after 3 seconds
         setTimeout(() => {
-            const alert = document.querySelector('.alert.custom-alert');
-            if (alert) alert.remove();
+            if (alertDiv && alertDiv.parentNode) {
+                alertDiv.remove();
+            }
         }, 3000);
     }
     
@@ -392,7 +409,6 @@
     
 </script>
 
-<script th:src="@{/assets/js/shop/shop-common.js}"></script>
 <script th:src="@{/assets/js/inventory-pagination.js}"></script>
 
 </body>
