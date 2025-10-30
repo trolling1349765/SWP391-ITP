@@ -86,7 +86,7 @@ public class ShopAdminController {
             @RequestParam(required = false, defaultValue = "") String deleteBy,
             @RequestParam(required = false, defaultValue = "") String status,
             Model model
-    ){
+    ) {
         if (page < 0) {
             model.addAttribute("errorMessage", "Page number can not be negative.");
             page = 0;
@@ -106,6 +106,23 @@ public class ShopAdminController {
                 page,
                 size
         );
+
+        if (page > shops.getTotalPages()) {
+            page = shops.getTotalPages() - 1;
+            shops = shopService.findByFilter(
+                    shopName,
+                    createBy,
+                    fromDate,
+                    toDate,
+                    fromUpdateDate,
+                    toUpdateDate,
+                    delete,
+                    deleteBy,
+                    status,
+                    page,
+                    size
+            );
+        }
 
         model.addAttribute("currentPage", shops.getNumber());
         model.addAttribute("totalPages", shops.getTotalPages());

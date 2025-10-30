@@ -57,6 +57,22 @@ public class UserController {
                 role,
                 page,
                 size);
+        if (page > userpage.getTotalPages()) {
+            page = userpage.getTotalPages() - 1;
+            userpage = userService.findByFilter(
+                    username,
+                    email,
+                    fromDate,
+                    toDate,
+                    fromUpdateDate,
+                    toUpdateDate,
+                    delete,
+                    deleteBy,
+                    status,
+                    role,
+                    page,
+                    size);
+        }
 
         model.addAttribute("users", userpage);
         model.addAttribute("currentPage", userpage.getNumber());
