@@ -303,6 +303,10 @@ public class    ShopController {
         Long shopId = getShopIdFromSession(session);
         List<Product> products = productService.listByShop(shopId);
 
+        // Load categories for filter
+        List<Category> allCategories = categoryRepository.findAll();
+        model.addAttribute("allCategories", allCategories);
+
         // Sắp xếp theo ID tăng dần (từ bé lên lớn)
         products.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
 
