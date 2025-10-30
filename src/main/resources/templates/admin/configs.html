@@ -41,6 +41,36 @@
                             </tr>
                             </thead>
                             <tbody>
+                            <tr class="table-secondary">
+                                <form th:action="@{/admin/configs}" method="get">
+                                    <td></td>
+                                    <td><input type="text" name="configKey" th:value="${configKey}"
+                                               placeholder="Search Key" class="form-control form-control-sm"></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-1">
+                                            <div><input type="date" name="fromDate" th:value="${fromDate}"
+                                                        class="form-control form-control-sm"></div>
+                                            <div><input type="date" name="toDate" th:value="${toDate}"
+                                                        class="form-control form-control-sm"></div>
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                    <td>
+                                        <select class="form-select form-select-sm" name="deleted">
+                                            <option value="">All</option>
+                                            <option value="true" th:selected="${deleted == 'true'}">YES</option>
+                                            <option value="false" th:selected="${deleted == 'false'}">NO</option>
+                                        </select>
+                                    </td>
+                                    <td></td>
+                                    <td>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+                                        <button type="reset" class="btn btn-sm btn-outline-secondary">Clear</button>
+                                    </td>
+                                </form>
+                            </tr>
                             <tr th:each="config : ${configs.content}">
                                 <td th:text="${config.id}"></td>
                                 <td th:text="${config.configKey}"></td>
@@ -53,7 +83,7 @@
                                 <td>
                                     <span th:if="${!config.isDeleted}">
                                         <a th:href="@{/admin/configs/update/{id}(id=${config.id})}"
-                                            class="btn btn-primary" th:text="Update"></a>
+                                           class="btn btn-primary" th:text="Update"></a>
                                         <form
                                                 th:action="@{/admin/configs/delete/{id}(id=${config.id})}"
                                                 method="post"
@@ -86,7 +116,11 @@
                         <!-- Previous -->
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/admin/configs(page=${currentPage - 1})}">
+                               th:href="@{/admin/configs(page=${currentPage - 1},
+                               configKey=${configKey},
+                               toDate=${toDate},
+                               fromDate=${fromDate},
+                               delete=${deleted})}">
                                 Previous
                             </a>
                         </li>
@@ -97,14 +131,22 @@
                             th:classappend="${i == currentPage} ? 'active'">
                             <a class="page-link"
                                th:text="${i + 1}"
-                               th:href="@{/admin/configs(page=${i})}">
+                               th:href="@{/admin/configs(page=${i})},
+                               configKey=${configKey},
+                               toDate=${toDate},
+                               fromDate=${fromDate},
+                               delete=${deleted})}">
                             </a>
                         </li>
 
                         <!-- Next -->
                         <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/admin/configs(page=${currentPage + 1})}">
+                               th:href="@{/admin/configs(page=${currentPage + 1})},
+                               configKey=${configKey},
+                               toDate=${toDate},
+                               fromDate=${fromDate},
+                               delete=${deleted})}">
                                 Next
                             </a>
                         </li>
