@@ -1,7 +1,9 @@
 package fpt.swp.springmvctt.itp.service.impl;
 
 import fpt.swp.springmvctt.itp.entity.User;
+import fpt.swp.springmvctt.itp.entity.Role;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
+import fpt.swp.springmvctt.itp.repository.RoleRepository;
 import fpt.swp.springmvctt.itp.service.UserService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -20,6 +23,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private RoleRepository roleRepository;
 
 
     @Override
@@ -51,7 +57,7 @@ public class UserServiceImpl implements UserService {
     public User Login(String emailOrUsername, String password) {
         User user = userRepository.findByEmail(emailOrUsername);
         if (user == null) {
-            user =  userRepository.findByUsername(emailOrUsername);
+            user = userRepository.findByUsername(emailOrUsername).orElse(null);
         }
         if (user != null) {
             if (user.getPassword().equals(password)) {
@@ -117,7 +123,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsername(username).orElse(null);
     }
 
     @Override
@@ -141,9 +147,17 @@ public class UserServiceImpl implements UserService {
             user.setOauthProvider("google");
             user.setProvider("google");
             user.setStatus("ACTIVE");
-            user.setCreateAt(java.time.LocalDate.now());
+            user.setCreateAt(LocalDate.now());
             user.setCreateBy("oauth_google");
             user.setIsDeleted(false);
+            
+            // ✅ SET DEFAULT ROLE = CUSTOMER cho user OAuth
+            Role customerRole = roleRepository.findByName("CUSTOMER")
+                .orElseGet(() -> roleRepository.findByName("USER")
+                .orElse(null));
+            if (customerRole != null) {
+                user.setRole(customerRole);
+            }
 
             userRepository.save(user);
         } else {
@@ -226,7 +240,6 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(){}
     public static void main(String[] args) {
-        System.out.println(BCrypt.hashpw("admin123", BCrypt.gensalt()));
-        System.out.println(BCrypt.hashpw("123456..", BCrypt.gensalt()));
+        System.out.println(BCrypt.hashpw("123456", BCrypt.gensalt()));
     }
 }

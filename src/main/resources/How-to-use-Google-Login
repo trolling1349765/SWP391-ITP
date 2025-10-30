@@ -1,0 +1,11 @@
+# ====== DEVELOPMENT ENVIRONMENT CONFIGURATION ======
+# IMPORTANT: Copy this file to application-dev.properties and fill in your credentials
+# DO NOT commit application-dev.properties to Git!
+
+#=========================Google OAuth Configuration ======================
+google.clientSecret=your_google_client_secret_here
+google.clientId=your_google_client_id_here
+google.redirectUri=http://localhost:8080/itp/oauth2/callback/google
+
+#=====================================================================
+

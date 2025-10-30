@@ -9,7 +9,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 
+import java.util.Optional;
+
 public interface ShopRepository extends JpaRepository<Shop, Long> {
+    Optional<Shop> findByUserId(Long userId);
+    boolean existsByUserId(Long userId);
     Page<Shop> findByStatus(String status, Pageable pageable);
 
     @Query("""

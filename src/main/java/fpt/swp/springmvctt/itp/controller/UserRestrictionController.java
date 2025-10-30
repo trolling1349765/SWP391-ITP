@@ -62,14 +62,14 @@ public class UserRestrictionController {
         return "admin/restriction-detail";
     }
 
-    // ✅ Thêm mới (POST)
+    //  Thêm mới (POST)
     @PostMapping()
     public String create(@ModelAttribute("newRestriction") UserRestriction restriction) {
         userRestrictionService.save(restriction);
         return "redirect:/admin/restrictions";
     }
 
-    // ✅ Cập nhật (PUT)
+    //  Cập nhật (PUT)
     @PutMapping("/edit/{id}")
     public String update(
             @PathVariable Long id,

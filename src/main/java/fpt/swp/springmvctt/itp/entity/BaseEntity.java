@@ -1,5 +1,9 @@
 package fpt.swp.springmvctt.itp.entity;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
@@ -7,23 +11,28 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @MappedSuperclass
+@Getter @Setter
 public abstract class BaseEntity {
-    @Column(name = "create_by")
-    private String createBy;
-
-    @Column(name = "create_at" )
+    @Column(name="create_at")
     private LocalDate createAt;
-
-    @Column(name = "update_at")
+    @Column(name="update_at")
     private LocalDate updateAt;
-
-    @Column(name = "is_deleted")
+    @Column(name="is_deleted")
     private Boolean isDeleted;
-
-    @Column(name = "delete_by")
+    @Column(name="create_by")
+    private String createBy;
+    @Column(name="update_by")
+    private String updateBy;
+    @Column(name="delete_by")
     private String deleteBy;
+
+    @PrePersist protected void onCreate() {
+        if (createAt == null)
+            createAt = LocalDate.now();
+        if (isDeleted == null)
+            isDeleted = false;
+    }
+    @PreUpdate  protected void onUpdate() {
+        updateAt = LocalDate.now(); }
 }

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${product.productName}">Product Detail</title>
+    <style>
+        :root{--bg:#0b1220;--card:#0f172a;--line:#1f2937;--text:#e5e7eb;--muted:#9ca3af;--primary:#2563eb;}
+        body{background:var(--bg);color:var(--text);font:14px/1.5 ui-sans-serif,system-ui;margin:0}
+        .container{max-width:900px;margin:24px auto;padding:0 16px}
+        .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .btn{display:inline-block;padding:10px 16px;border-radius:10px;background:var(--primary);color:#fff;text-decoration:none;border:0;cursor:pointer}
+        .btn-secondary{background:#475569}
+        .grid{display:grid;grid-template-columns:1fr 2fr;gap:20px}
+        .img-preview{width:100%;max-width:400px;height:auto;border-radius:12px;border:1px solid var(--line)}
+        .info-row{display:grid;grid-template-columns:140px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+        .info-label{color:var(--muted);font-weight:500}
+        .badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600}
+        .badge-active{background:#064e3b;color:#86efac}
+        .badge-hidden{background:#1e293b;color:#94a3af}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2 style="margin:0">Chi tiết sản phẩm</h2>
+        <a class="btn btn-secondary" th:href="@{/shop/dashboard}">← Quay lại Dashboard</a>
+    </div>
+
+    <div class="card">
+        <div class="grid">
+            <!-- Ảnh sản phẩm -->
+            <div>
+                <img class="img-preview"
+                     th:src="${product.img != null && !#strings.isEmpty(product.img)} ?
+                             @{/assets/img/{f}(f=${product.img})} :
+                             @{/assets/img/products/default.jpg}"
+                     th:alt="${product.productName}">
+            </div>
+
+            <!-- Thông tin chi tiết -->
+            <div>
+                <h3 style="margin:0 0 16px" th:text="${product.productName}">Product Name</h3>
+
+                <div class="info-row">
+                    <div class="info-label">ID</div>
+                    <div th:text="${product.id}">1</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Giá</div>
+                    <div th:text="${product.price != null ? #numbers.formatDecimal(product.price,1,'COMMA',2,'POINT') + ' VND' : 'N/A'}">0 VND</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Tồn kho</div>
+                    <div th:text="${product.availableStock != null ? product.availableStock : 0}">0</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Category</div>
+                    <div th:text="${product.category != null ? product.category.categoryName : 'N/A'}">N/A</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Trạng thái</div>
+                    <div>
+                        <span class="badge"
+                              th:classappend="${product.status == 'ACTIVE'} ? 'badge-active' : 'badge-hidden'"
+                              th:text="${product.status}">ACTIVE</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Shop</div>
+                    <div th:text="${product.shop != null ? product.shop.shopName : 'N/A'}">N/A</div>
+                </div>
+
+                <div class="info-row" style="border-bottom:0">
+                    <div class="info-label">Mô tả</div>
+                    <div th:text="${product.description != null ? product.description : 'Chưa có mô tả'}">No description</div>
+                </div>
+
+                <!-- Actions -->
+                <div style="margin-top:20px;display:flex;gap:10px">
+                    <a class="btn" th:href="@{/shop/updateProduct/{id}(id=${product.id})}">Sửa sản phẩm</a>
+                    <a class="btn btn-secondary" th:href="@{/shop/inventory}">Quản lý kho</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

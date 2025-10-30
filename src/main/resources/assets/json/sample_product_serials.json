@@ -1,0 +1,46 @@
+{
+  "productId": 1,
+  "importDate": "2025-10-22T21:30:00",
+  "totalRows": 3,
+  "importedCount": 3,
+  "skippedCount": 0,
+  "serials": [
+    {
+      "serialCode": "VT001",
+      "secretCode": "SEC001",
+      "faceValue": 20000.0,
+      "information": "Thẻ Viettel 20k",
+      "status": "HIDDEN",
+      "importDate": "2025-10-22T21:30:00",
+      "isSold": false,
+      "soldDate": null,
+      "soldTo": null
+    },
+    {
+      "serialCode": "VT002",
+      "secretCode": "SEC002",
+      "faceValue": 20000.0,
+      "information": "Thẻ Viettel 20k",
+      "status": "HIDDEN",
+      "importDate": "2025-10-22T21:30:00",
+      "isSold": false,
+      "soldDate": null,
+      "soldTo": null
+    },
+    {
+      "serialCode": "VT003",
+      "secretCode": "SEC003",
+      "faceValue": 20000.0,
+      "information": "Thẻ Viettel 20k",
+      "status": "HIDDEN",
+      "importDate": "2025-10-22T21:30:00",
+      "isSold": false,
+      "soldDate": null,
+      "soldTo": null
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "duplicateSerials": [],
+  "invalidSerials": []
+}

@@ -3,6 +3,7 @@ import fpt.swp.springmvctt.itp.filter.AdminFilter;
 import fpt.swp.springmvctt.itp.filter.SellerFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -12,11 +13,16 @@ import java.util.Arrays;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
     @Override
-    //this funtion use for connect to assets folder
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/assets/**")
-                .addResourceLocations("classpath:/assets/");
+        registry.addResourceHandler("/assets/img/**")
+                .addResourceLocations("classpath:/assets/img/");
+
+        registry.addResourceHandler("/assets/ajax/**")
+                .addResourceLocations("classpath:/assets/ajax/");
+        registry.addResourceHandler("/assets/css/**")
+                .addResourceLocations("classpath:/assets/css/");
     }
 
     @Bean

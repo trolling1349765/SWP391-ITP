@@ -1,0 +1,185 @@
+/* Shop CRUD CSS - Basic CRUD operations styles */
+
+/* Form styles */
+.crud-form {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.crud-form .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.crud-form .form-control,
+.crud-form .form-select {
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.crud-form .form-control:focus,
+.crud-form .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+/* Table styles */
+.crud-table {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    overflow: hidden;
+}
+
+.crud-table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    padding: 1rem;
+}
+
+.crud-table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.crud-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Action buttons */
+.crud-actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.crud-actions .btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Status badges */
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-hidden {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.status-blocked {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Modal styles */
+.crud-modal .modal-content {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.crud-modal .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.crud-modal .modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+/* Alert styles */
+.crud-alert {
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.crud-alert-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-left: 4px solid #198754;
+}
+
+.crud-alert-danger {
+    background-color: #f8d7da;
+    color: #842029;
+    border-left: 4px solid #dc3545;
+}
+
+.crud-alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+.crud-alert-info {
+    background-color: #d1ecf1;
+    color: #055160;
+    border-left: 4px solid #17a2b8;
+}
+
+/* Loading states */
+.crud-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.crud-spinner {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .crud-form {
+        padding: 1rem;
+    }
+    
+    .crud-table thead th,
+    .crud-table tbody td {
+        padding: 0.5rem;
+    }
+    
+    .crud-actions {
+        flex-direction: column;
+    }
+    
+    .crud-actions .btn {
+        margin-bottom: 0.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .crud-form {
+        padding: 0.75rem;
+    }
+    
+    .crud-table {
+        font-size: 0.875rem;
+    }
+    
+    .crud-table thead th,
+    .crud-table tbody td {
+        padding: 0.375rem;
+    }
+}
