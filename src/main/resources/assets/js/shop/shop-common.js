@@ -291,7 +291,7 @@ function deleteProduct(productId) {
     }
     
     // Make delete request
-    fetch(`/shop/deleteProduct/${productId}`, {
+    fetch(`/itp/shop/products/${productId}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

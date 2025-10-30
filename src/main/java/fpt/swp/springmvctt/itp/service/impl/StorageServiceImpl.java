@@ -34,11 +34,11 @@ public class StorageServiceImpl implements StorageService {
             Path filePath = shopDir.resolve(filename).toAbsolutePath().normalize();
             file.transferTo(filePath.toFile());
 
-            System.out.println("✅ Image saved to: " + filePath);
-            System.out.println("✅ Return path: /assets/img/shop/" + filename);
+            System.out.println(" Image saved to: " + filePath);
+            System.out.println(" Return path: /assets/img/shop/" + filename);
             return "/assets/img/shop/" + filename;
         } catch (IOException e) {
-            System.err.println("❌ Error saving image: " + e.getMessage());
+            System.err.println(" Error saving image: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Cannot save file", e);
         }
