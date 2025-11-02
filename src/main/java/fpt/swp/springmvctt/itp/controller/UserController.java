@@ -57,7 +57,7 @@ public class UserController {
                 role,
                 page,
                 size);
-        if (page > userpage.getTotalPages()) {
+        if (page >= userpage.getTotalPages()) {
             page = userpage.getTotalPages() - 1;
             userpage = userService.findByFilter(
                     username,

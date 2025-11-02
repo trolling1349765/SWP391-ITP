@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,10 +22,13 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 @Controller
+@PropertySource("classpath:google.properties")
 public class GoogleOAuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(GoogleOAuthController.class);
-    private final UserService userService;
+
+    @Autowired
+    private UserService userService;
 
     @Value("${google.clientId}")
     private String clientId;
