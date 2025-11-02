@@ -34,6 +34,10 @@ public class ConfigSettingController {
         Boolean delete = deleted.isEmpty() ? null : deleted.equals("true");
 
         Page<Configuration> configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
+        if (page >= configs.getTotalPages()) {
+            page = configs.getTotalPages() - 1;
+            configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
+        }
 
         model.addAttribute("configs", configs);
         model.addAttribute("currentPage", configs.getNumber());

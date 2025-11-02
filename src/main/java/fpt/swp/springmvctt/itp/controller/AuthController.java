@@ -198,4 +198,11 @@ public class AuthController {
         redirectAttributes.addFlashAttribute("success", "Đăng xuất thành công!");
         return "redirect:/";
     }
+
+    //--------------------------Google Auth Con
+
+
+
+
+
 }

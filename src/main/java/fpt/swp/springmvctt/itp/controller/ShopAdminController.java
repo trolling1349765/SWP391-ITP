@@ -107,7 +107,7 @@ public class ShopAdminController {
                 size
         );
 
-        if (page > shops.getTotalPages()) {
+        if (page >= shops.getTotalPages()) {
             page = shops.getTotalPages() - 1;
             shops = shopService.findByFilter(
                     shopName,
