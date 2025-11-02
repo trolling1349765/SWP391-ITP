@@ -18,96 +18,122 @@
         <!--    Main content -->
         <div class="col-12 col-md-9 col-lg-10 p-0">
             <!-- 🧾 Table -->
-            <div class="card shadow-sm">
-                <div class="card-body p-0">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Quản lý cấu hình hệ thống</h5>
+                    <a th:href="@{/admin/configs/new}" class="btn btn-light text-primary fw-semibold">
+                        <i class="bi bi-plus-circle me-1"></i> Thêm cấu hình
+                    </a>
+                </div>
+
+                <div class="card-body">
                     <div class="table-responsive">
-                        <div class="d-flex justify-content-end mb-3">
-                            <a th:href="@{/admin/configs/new}" class="btn btn-success">
-                                <i class="bi bi-plus-circle me-1"></i> Thêm cấu hình
-                            </a>
-                        </div>
-                        <table class="table table-bordered table-hover">
-                            <thead class="table-secondary">
-                            <tr>
-                                <th>ID</th>
-                                <th>Key</th>
-                                <th>Value</th>
-                                <th>Create By</th>
-                                <th>Create At</th>
-                                <th>Update At</th>
-                                <th>Deleted</th>
-                                <th>Delete By</th>
-                                <th>Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr class="table-secondary">
-                                <form th:action="@{/admin/configs}" method="get">
+                        <!-- Bộ lọc -->
+                        <form th:action="@{/admin/configs}" method="get">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light text-center">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                    <th>Người tạo</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Cập nhật</th>
+                                    <th>Trạng thái</th>
+                                    <th>Xóa bởi</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <!-- Hàng lọc -->
+                                <tr class="bg-light">
                                     <td></td>
-                                    <td><input type="text" name="configKey" th:value="${configKey}"
-                                               placeholder="Search Key" class="form-control form-control-sm"></td>
+                                    <td>
+                                        <input type="text" name="configKey" th:value="${configKey}"
+                                               placeholder="Tìm theo key..." class="form-control form-control-sm">
+                                    </td>
                                     <td></td>
                                     <td></td>
                                     <td>
                                         <div class="d-flex flex-column gap-1">
-                                            <div><input type="date" name="fromDate" th:value="${fromDate}"
-                                                        class="form-control form-control-sm"></div>
-                                            <div><input type="date" name="toDate" th:value="${toDate}"
-                                                        class="form-control form-control-sm"></div>
+                                            <input type="date" name="fromDate" th:value="${fromDate}"
+                                                   class="form-control form-control-sm">
+                                            <input type="date" name="toDate" th:value="${toDate}"
+                                                   class="form-control form-control-sm">
                                         </div>
                                     </td>
                                     <td></td>
                                     <td>
                                         <select class="form-select form-select-sm" name="deleted">
-                                            <option value="">All</option>
-                                            <option value="true" th:selected="${deleted == 'true'}">YES</option>
-                                            <option value="false" th:selected="${deleted == 'false'}">NO</option>
+                                            <option value="">Tất cả</option>
+                                            <option value="true" th:selected="${deleted == 'true'}">Đã xóa</option>
+                                            <option value="false" th:selected="${deleted == 'false'}">Còn hoạt động</option>
                                         </select>
                                     </td>
                                     <td></td>
-                                    <td>
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
-                                        <button type="reset" class="btn btn-sm btn-outline-secondary">Clear</button>
+                                    <td class="text-center">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="bi bi-funnel"></i> Lọc
+                                        </button>
+                                        <button type="reset" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-x-circle"></i> Xóa
+                                        </button>
                                     </td>
-                                </form>
-                            </tr>
-                            <tr th:each="config : ${configs.content}">
-                                <td th:text="${config.id}"></td>
-                                <td th:text="${config.configKey}"></td>
-                                <td th:text="${config.configValue}"></td>
-                                <td th:text="${config.createBy}"></td>
-                                <td th:text="${config.createAt}"></td>
-                                <td th:text="${config.updateAt}"></td>
-                                <td th:text="${config.isDeleted} ? 'Yes' : 'No'"></td>
-                                <td th:text="${config.deleteBy}"></td>
-                                <td>
-                                    <span th:if="${!config.isDeleted}">
-                                        <a th:href="@{/admin/configs/update/{id}(id=${config.id})}"
-                                           class="btn btn-primary" th:text="Update"></a>
-                                        <form
-                                                th:action="@{/admin/configs/delete/{id}(id=${config.id})}"
-                                                method="post"
-                                                onsubmit="return confirm('Bạn có chắc chắn muốn xóa cấu hình này?');">
-                                            <input type="hidden" name="_method" value="delete"/>
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
-                                    </span>
-                                    <span th:if="${config.isDeleted}">
-                                        <form
-                                                th:action="@{/admin/configs/reborn/{id}(id=${config.id})}"
-                                                method="post"
-                                                onsubmit="return confirm('Khôi phục cấu hình này?');">
-                                            <input type="hidden" name="_method" value="put"/>
-                                            <button type="submit" class="btn btn-danger">Restore</button>
-                                        </form>
-                                    </span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                </tr>
+
+                                <!-- Dữ liệu -->
+                                <tr th:each="config : ${configs.content}"
+                                    th:classappend="${config.isDeleted} ? 'table-danger' : '' ">
+                                    <td th:text="${config.id}"></td>
+                                    <td th:text="${config.configKey}" class="fw-semibold text-primary"></td>
+                                    <td th:text="${config.configValue}"></td>
+                                    <td th:text="${config.createBy}"></td>
+                                    <td th:text="${#temporals.format(config.createAt, 'dd/MM/yyyy')}"></td>
+                                    <td th:text="${#temporals.format(config.updateAt, 'dd/MM/yyyy')}"></td>
+                                    <td>
+                                <span th:text="${config.isDeleted} ? 'Đã xóa' : 'Hoạt động'"
+                                      th:classappend="${config.isDeleted} ? 'badge bg-danger' : 'badge bg-success'">
+                                </span>
+                                    </td>
+                                    <td th:text="${config.deleteBy}"></td>
+                                    <td class="text-center">
+                                        <!-- Nếu chưa xóa -->
+                                        <div th:if="${!config.isDeleted}" class="d-flex justify-content-center gap-1">
+                                            <a th:href="@{/admin/configs/update/{id}(id=${config.id})}"
+                                               class="btn btn-sm btn-outline-primary"
+                                               th:text="Update">
+                                                <i class="bi bi-pencil-square"></i>
+
+                                            </a>
+                                            <form th:action="@{/admin/configs/delete/{id}(id=${config.id})}" method="post"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa cấu hình này?');">
+                                                <input type="hidden" name="_method" value="delete"/>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" th:text="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <!-- Nếu đã xóa -->
+                                        <div th:if="${config.isDeleted}" class="d-flex justify-content-center">
+                                            <form th:action="@{/admin/configs/reborn/{id}(id=${config.id})}" method="post"
+                                                  onsubmit="return confirm('Khôi phục cấu hình này?');">
+                                                <input type="hidden" name="_method" value="put"/>
+                                                <button type="submit" class="btn btn-sm btn-outline-success" th:text="Restore">
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </form>
                     </div>
                 </div>
             </div>
+
             <!-- Phân trang -->
             <div class="mt-3">
                 <nav th:if="${totalPages > 1}" aria-label="Page navigation">
