@@ -103,6 +103,15 @@ public class UserServiceImpl implements UserService {
         user.setPassword(hashedPassword);
         user.setStatus("ACTIVE");
         user.setProvider("local");
+        
+        // ✅ SET DEFAULT ROLE = CUSTOMER (role_id = 3) cho user mới đăng ký
+        Role customerRole = roleRepository.findById(3L)
+            .orElseGet(() -> roleRepository.findByName("CUSTOMER")
+            .orElse(null));
+        if (customerRole != null) {
+            user.setRole(customerRole);
+        }
+        
         userRepository.save(user);
     }
 
@@ -151,7 +160,7 @@ public class UserServiceImpl implements UserService {
             user.setCreateBy("oauth_google");
             user.setIsDeleted(false);
             
-            // ✅ SET DEFAULT ROLE = CUSTOMER cho user OAuth
+            //  SET DEFAULT ROLE = CUSTOMER cho user OAuth
             Role customerRole = roleRepository.findByName("CUSTOMER")
                 .orElseGet(() -> roleRepository.findByName("USER")
                 .orElse(null));
@@ -194,9 +203,9 @@ public class UserServiceImpl implements UserService {
                     "\n\nLiên kết này sẽ hết hạn sau 1 giờ.\n\nTrân trọng,\nITP Team");
 
             mailSender.send(message);
-            System.out.println("✅ Đã gửi email đặt lại mật khẩu tới: " + email);
+            System.out.println(" Đã gửi email đặt lại mật khẩu tới: " + email);
         } catch (Exception e) {
-            System.err.println("❌ Gửi email thất bại: " + e.getMessage());
+            System.err.println(" Gửi email thất bại: " + e.getMessage());
             throw new RuntimeException("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau!");
         }
     }

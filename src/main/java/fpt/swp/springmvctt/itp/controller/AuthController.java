@@ -69,12 +69,17 @@ public class AuthController {
 
             redirectAttributes.addFlashAttribute("success", "Đăng nhập thành công!");
             session.setAttribute("user", user.get());
-            session.setAttribute("role", user.get().getRole().getName());
+            
+            // Null check để tránh crash nếu user.getRole() là null
+            String roleName = (user.get().getRole() != null) 
+                ? user.get().getRole().getName() 
+                : "CUSTOMER";
+            session.setAttribute("role", roleName);
 
-            if (user.get().getRole().getName().equalsIgnoreCase("ADMIN")) {
+            if ("ADMIN".equalsIgnoreCase(roleName)) {
                 return "redirect:/admin/dashboard";
             }
-            if (user.get().getRole().getName().equalsIgnoreCase("SELLER")) {
+            if ("SELLER".equalsIgnoreCase(roleName)) {
                 return "redirect:/shop/dashboard";
             }
 
