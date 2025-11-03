@@ -22,7 +22,7 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 @Controller
-@PropertySource("classpath:google.properties")
+@PropertySource(value = "classpath:google.properties", ignoreResourceNotFound = true)
 public class GoogleOAuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(GoogleOAuthController.class);
@@ -30,10 +30,10 @@ public class GoogleOAuthController {
     @Autowired
     private UserService userService;
 
-    @Value("${google.clientId}")
+    @Value("${google.clientId:}")
     private String clientId;
 
-    @Value("${google.clientSecret}")
+    @Value("${google.clientSecret:}")
     private String clientSecret;
 
     @Value("${google.redirectUri:http://localhost:8080/itp/oauth2/callback/google}")
