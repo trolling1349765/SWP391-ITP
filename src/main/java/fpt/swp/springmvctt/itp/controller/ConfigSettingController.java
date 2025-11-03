@@ -38,10 +38,6 @@ public class ConfigSettingController {
             page = configs.getTotalPages() - 1;
             configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
         }
-        if (configs.getContent().isEmpty()) {
-            model.addAttribute("errorMessage", "Bad request. No config found.");
-            return "redirect:/admin/configs";
-        }
 
         model.addAttribute("configs", configs);
         model.addAttribute("currentPage", configs.getNumber());

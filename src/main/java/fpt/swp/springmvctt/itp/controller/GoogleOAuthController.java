@@ -7,7 +7,6 @@ import fpt.swp.springmvctt.itp.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +21,6 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 @Controller
-@PropertySource(value = "classpath:google.properties", ignoreResourceNotFound = true)
 public class GoogleOAuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(GoogleOAuthController.class);
@@ -48,7 +46,7 @@ public class GoogleOAuthController {
         try {
             // Kiểm tra cấu hình Google OAuth
             if (clientId == null || clientId.trim().isEmpty()) {
-                logger.error("Google Client ID is not configured");
+                logger.warn("Google OAuth is not configured. Please check google.properties file.");
                 return "redirect:/login?error=oauth_not_configured";
             }
 

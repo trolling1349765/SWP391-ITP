@@ -51,10 +51,6 @@ public class ShopAdminController {
             model.addAttribute("errorMessage", "Page number too big.");
             shops = shopService.filterInactiveShops(shopName, username, fromDate, toDate, page, size);
         }
-        if (shops.getContent().isEmpty()) {
-            model.addAttribute("errorMessage", "Bad request. No shops found.");
-            return "redirect:/admin/registers";
-        }
 
         model.addAttribute("currentPage", shops.getNumber());
         model.addAttribute("totalPages", shops.getTotalPages());
@@ -132,10 +128,6 @@ public class ShopAdminController {
                     page,
                     size
             );
-        }
-        if (shops.getContent().isEmpty()) {
-            model.addAttribute("errorMessage", "Bad request. No shops found.");
-            return "redirect:/admin/shops";
         }
 
         model.addAttribute("currentPage", shops.getNumber());

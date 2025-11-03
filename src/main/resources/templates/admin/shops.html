@@ -126,8 +126,8 @@
                                     <td th:text="${shop.status}">Inactive</td>
                                     <td th:text="${shop.createBy}">seller A</td>
                                     <td th:text="${#temporals.format(shop.createAt, 'yyyy-MM-dd')}"></td>
-                                    <td th:text="${shop.isDeleted ? 'Yes' : 'No'}"></td>
-                                    <td th:text="${shop.isDeleted ? shop.deleteBy : ''}"></td>
+                                    <td th:text="${shop.isDeleted != null and shop.isDeleted ? 'Yes' : 'No'}"></td>
+                                    <td th:text="${shop.isDeleted != null and shop.isDeleted ? (shop.deleteBy ?: '') : ''}"></td>
                                     <td th:text="${shop.updateAt}"></td>
                                     <td th:text="${shop.rating}">4.5</td>
                                     <td>
