@@ -18,14 +18,6 @@ import java.util.List;
 @RequestMapping("/")
 @RequiredArgsConstructor
 public class HomeController {
-
-    // 🏠 Trang chủ người dùng
-//    @GetMapping
-//    public String homepage(@RequestParam String message, Model model) {
-//        model.addAttribute("message", message);
-//        // => src/main/resources/templates/user/home.html
-//        return "user/Homepage";
-//    }
     private final ProductService productService;
 
     @GetMapping()
