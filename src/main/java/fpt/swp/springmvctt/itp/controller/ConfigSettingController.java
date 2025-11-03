@@ -34,9 +34,13 @@ public class ConfigSettingController {
         Boolean delete = deleted.isEmpty() ? null : deleted.equals("true");
 
         Page<Configuration> configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
-        if (page >= configs.getTotalPages()) {
+        if (!configs.isEmpty() && page >= configs.getTotalPages()) {
             page = configs.getTotalPages() - 1;
             configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
+        }
+        if (configs.getContent().isEmpty()) {
+            model.addAttribute("errorMessage", "Bad request. No config found.");
+            return "redirect:/admin/configs";
         }
 
         model.addAttribute("configs", configs);

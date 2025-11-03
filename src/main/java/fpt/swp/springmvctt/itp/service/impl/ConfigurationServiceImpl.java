@@ -84,7 +84,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     public Page<Configuration> findByFilter(String configKey, LocalDate toDate, LocalDate fromDate, Boolean delete, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         if (configKey.isEmpty() || configKey.equals("")) { configKey = null; }
-        return configurationRepository.findByFilter(configKey, toDate, fromDate, delete, pageable);
+        if(!configurationRepository.findByFilter(configKey, toDate, fromDate, delete, pageable).isEmpty())
+            return configurationRepository.findByFilter(configKey, toDate, fromDate, delete, pageable);
+        else return Page.empty();
     }
 
 }

@@ -17,6 +17,7 @@
         </div>
         <!--    Main content -->
         <div class="col-12 col-md-9 col-lg-10 p-0">
+
             <!-- 🧾 Table -->
             <div class="card shadow-sm">
                 <div class="card-body p-0">
@@ -40,6 +41,12 @@
 
                             <!-- 🔽 Filter row -->
                             <tbody>
+<!--                            error-->
+                            <tr th:if="${errorMessage}">
+                                <td colspan="11">
+                                    <div class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+                                </td>
+                            </tr>
                             <tr class="table-secondary">
                                 <form th:action="@{/admin/users}" method="get">
                                     <td></td>

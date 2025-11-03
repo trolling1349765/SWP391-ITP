@@ -57,7 +57,7 @@ public class UserController {
                 role,
                 page,
                 size);
-        if (page >= userpage.getTotalPages()) {
+        if (userpage.isEmpty() && page >= userpage.getTotalPages()) {
             page = userpage.getTotalPages() - 1;
             userpage = userService.findByFilter(
                     username,
@@ -72,6 +72,10 @@ public class UserController {
                     role,
                     page,
                     size);
+        }
+        if (userpage.getContent().isEmpty()) {
+            model.addAttribute("errorMessage", "Bad request. No users found.");
+            return "redirect:/admin/users";
         }
 
         model.addAttribute("users", userpage);

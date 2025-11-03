@@ -26,7 +26,10 @@
             <h3 th:if="${errorMessage != null}"
                 th:text="${errorMessage}"
                 class="text-danger"></h3>
-
+<!--            error-->
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <span th:text="${errorMessage}"></span>
+            </div>
             <form th:action="@{/admin/registers}" method="get">
                 <table class="table table-bordered">
                     <thead>

@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
         if (status == null || status.isEmpty()) status = null;
         if ("all".equalsIgnoreCase(role) || role == null || role.isEmpty()) role = null;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
-        return userRepository.findByFilter(
+        Page<User> users = userRepository.findByFilter(
                 username,
                 email,
                 fromDate,
@@ -106,6 +106,9 @@ public class UserServiceImpl implements UserService {
                 role,
                 pageable
         );
+        if(!users.isEmpty())
+            return users;
+        else return Page.empty();
     }
 
 

@@ -30,6 +30,10 @@
                         <h3 th:if="${errorMessage != null}"
                             th:text="${errorMessage}"
                             class="text-danger"></h3>
+                        <!--            error-->
+                        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                            <span th:text="${errorMessage}"></span>
+                        </div>
 
                         <form th:action="@{/admin/shops}" method="get">
                             <table class="table table-hover align-middle mb-0">

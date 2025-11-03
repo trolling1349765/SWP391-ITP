@@ -1,7 +1,9 @@
 package fpt.swp.springmvctt.itp.service.impl;
 
+import fpt.swp.springmvctt.itp.entity.Role;
 import fpt.swp.springmvctt.itp.entity.Shop;
 import fpt.swp.springmvctt.itp.entity.User;
+import fpt.swp.springmvctt.itp.repository.RoleRepository;
 import fpt.swp.springmvctt.itp.repository.ShopRepository;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
 import fpt.swp.springmvctt.itp.service.ShopService;
@@ -28,6 +30,8 @@ public class ShopServiceImpl implements ShopService {
     private final UserRepository userRepository;
     @Autowired
     private HttpServletRequest httpServletRequest;
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Override
     public Shop createForUser(Long userId, String shopName) {
@@ -108,7 +112,7 @@ public class ShopServiceImpl implements ShopService {
         if (deleteBy == null || deleteBy.isEmpty() ) deleteBy = null;
         if (status == null || status.isEmpty()) status = null;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
-        return shopRepository.findByFilter(
+        Page<Shop> shops = shopRepository.findByFilter(
                 shopName,
                 createBy,
                 fromDate,
@@ -120,6 +124,8 @@ public class ShopServiceImpl implements ShopService {
                 status,
                 pageable
         );
+        if (shops.getTotalElements() > 0) return shops;
+        else return Page.empty();
     }
 
     @Override
@@ -138,6 +144,12 @@ public class ShopServiceImpl implements ShopService {
     public void activateShop(Long id) {
         shopRepository.findById(id).ifPresent((shop) ->{
             shop.setStatus("ACTIVE");
+            userRepository.findById(shop.getUser().getId()).ifPresent((user) ->{
+                Role role = roleRepository.findByName("SELLER").get();
+               user.setRole(role);
+               userRepository.save(user);
+                shop.setCreateBy(user.getUsername());
+            });
             shopRepository.save(shop);
         });
     }

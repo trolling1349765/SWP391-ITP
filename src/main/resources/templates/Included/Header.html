@@ -42,8 +42,27 @@
     </span>
         <a th:href="@{/logout}" style="color:#cbd5e1;border:1px solid #334155;border-radius:.4rem;
        padding:.35rem .75rem;text-decoration:none;">Đăng xuất</a>
+        <nav class="navbar">
+            <div class="menu-toggle" id="menu-toggle">
+                ☰
+            </div>
+            <ul class="menu" id="menu">
+                <li><a href="#">Trang chủ</a></li>
+                <li><a href="#">Sản phẩm</a></li>
+                <li><a href="#">Giới thiệu</a></li>
+                <li><a href="#">Liên hệ</a></li>
+            </ul>
+        </nav>
     </div>
 
 </header>
 </body>
+<script>
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+
+    toggle.addEventListener('click', () => {
+        menu.classList.toggle('active');
+    });
+</script>
 </html>

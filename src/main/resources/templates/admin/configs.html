@@ -17,6 +17,10 @@
         </div>
         <!--    Main content -->
         <div class="col-12 col-md-9 col-lg-10 p-0">
+            <!--            error-->
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <span th:text="${errorMessage}"></span>
+            </div>
             <!-- 🧾 Table -->
             <div class="card shadow-lg border-0 rounded-4">
                 <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
@@ -40,7 +44,7 @@
                                     <th>Ngày tạo</th>
                                     <th>Cập nhật</th>
                                     <th>Trạng thái</th>
-                                    <th>Xóa bởi</th>
+                                    <th>Người xóa</th>
                                     <th>Thao tác</th>
                                 </tr>
                                 </thead>
@@ -67,17 +71,17 @@
                                     <td>
                                         <select class="form-select form-select-sm" name="deleted">
                                             <option value="">Tất cả</option>
-                                            <option value="true" th:selected="${deleted == 'true'}">Đã xóa</option>
-                                            <option value="false" th:selected="${deleted == 'false'}">Còn hoạt động</option>
+                                            <option value="true" th:selected="${deleted == 'true'}">Hidden</option>
+                                            <option value="false" th:selected="${deleted == 'false'}">Active</option>
                                         </select>
                                     </td>
                                     <td></td>
                                     <td class="text-center">
                                         <button type="submit" class="btn btn-sm btn-outline-primary me-1">
-                                            <i class="bi bi-funnel"></i> Lọc
+                                            <i class="bi bi-funnel"></i> Filter
                                         </button>
                                         <button type="reset" class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-x-circle"></i> Xóa
+                                            <i class="bi bi-x-circle"></i> Clear
                                         </button>
                                     </td>
                                 </tr>
@@ -98,7 +102,7 @@
                                     </td>
                                     <td th:text="${config.deleteBy}"></td>
                                     <td class="text-center">
-                                        <!-- Nếu chưa xóa -->
+                                        <!-- not delete -->
                                         <div th:if="${!config.isDeleted}" class="d-flex justify-content-center gap-1">
                                             <a th:href="@{/admin/configs/update/{id}(id=${config.id})}"
                                                class="btn btn-sm btn-outline-primary"
@@ -115,7 +119,7 @@
                                             </form>
                                         </div>
 
-                                        <!-- Nếu đã xóa -->
+                                        <!-- deleted -->
                                         <div th:if="${config.isDeleted}" class="d-flex justify-content-center">
                                             <form th:action="@{/admin/configs/reborn/{id}(id=${config.id})}" method="post"
                                                   onsubmit="return confirm('Khôi phục cấu hình này?');">
@@ -153,15 +157,15 @@
 
                         <!-- Page numbers -->
                         <li class="page-item"
-                            th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:each="i : ${#numbers.sequence(0, totalPages > 0 ? totalPages - 1 : 0)}"
                             th:classappend="${i == currentPage} ? 'active'">
                             <a class="page-link"
                                th:text="${i + 1}"
-                               th:href="@{/admin/configs(page=${i})},
-                               configKey=${configKey},
-                               toDate=${toDate},
-                               fromDate=${fromDate},
-                               delete=${deleted})}">
+                               th:href="@{/admin/configs(page=${i},
+                                     configKey=${configKey},
+                                     toDate=${toDate},
+                                     fromDate=${fromDate},
+                                     delete=${deleted})}">
                             </a>
                         </li>
 
