@@ -43,7 +43,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
 
     @Override
     public ImportResult importSerialsFromExcel(ExcelImportForm form) {
-        log.info("🔥 importSerialsFromExcel called for product ID: {}", form.getProductId());
+        log.info(" importSerialsFromExcel called for product ID: {}", form.getProductId());
         log.info("   - Excel file: {}", form.getExcelFile() != null ? form.getExcelFile().getOriginalFilename() : "NULL");
         log.info("   - File size: {} bytes", form.getExcelFile() != null ? form.getExcelFile().getSize() : 0);
         
@@ -140,7 +140,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
             }
             
             // Import trực tiếp vào database (không tạo JSON file)
-            log.info("📦 Importing {} serials directly to database for product {}", serials.size(), form.getProductId());
+            log.info(" Importing {} serials directly to database for product {}", serials.size(), form.getProductId());
             
             int dbImportedCount = 0;
             int dbSkippedCount = 0;
@@ -155,7 +155,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     String serialCode = (String) serialData.get("serialCode");
                     String secretCode = (String) serialData.get("secretCode");
                     
-                    log.info("💾 Saving serial: {} / {}", serialCode, secretCode);
+                    log.info(" Saving serial: {} / {}", serialCode, secretCode);
                     
                     ProductStore productStore = new ProductStore();
                     productStore.setProductId(form.getProductId());
@@ -176,10 +176,10 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     ProductStore saved = productStoreRepository.save(productStore);
                     dbImportedCount++;
                     
-                    log.info("   ✅ Saved with ID: {}", saved.getId());
+                    log.info("Saved with ID: {}", saved.getId());
                     
                 } catch (Exception e) {
-                    log.error("   ❌ Error importing serial to DB: {}", e.getMessage());
+                    log.error("Error importing serial to DB: {}", e.getMessage());
                     e.printStackTrace();
                     dbSkippedCount++;
                 }

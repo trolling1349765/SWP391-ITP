@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Arrays;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
+import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.repository.ProductStoreRepository;
 import fpt.swp.springmvctt.itp.service.CategoryService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
@@ -55,6 +57,7 @@ public class    ShopController {
     private final CategoryService categoryService;
     private final ExcelImportService excelImportService;
     private final ProductStoreRepository productStoreRepository;
+    private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ShopRepository shopRepository;
     private final StorageService storageService;
@@ -78,6 +81,17 @@ public class    ShopController {
     private void putCurrentPath(Model model, HttpServletRequest request) {
         model.addAttribute("currentPath", request != null ? request.getRequestURI() : "");
     }
+    
+    private void addShopToModel(Model model, HttpSession session) {
+        try {
+            Long shopId = getShopIdFromSession(session);
+            Shop shop = shopRepository.findById(shopId).orElse(null);
+            model.addAttribute("shop", shop);
+        } catch (Exception e) {
+            // If error, just don't add shop to model (will show default "Admin")
+            System.err.println("Could not load shop for header: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(defaultValue = "1") int page,
@@ -87,8 +101,9 @@ public class    ShopController {
                             RedirectAttributes ra) {
         try {
             putCurrentPath(model, request);
-
-            // Get shopId from session, handle error gracefully
+            addShopToModel(model, session);
+            
+            // Get shopId from session
             Long shopId;
             try {
                 shopId = getShopIdFromSession(session);
@@ -176,8 +191,9 @@ public class    ShopController {
 
     // Add Product
     @GetMapping("/addProduct")
-    public String addProductForm(Model model, HttpServletRequest request) {
+    public String addProductForm(Model model, HttpServletRequest request, HttpSession session) {
         putCurrentPath(model, request);
+        addShopToModel(model, session);
         model.addAttribute("form", new ProductForm());
         model.addAttribute("categories", categoryService.findAll());
         return "shop/addProduct";
@@ -221,8 +237,9 @@ public class    ShopController {
 
     // Update Product
     @GetMapping("/updateProduct/{id}")
-    public String updateProductForm(@PathVariable Long id, Model model, HttpServletRequest request) {
+    public String updateProductForm(@PathVariable Long id, Model model, HttpServletRequest request, HttpSession session) {
         putCurrentPath(model, request);
+        addShopToModel(model, session);
         Product product = productService.get(id);
         ProductForm form = new ProductForm();
         form.setProductName(product.getProductName());
@@ -282,8 +299,13 @@ public class    ShopController {
     @GetMapping("/inventory")
     public String inventory(Model model, HttpServletRequest request, HttpSession session) {
         putCurrentPath(model, request);
+        addShopToModel(model, session);
         Long shopId = getShopIdFromSession(session);
         List<Product> products = productService.listByShop(shopId);
+
+        // Load categories for filter
+        List<Category> allCategories = categoryRepository.findAll();
+        model.addAttribute("allCategories", allCategories);
 
         // Sắp xếp theo ID tăng dần (từ bé lên lớn)
         products.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
@@ -750,5 +772,158 @@ public class    ShopController {
         shop.setImage(imageUrl);
         shopRepository.save(shop);
         return "redirect:/shop/details/" + shopId;
+    }
+
+    // ===== SHOP PROFILE MANAGEMENT =====
+    
+    @GetMapping("/profile")
+    public String showShopProfile(Model model, HttpSession session, HttpServletRequest request) {
+        try {
+            Long shopId = getShopIdFromSession(session);
+            Shop shop = shopRepository.findById(shopId)
+                    .orElseThrow(() -> new IllegalStateException("Shop không tồn tại!"));
+            
+            // Load all categories
+            List<Category> allCategories = categoryRepository.findAll();
+            
+            // Load statistics (giống dashboard)
+            List<Product> allProducts = productRepository.findByShopIdOrderByIdDesc(shopId);
+            long totalProducts = allProducts.size();
+            long activeProducts = allProducts.stream()
+                    .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
+                    .count();
+            
+            // Calculate total stock
+            long totalStock = 0;
+            for (Product product : allProducts) {
+                List<ProductStore> stores = productStoreRepository.findByProductIdOrderByIdDesc(product.getId());
+                totalStock += stores.size();
+            }
+            
+            model.addAttribute("shop", shop);
+            model.addAttribute("allCategories", allCategories);
+            model.addAttribute("totalProducts", totalProducts);
+            model.addAttribute("activeProducts", activeProducts);
+            model.addAttribute("totalStock", totalStock);
+            model.addAttribute("currentPath", "/shop/profile");
+            
+            addShopToModel(model, session);
+            putCurrentPath(model, request);
+            
+            return "shop/shop-profile";
+        } catch (Exception e) {
+            System.err.println("Error loading shop profile: " + e.getMessage());
+            return "redirect:/shop/dashboard";
+        }
+    }
+    
+    @PostMapping("/profile/update")
+    public String updateShopProfile(
+            @RequestParam("shopName") String shopName,
+            @RequestParam("category") String category,
+            @RequestParam("email") String email,
+            @RequestParam("phone") String phone,
+            @RequestParam(value = "shortDescription", required = false) String shortDescription,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "shopImage", required = false) MultipartFile shopImage,
+            @RequestParam(value = "logoImage", required = false) MultipartFile logoImage,
+            HttpSession session,
+            RedirectAttributes ra) {
+        try {
+            // ===== BACKEND VALIDATION =====
+            
+            // Validate shop name
+            if (shopName == null || shopName.trim().isEmpty()) {
+                ra.addFlashAttribute("error", "Tên shop không được để trống");
+                return "redirect:/shop/profile";
+            }
+            if (shopName.length() > 100) {
+                ra.addFlashAttribute("error", "Tên shop không được vượt quá 100 ký tự");
+                return "redirect:/shop/profile";
+            }
+            
+            // Validate category
+            if (category == null || category.trim().isEmpty()) {
+                ra.addFlashAttribute("error", "Vui lòng chọn ít nhất 1 danh mục");
+                return "redirect:/shop/profile";
+            }
+            
+            // Validate email
+            if (email == null || email.trim().isEmpty()) {
+                ra.addFlashAttribute("error", "Email không được để trống");
+                return "redirect:/shop/profile";
+            }
+            if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                ra.addFlashAttribute("error", "Email không hợp lệ");
+                return "redirect:/shop/profile";
+            }
+            
+            // Validate phone
+            if (phone == null || phone.trim().isEmpty()) {
+                ra.addFlashAttribute("error", "Số điện thoại không được để trống");
+                return "redirect:/shop/profile";
+            }
+            if (!phone.matches("^0[0-9]{9}$")) {
+                ra.addFlashAttribute("error", "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0");
+                return "redirect:/shop/profile";
+            }
+            
+            // Validate short description length
+            if (shortDescription != null && shortDescription.length() > 500) {
+                ra.addFlashAttribute("error", "Mô tả ngắn không được vượt quá 500 ký tự");
+                return "redirect:/shop/profile";
+            }
+            
+            // Validate image size
+            if (shopImage != null && !shopImage.isEmpty()) {
+                if (shopImage.getSize() > 5 * 1024 * 1024) { // 5MB
+                    ra.addFlashAttribute("error", "Ảnh bìa không được vượt quá 5MB");
+                    return "redirect:/shop/profile";
+                }
+            }
+            
+            if (logoImage != null && !logoImage.isEmpty()) {
+                if (logoImage.getSize() > 5 * 1024 * 1024) { // 5MB
+                    ra.addFlashAttribute("error", "Logo không được vượt quá 5MB");
+                    return "redirect:/shop/profile";
+                }
+            }
+            
+            // ===== UPDATE SHOP =====
+            
+            Long shopId = getShopIdFromSession(session);
+            Shop shop = shopRepository.findById(shopId)
+                    .orElseThrow(() -> new IllegalStateException("Shop không tồn tại!"));
+            
+            // Update basic info
+            shop.setShopName(shopName.trim());
+            shop.setCategory(category.trim());
+            shop.setEmail(email.trim().toLowerCase());
+            shop.setPhone(phone.trim());
+            shop.setShortDescription(shortDescription != null ? shortDescription.trim() : null);
+            shop.setDescription(description != null ? description.trim() : null);
+            
+            // Upload shop banner image if provided
+            if (shopImage != null && !shopImage.isEmpty()) {
+                String imageUrl = storageService.uploadImage(shopImage);
+                shop.setImage(imageUrl);
+            }
+            
+            // Upload shop logo if provided
+            if (logoImage != null && !logoImage.isEmpty()) {
+                String logoUrl = storageService.uploadImage(logoImage);
+                shop.setImageUrl(logoUrl);
+            }
+            
+            shopRepository.save(shop);
+            
+            ra.addFlashAttribute("success", "Cập nhật thông tin shop thành công!");
+            return "redirect:/shop/profile";
+            
+        } catch (Exception e) {
+            System.err.println("Error updating shop profile: " + e.getMessage());
+            ra.addFlashAttribute("error", "Lỗi khi cập nhật shop: " + e.getMessage());
+            return "redirect:/shop/profile";
+        }
     }
 }

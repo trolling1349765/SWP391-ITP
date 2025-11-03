@@ -68,6 +68,17 @@
                     <span style="font-weight:500;font-size:.55rem;">Kho</span>
                 </a>
             </li>
+            <li style="margin-bottom:.15rem;">
+                <a th:href="@{/shop/profile}"
+                   th:classappend="${currentPath != null && #strings.contains(currentPath,'/shop/profile')}? ' active'"
+                   style="display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.35rem .15rem;border-radius:.3rem;color:#2c3e50;text-decoration:none;font-size:.6rem;transition:all .2s;"
+                   title="Hồ sơ Shop">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+                    </svg>
+                    <span style="font-weight:500;font-size:.55rem;">Hồ sơ</span>
+                </a>
+            </li>
         </ul>
     </div>
 

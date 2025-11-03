@@ -34,7 +34,12 @@
                                 Uy tín – Chất lượng – Bảo hành.
                             </p>
                             <a th:href="@{/products}" class="btn btn-dark btn-lg">Khám phá ngay</a>
-                            <a th:href="@{/shop/dashboard}" class="btn btn-outline-primary btn-lg ms-2">Shop Dashboard</a>
+                            <!-- Chỉ hiện nút Shop Dashboard cho SELLER -->
+                            <a th:href="@{/shop/dashboard}" 
+                               th:if="${session.user != null and session.user.role.name == 'SELLER'}"
+                               class="btn btn-outline-primary btn-lg ms-2">
+                                Shop Dashboard
+                            </a>
                         </div>
                         <div class="col-md-6 text-center">
                             <img th:src="@{/img/hero-setup.jpg}" alt="MMO setup" class="img-fluid rounded shadow">

@@ -30,19 +30,14 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3">
-                        <label class="form-label">Product Type:</label>
-                        <select class="form-select" id="productTypeFilter" onchange="filterInventory()">
-                            <option value="">All Types</option>
-                            <option value="VIETTEL">📱 Thẻ Viettel</option>
-                            <option value="MOBIFONE">📱 Thẻ Mobifone</option>
-                            <option value="VINAPHONE">📱 Thẻ Vinaphone</option>
-                            <option value="VIETTEL_DATA">📶 Gói data Viettel</option>
-                            <option value="MOBIFONE_DATA">📶 Gói data Mobifone</option>
-                            <option value="VINAPHONE_DATA">📶 Gói data Vinaphone</option>
-                            <option value="EMAIL">💳 Tài khoản Email</option>
-                            <option value="GIFT">🎁 Thẻ quà tặng</option>
-                            <option value="SOFTWARE">🔑 Key phần mềm</option>
-                            <option value="OTHER">📦 Khác</option>
+                        <label class="form-label">Category:</label>
+                        <select class="form-select" id="categoryFilter" onchange="filterInventory()">
+                            <option value="">All Categories</option>
+                            <option th:each="cat : ${allCategories}" 
+                                    th:value="${cat.id}" 
+                                    th:text="${cat.categoryName}">
+                                Category Name
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -75,9 +70,6 @@
                     <div class="col-12">
                         <button class="btn btn-secondary" onclick="clearFilters()">
                             <i class="fas fa-times"></i> Clear Filters
-                        </button>
-                        <button class="btn btn-primary" onclick="exportFilteredData()">
-                            <i class="fas fa-download"></i> Export Filtered
                         </button>
                     </div>
                 </div>
@@ -134,64 +126,51 @@
                 <table class="table table-striped align-middle mb-0">
                     <thead>
                     <tr>
-                        <th width="60">STT</th>
-                        <th>ID</th>
+                        <th width="60" class="text-center">STT</th>
                         <th>Tên sản phẩm</th>
                         <th>Giá</th>
-                        <th>Tồn kho</th>
-                        <th>Trạng thái</th>
-                        <th class="text-nowrap">Thao tác</th>
+                        <th class="text-center">Tồn kho</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="p, iterStat : ${products}" 
-                        th:data-product-type="${p.productType.name()}"
+                    <tr th:each="p, iterStat : ${products}"
+                        th:data-category-id="${p.categoryId}"
                         th:data-face-value="${p.price.intValue()}"
                         th:data-stock="${stockMap[p.id]}"
                         th:data-product-name="${p.productName.toLowerCase()}">
-                        <td th:text="${iterStat.index + 1}">1</td>
-                        <td th:text="${p.id}">1</td>
+                        <td class="text-center" th:text="${iterStat.index + 1}">1</td>
                         <td>
                             <strong th:text="${p.productName}">Tên</strong>
                             <br>
                             <small class="text-muted" th:text="${p.productType.displayName}">Product Type</small>
                         </td>
                         <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0</td>
-                        <td>
-                            <!-- Total stock with color coding -->
-                            <div class="fw-bold">
-                                <span th:if="${stockMap[p.id] > 10}" class="badge text-bg-success" th:text="${stockMap[p.id]}">100</span>
-                                <span th:if="${stockMap[p.id] > 0 && stockMap[p.id] <= 10}" class="badge text-bg-warning" th:text="${stockMap[p.id]}">5</span>
-                                <span th:if="${stockMap[p.id] == 0}" class="badge text-bg-danger" th:text="${stockMap[p.id]}">0</span>
-                            </div>
-                            <!-- Stock by batches -->
-                            <div th:if="${batchMap[p.id] != null && !batchMap[p.id].isEmpty()}" class="small text-muted mt-1">
-                                <div th:each="batch : ${batchMap[p.id]}" class="d-flex justify-content-between">
-                                    <span th:text="${#numbers.formatDecimal(batch.key, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
-                                    <span class="badge bg-light text-dark" th:text="${batch.value}">0</span>
-                                </div>
-                            </div>
-                            <div th:if="${batchMap[p.id] == null || batchMap[p.id].isEmpty()}" class="text-muted small">
-                                Chưa có serial
-                            </div>
+                        <td class="text-center">
+                            <!-- Total stock with color coding only -->
+                            <span th:if="${stockMap[p.id] > 10}" class="badge text-bg-success fs-6" th:text="${stockMap[p.id]}">100</span>
+                            <span th:if="${stockMap[p.id] > 0 && stockMap[p.id] <= 10}" class="badge text-bg-warning fs-6" th:text="${stockMap[p.id]}">5</span>
+                            <span th:if="${stockMap[p.id] == 0}" class="badge text-bg-danger fs-6" th:text="${stockMap[p.id]}">0</span>
                         </td>
-                        <td>
+                        <td class="text-center">
                             <span class="badge" 
                                   th:classappend="${p.status.name()=='ACTIVE'} ? 'text-bg-success' : 
                                                  (${p.status.name()=='HIDDEN'} ? 'text-bg-secondary' : 'text-bg-danger')"
                                   th:text="${p.status}">HIDDEN</span>
                         </td>
-                        <td class="text-nowrap">
+                        <td class="text-center text-nowrap">
                             <div class="btn-group" role="group">
                                 <a th:href="@{|/shop/products/${p.id}|}" class="btn btn-sm btn-outline-info">Chi tiết</a>
                                 <a th:href="@{|/shop/updateProduct/${p.id}|}" class="btn btn-sm btn-outline-primary">Sửa</a>
-                                <button class="btn btn-sm btn-outline-danger" th:onclick="'deleteProduct(' + ${p.id} + ')'">Xóa</button>
+                                <button class="btn btn-sm btn-outline-danger delete-product-btn" th:data-product-id="${p.id}">Xóa</button>
                             </div>
                         </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
+            <!-- Pagination will be inserted here by JavaScript -->
         </div>
 
     </div>
@@ -201,48 +180,48 @@
 
 <script>
     function deleteProduct(productId) {
-        console.log('deleteProduct called with ID:', productId);
+        if (typeof bootstrap === 'undefined') {
+            alert('Lỗi: Bootstrap chưa được tải. Vui lòng reload trang.');
+            return;
+        }
         
-        //
         const modalHtml = `
-            <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+            <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteConfirmModalLabel">Xác nhận xóa sản phẩm</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Xác nhận xóa sản phẩm</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
                         <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa sản phẩm #${productId} không?</p>
-                            <p class="text-danger"><strong>Hành động này không thể hoàn tác!</strong></p>
-                    </div>
+                            <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>#${productId}</strong> không?</p>
+                            <p class="text-danger mb-0"><strong>Hành động này không thể hoàn tác!</strong></p>
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                             <button type="button" class="btn btn-danger" onclick="confirmDelete(${productId})">Xóa</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
         `;
         
-        // Xóa modal cũ nếu có
         const existingModal = document.getElementById('deleteConfirmModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
+        if (existingModal) existingModal.remove();
         
-        // Thêm modal mới vào body
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         
-        // Hiển thị modal
         const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
         modal.show();
     }
     
     function confirmDelete(productId) {
-        console.log('confirmDelete called with ID:', productId);
+        const modalElement = document.getElementById('deleteConfirmModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
         
-        // Gửi AJAX request để xóa sản phẩm
+        showAlert('info', 'Đang xóa sản phẩm...');
+        
         fetch(`/itp/shop/products/${productId}`, {
             method: 'DELETE',
             headers: {
@@ -251,64 +230,61 @@
             }
         })
         .then(response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-            
-            if (response.ok) {
-                return response.json().catch(() => ({})); // Parse JSON if possible, otherwise empty object
+            if (response.ok || response.status === 200) {
+                return response.json().catch(() => ({ success: true }));
             } else {
-                return response.text().then(text => {
-                    console.log('Error response text:', text);
-                    throw new Error(`HTTP ${response.status}: ${text}`);
-                });
+                throw new Error(`Server trả về lỗi ${response.status}`);
             }
         })
-        .then(data => {
-            console.log('Response data:', data);
-            
-            // Đóng modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
-            modal.hide();
-            
-            // Hiển thị thông báo thành công
+        .then(() => {
             showAlert('success', 'Đã xóa sản phẩm thành công!');
-            
-            // Reload trang sau 1 giây
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
+            setTimeout(() => location.reload(), 1000);
         })
         .catch(error => {
-            console.error('Full error:', error);
-            showAlert('danger', 'Có lỗi xảy ra: ' + error.message);
+            showAlert('danger', 'Lỗi: ' + error.message);
         });
     }
     
     function showAlert(type, message) {
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.alert.custom-alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Create alert element
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            min-width: 400px;
+            max-width: 600px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 16px;
+            font-weight: 500;
         `;
         
-        // Thêm alert vào đầu container
-        const container = document.querySelector('.col-md-9.col-lg-10');
-        container.insertAdjacentHTML('afterbegin', alertHtml);
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
         
-        // Tự động ẩn alert sau 5 giây
+        document.body.appendChild(alertDiv);
+        
+        // Auto remove after 3 seconds
         setTimeout(() => {
-            const alert = container.querySelector('.alert');
-            if (alert) {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
+            if (alertDiv && alertDiv.parentNode) {
+                alertDiv.remove();
             }
-        }, 5000);
+        }, 3000);
     }
     
     // Filtering Functions
     function filterInventory() {
-        const productTypeFilter = document.getElementById('productTypeFilter').value;
+        const categoryFilter = document.getElementById('categoryFilter').value;
         const faceValueFilter = document.getElementById('faceValueFilter').value;
         const stockStatusFilter = document.getElementById('stockStatusFilter').value;
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
@@ -317,15 +293,15 @@
         let visibleCount = 0;
         
         rows.forEach(row => {
-            const productType = row.getAttribute('data-product-type');
+            const categoryId = row.getAttribute('data-category-id');
             const faceValue = row.getAttribute('data-face-value');
             const stock = parseInt(row.getAttribute('data-stock'));
             const productName = row.getAttribute('data-product-name');
             
             let showRow = true;
             
-            // Filter by product type
-            if (productTypeFilter && productType !== productTypeFilter) {
+            // Filter by category
+            if (categoryFilter && categoryId !== categoryFilter) {
                 showRow = false;
             }
             
@@ -358,12 +334,19 @@
             }
         });
         
-        // Update counter
+        // Update counter and refresh pagination
         updateVisibleCount(visibleCount, rows.length);
+        
+        // Refresh pagination after filtering (wait for display updates)
+        setTimeout(() => {
+            if (typeof refreshPagination === 'function') {
+                refreshPagination();
+            }
+        }, 50);
     }
     
     function clearFilters() {
-        document.getElementById('productTypeFilter').value = '';
+        document.getElementById('categoryFilter').value = '';
         document.getElementById('faceValueFilter').value = '';
         document.getElementById('stockStatusFilter').value = '';
         document.getElementById('searchInput').value = '';
@@ -374,6 +357,13 @@
         });
         
         updateVisibleCount(rows.length, rows.length);
+        
+        // Refresh pagination after clearing filters
+        setTimeout(() => {
+            if (typeof refreshPagination === 'function') {
+                refreshPagination();
+            }
+        }, 50);
     }
     
     function updateVisibleCount(visible, total) {
@@ -394,41 +384,32 @@
         }
     }
     
-    function exportFilteredData() {
-        const visibleRows = document.querySelectorAll('tbody tr[style=""]');
-        let csvContent = "ID,Product Name,Product Type,Price,Stock,Status\n";
-        
-        visibleRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 6) {
-                const id = cells[1].textContent;
-                const name = cells[2].textContent.replace(/\n/g, ' ').trim();
-                const price = cells[3].textContent;
-                const stock = cells[4].textContent;
-                const status = cells[5].textContent;
-                
-                csvContent += `"${id}","${name}","${price}","${stock}","${status}"\n`;
-            }
+    
+    // Function to attach delete button listeners
+    function attachDeleteListeners() {
+        document.querySelectorAll('.delete-product-btn').forEach(btn => {
+            btn.removeEventListener('click', handleDelete); // Remove old listener
+            btn.addEventListener('click', handleDelete);
         });
-        
-        // Download CSV
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'filtered_inventory_' + new Date().toISOString().split('T')[0] + '.csv';
-        a.click();
-        window.URL.revokeObjectURL(url);
     }
+    
+    function handleDelete(event) {
+        const productId = this.getAttribute('data-product-id');
+        deleteProduct(productId);
+    }
+    
+    // Make it global so pagination can call it
+    window.attachDeleteListeners = attachDeleteListeners;
     
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         updateVisibleCount(document.querySelectorAll('tbody tr').length, document.querySelectorAll('tbody tr').length);
+        attachDeleteListeners();
     });
     
 </script>
 
-<script th:src="@{/assets/js/shop/shop-common.js}"></script>
+<script th:src="@{/assets/js/inventory-pagination.js}"></script>
 
 </body>
 </html>

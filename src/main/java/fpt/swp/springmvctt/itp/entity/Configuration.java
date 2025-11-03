@@ -23,5 +23,7 @@ public class Configuration extends BaseEntity {
 
     @Column(name = "config_value", length = 255, nullable = false)
     private String configValue;
+
+
 }
 

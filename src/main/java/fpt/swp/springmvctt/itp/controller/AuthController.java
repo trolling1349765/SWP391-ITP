@@ -1,6 +1,6 @@
 package fpt.swp.springmvctt.itp.controller;
 
-import fpt.swp.springmvctt.itp.entity.User;
+import fpt.swp.springmvctt.itp.entity   .User;
 import fpt.swp.springmvctt.itp.service.UserService;
 import fpt.swp.springmvctt.itp.util.ValidateUtil;
 import jakarta.servlet.http.Cookie;
@@ -69,13 +69,12 @@ public class AuthController {
 
             redirectAttributes.addFlashAttribute("success", "Đăng nhập thành công!");
             session.setAttribute("user", user.get());
-
-            // Null check để tránh crash nếu user.getRole() là null
-            String roleName = (user.get().getRole() != null)
-                ? user.get().getRole().getName()
-                : "CUSTOMER";
+            
+            // ✅ FIX: Check null role trước khi gọi getName()
+            String roleName = (user.get().getRole() != null) ? user.get().getRole().getName() : "CUSTOMER";
             session.setAttribute("role", roleName);
-            session.setAttribute("role", user.get().getRole().getName());
+            
+            // Set user status ACTIVE khi login
             userService.setUserAccess(user.get().getId(), "ACTIVE");
 
             if ("ADMIN".equalsIgnoreCase(roleName)) {
