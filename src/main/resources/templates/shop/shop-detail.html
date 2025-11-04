@@ -19,8 +19,11 @@
 <div class="shop-detail-container">
     <!-- === BACK BUTTON === -->
     <div class="mb-3">
-        <a th:href="@{/admin/registers}" class="btn btn-outline-secondary">
+        <a th:href="@{/admin/registers}" class="btn btn-outline-secondary me-2">
             ← Back to Shop Register
+        </a>
+        <a th:href="@{/admin/shops}" class="btn btn-outline-secondary">
+            ← Back to Manage Shops
         </a>
     </div>
     
@@ -64,19 +67,45 @@
                    and session.user.role.name.equalsIgnoreCase('ADMIN')
                    }">
                     <a th:href="@{'/admin/registers/activate/' + ${shop.id}}" class="btn btn-success">
-                        Active
+                        Accept
                     </a>
                     <a th:href="@{/admin/registers}" class="btn btn-primary">
                         Back
                     </a>
+                    <!-- Reject (soft delete only) -->
                     <form th:action="@{/admin/registers/delete/{id}(id=${shop.id})}" method="post" 
-                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa shop này?');" 
+                          onsubmit="return confirm('Bạn có chắc chắn muốn từ chối shop này? Shop sẽ bị từ chối nhưng user vẫn chưa thể đăng ký lại. Bạn có thể unlock sau.');" 
                           style="display: inline;">
                         <input type="hidden" name="_method" value="delete">
                         <button type="submit" class="btn btn-danger">
-                            Delete
+                            Reject
                         </button>
                     </form>
+                    <!-- Reject & Unlock (reject và unlock luôn) -->
+                    <form th:action="@{/admin/registers/rejectAndUnlock/{id}(id=${shop.id})}" method="post" 
+                          onsubmit="return confirm('Bạn có chắc chắn muốn từ chối shop này và unlock user? User sẽ có thể đăng ký shop mới ngay. Shop cũ vẫn được giữ lại làm bằng chứng.');" 
+                          style="display: inline;">
+                        <button type="submit" class="btn btn-warning">
+                            Reject & Lock User
+                        </button>
+                    </form>
+                </span>
+                
+                <!-- Admin: Allow Re-registration button for deleted shops -->
+                <span th:if="${shop.isDeleted != null and shop.isDeleted
+                   and session.user != null
+                   and session.user.role.name.equalsIgnoreCase('ADMIN')
+                   }">
+                    <form th:action="@{/admin/shops/allowReRegistration/{id}(id=${shop.id})}" method="post" 
+                          onsubmit="return confirm('Bạn có chắc chắn muốn mở khóa user này? User sẽ có thể đăng ký shop mới. Shop cũ vẫn được giữ lại làm bằng chứng.');" 
+                          style="display: inline;">
+                        <button type="submit" class="btn btn-warning">
+                            Allow Re-registration
+                        </button>
+                    </form>
+                    <a th:href="@{/admin/shops}" class="btn btn-primary">
+                        Back
+                    </a>
                 </span>
                 
                 <!-- Seller: Edit and View Store buttons for active shops -->

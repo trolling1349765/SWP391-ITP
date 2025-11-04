@@ -4,6 +4,7 @@ import fpt.swp.springmvctt.itp.dto.request.ShopRegistrationForm;
 import fpt.swp.springmvctt.itp.entity.Category;
 import fpt.swp.springmvctt.itp.entity.Shop;
 import fpt.swp.springmvctt.itp.entity.User;
+import fpt.swp.springmvctt.itp.repository.ShopRepository;
 import fpt.swp.springmvctt.itp.service.CategoryService;
 import fpt.swp.springmvctt.itp.service.ShopService;
 import fpt.swp.springmvctt.itp.service.StorageService;
@@ -29,6 +30,7 @@ public class ShopRegisterController {
     private final ShopService shopService;
     private final CategoryService categoryService;
     private final StorageService storageService;
+    private final ShopRepository shopRepository;
 
     /**
      * Hiển thị form đăng ký shop
@@ -43,8 +45,17 @@ public class ShopRegisterController {
             return "redirect:/login";
         }
 
-        // Kiểm tra user đã có shop chưa
-        if (user.getShop() != null) {
+        // Kiểm tra user đã có shop chưa (query trực tiếp từ DB để tránh lazy loading issue)
+        // Chỉ kiểm tra shop có user_id (shop chưa bị unlock)
+        Shop existingShop = shopRepository.findByUserId(user.getId()).orElse(null);
+        if (existingShop != null) {
+            // Nếu shop đã bị từ chối và chưa được unlock (vẫn có user_id), không cho tạo shop mới
+            if (existingShop.getIsDeleted() != null && existingShop.getIsDeleted()) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Shop của bạn đã bị từ chối. Vui lòng liên hệ admin để được hỗ trợ.");
+                return "redirect:/";
+            }
+            // Nếu shop chưa bị xóa, redirect về dashboard
             redirectAttributes.addFlashAttribute("error", "Bạn đã có shop rồi!");
             return "redirect:/shop/dashboard";
         }
@@ -75,6 +86,21 @@ public class ShopRegisterController {
         if (user == null) {
             redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để đăng ký shop");
             return "redirect:/login";
+        }
+
+        // Kiểm tra user đã có shop chưa (query trực tiếp từ DB để tránh lazy loading)
+        // Chỉ kiểm tra shop có user_id (shop chưa bị unlock)
+        Shop existingShop = shopRepository.findByUserId(user.getId()).orElse(null);
+        if (existingShop != null) {
+            // Nếu shop đã bị từ chối và chưa được unlock (vẫn có user_id), không cho tạo shop mới
+            if (existingShop.getIsDeleted() != null && existingShop.getIsDeleted()) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Shop của bạn đã bị từ chối. Vui lòng liên hệ admin để được hỗ trợ.");
+                return "redirect:/";
+            }
+            // Nếu shop chưa bị xóa, không cho tạo shop mới
+            redirectAttributes.addFlashAttribute("error", "Bạn đã có shop rồi!");
+            return "redirect:/shop/dashboard";
         }
 
         // Kiểm tra validation
@@ -172,19 +198,46 @@ public class ShopRegisterController {
                 }
             }
 
+            // Double check: Kiểm tra lại user đã có shop chưa (tránh race condition)
+            Shop lastCheckShop = shopRepository.findByUserId(user.getId()).orElse(null);
+            if (lastCheckShop != null) {
+                if (lastCheckShop.getIsDeleted() != null && lastCheckShop.getIsDeleted()) {
+                    redirectAttributes.addFlashAttribute("error", 
+                        "Shop của bạn đã bị từ chối. Vui lòng liên hệ admin để được hỗ trợ.");
+                    return "redirect:/";
+                } else {
+                    redirectAttributes.addFlashAttribute("error", "Bạn đã có shop rồi!");
+                    return "redirect:/shop/dashboard";
+                }
+            }
+            
             // Lưu shop
             shopService.save(shop);
             
             System.out.println("✅ Shop registered successfully: " + shop.getShopName() + " (ID: " + shop.getId() + ")");
 
             redirectAttributes.addFlashAttribute("success", 
-                "Đăng ký shop thành công! Vui lòng chờ admin phê duyệt.");
+                "Bạn đã tạo shop thành công, vui lòng đợi xét duyệt.");
             return "redirect:/";
 
+        } catch (org.hibernate.exception.ConstraintViolationException e) {
+            System.err.println("❌ Constraint violation: User đã có shop trong database");
+            e.printStackTrace();
+            model.addAttribute("error", 
+                "Bạn đã có shop trong hệ thống. Vui lòng liên hệ admin nếu shop của bạn đã bị từ chối.");
+            List<Category> categories = categoryService.findAll();
+            model.addAttribute("allCategories", categories);
+            model.addAttribute("user", user);
+            return "shop/shop-register";
         } catch (Exception e) {
             System.err.println("❌ Error registering shop: " + e.getMessage());
             e.printStackTrace();
-            model.addAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            String errorMsg = "Có lỗi xảy ra: " + e.getMessage();
+            // Kiểm tra nếu là lỗi constraint
+            if (e.getMessage() != null && e.getMessage().contains("Duplicate entry")) {
+                errorMsg = "Bạn đã có shop trong hệ thống. Vui lòng liên hệ admin nếu shop của bạn đã bị từ chối.";
+            }
+            model.addAttribute("error", errorMsg);
             List<Category> categories = categoryService.findAll();
             model.addAttribute("allCategories", categories);
             model.addAttribute("user", user);
