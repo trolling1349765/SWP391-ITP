@@ -13,7 +13,8 @@ function enableEdit() {
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value,
         shortDescription: document.getElementById('shortDescription').value,
-        description: document.getElementById('description').value
+        description: document.getElementById('description').value,
+        facebookLink: document.getElementById('facebookLink') ? document.getElementById('facebookLink').value : ''
     };
     
     // Enable all form fields
@@ -30,6 +31,15 @@ function enableEdit() {
     });
     document.getElementById('logoInput').disabled = false;
     document.getElementById('bannerInput').disabled = false;
+    
+    // Show and enable terms checkbox
+    const termsCard = document.getElementById('termsCard');
+    const termsCheckbox = document.getElementById('agreeToTerms');
+    if (termsCard && termsCheckbox) {
+        termsCard.classList.remove('d-none');
+        termsCheckbox.disabled = false;
+        termsCheckbox.checked = false; // Reset checkbox
+    }
     
     // Toggle buttons
     document.getElementById('editBtn').classList.add('d-none');
@@ -64,6 +74,9 @@ function cancelEdit() {
     document.getElementById('phone').value = originalData.phone;
     document.getElementById('shortDescription').value = originalData.shortDescription;
     document.getElementById('description').value = originalData.description;
+    if (document.getElementById('facebookLink')) {
+        document.getElementById('facebookLink').value = originalData.facebookLink;
+    }
     
     // Disable all form fields
     document.querySelectorAll('.edit-field').forEach(el => {
@@ -79,6 +92,15 @@ function cancelEdit() {
     });
     document.getElementById('logoInput').disabled = true;
     document.getElementById('bannerInput').disabled = true;
+    
+    // Hide and disable terms checkbox
+    const termsCard = document.getElementById('termsCard');
+    const termsCheckbox = document.getElementById('agreeToTerms');
+    if (termsCard && termsCheckbox) {
+        termsCard.classList.add('d-none');
+        termsCheckbox.disabled = true;
+        termsCheckbox.checked = false;
+    }
     
     // Toggle buttons
     document.getElementById('editBtn').classList.remove('d-none');
@@ -137,6 +159,7 @@ function validateForm() {
     const categories = document.getElementById('selectedCategories').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
+    const agreeToTerms = document.getElementById('agreeToTerms');
     
     if (!shopName) {
         showAlert('warning', 'Vui lòng nhập tên shop');
@@ -155,6 +178,12 @@ function validateForm() {
     
     if (!phone || !isValidPhone(phone)) {
         showAlert('warning', 'Số điện thoại không hợp lệ (10 chữ số, bắt đầu bằng 0)');
+        return false;
+    }
+    
+    // Check terms and conditions
+    if (agreeToTerms && !agreeToTerms.disabled && !agreeToTerms.checked) {
+        showAlert('warning', '<i class="fas fa-exclamation-triangle me-2"></i>Bạn phải đồng ý với điều khoản dịch vụ để cập nhật thông tin');
         return false;
     }
     
