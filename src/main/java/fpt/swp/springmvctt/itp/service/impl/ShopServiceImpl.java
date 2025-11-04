@@ -130,13 +130,19 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public void delete(Long id) {
-        HttpSession session = httpServletRequest.getSession();
-        User user = (User) session.getAttribute("user");
-        shopRepository.findById(id).ifPresent((shop) ->{
-            shop.setDeleteBy(user.getUsername());
+        HttpSession session = httpServletRequest.getSession(false);
+        User user = session != null ? (User) session.getAttribute("user") : null;
+        
+        shopRepository.findById(id).ifPresent((shop) -> {
+            if (user != null && user.getUsername() != null) {
+                shop.setDeleteBy(user.getUsername());
+            } else {
+                shop.setDeleteBy("admin"); // Fallback if user not found
+            }
             shop.setUpdateAt(LocalDate.now());
             shop.setIsDeleted(true);
             shopRepository.save(shop);
+            System.out.println("✅ Shop ID " + id + " soft deleted by: " + shop.getDeleteBy());
         });
     }
 
@@ -164,5 +170,60 @@ public class ShopServiceImpl implements ShopService {
     @Override
     public Shop save(Shop shop) {
         return shopRepository.save(shop);
+    }
+
+    @Override
+    public void allowReRegistration(Long id) {
+        shopRepository.findById(id).ifPresent((shop) -> {
+            // Chỉ xóa relationship từ user, giữ shop trong DB làm bằng chứng
+            if (shop.getUser() != null) {
+                User user = shop.getUser();
+                // Xóa relationship từ user
+                user.setShop(null);
+                userRepository.save(user);
+                
+                // Xóa relationship từ shop (set user_id = null)
+                shop.setUser(null);
+                shopRepository.save(shop);
+                
+                System.out.println("✅ Removed shop relationship from user: " + user.getUsername());
+                System.out.println("✅ Shop ID " + id + " unlocked (user can now register new shop, old shop kept as evidence)");
+            } else {
+                System.out.println("⚠️ Shop ID " + id + " has no user relationship");
+            }
+        });
+    }
+
+    @Override
+    public void rejectAndUnlock(Long id) {
+        HttpSession session = httpServletRequest.getSession(false);
+        User adminUser = session != null ? (User) session.getAttribute("user") : null;
+        
+        shopRepository.findById(id).ifPresent((shop) -> {
+            // Soft delete shop (reject)
+            if (adminUser != null && adminUser.getUsername() != null) {
+                shop.setDeleteBy(adminUser.getUsername());
+            } else {
+                shop.setDeleteBy("admin");
+            }
+            shop.setUpdateAt(LocalDate.now());
+            shop.setIsDeleted(true);
+            
+            // Unlock user (xóa relationship)
+            if (shop.getUser() != null) {
+                User user = shop.getUser();
+                // Xóa relationship từ user
+                user.setShop(null);
+                userRepository.save(user);
+                
+                // Xóa relationship từ shop (set user_id = null)
+                shop.setUser(null);
+                
+                System.out.println("✅ Shop ID " + id + " rejected and unlocked");
+                System.out.println("✅ User " + user.getUsername() + " can now register new shop");
+            }
+            
+            shopRepository.save(shop);
+        });
     }
 }
