@@ -73,10 +73,6 @@ public class UserController {
                     page,
                     size);
         }
-        if (userpage.getContent().isEmpty()) {
-            model.addAttribute("errorMessage", "Bad request. No users found.");
-            return "redirect:/admin/users";
-        }
 
         model.addAttribute("users", userpage);
         model.addAttribute("currentPage", userpage.getNumber());

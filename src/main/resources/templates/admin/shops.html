@@ -62,7 +62,6 @@
                                                    th:value="${shopName}">
                                         </label>
                                     </td>
-
                                     <td>
                                         <select class="form-select form-select-sm" name="status">
                                             <option value="">All</option>
@@ -74,7 +73,6 @@
                                             </option>
                                         </select>
                                     </td>
-
                                     <!-- User Name Filter -->
                                     <td>
                                         <label>
@@ -134,7 +132,7 @@
                                         <div>
                                         <a th:href="@{'/admin/shopDetail/' + ${shop.id}}"
                                            class="btn btn-success btn-sm">Details</a>
-                                        <form th:action="@{/admin/shops/delete/{id}(id=${shop.id})}" method="post"
+                                        <form th:if="${!shop.isDeleted}" th:action="@{/admin/shops/delete/{id}(id=${shop.id})}" method="post"
                                               onsubmit="return confirm('Bạn có chắc chắn muốn xóa dòng này?');">
                                             <input type="hidden" name="_method" value="delete">
                                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
