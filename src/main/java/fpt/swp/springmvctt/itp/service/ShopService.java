@@ -22,5 +22,7 @@ public interface ShopService {
     void delete(Long id);
 
     void activateShop(Long id);
+    
+    Shop save(Shop shop);
 //    public Page<Shop> findByFilter(String status, int page, int size, Pageable pageable);
 }
