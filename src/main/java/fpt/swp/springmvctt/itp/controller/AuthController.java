@@ -204,7 +204,10 @@ public class AuthController {
     @GetMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
-        userService.setUserAccess(user.getId(), "INACTIVE");
+        // Chỉ set status INACTIVE nếu user đã đăng nhập
+        if (user != null && user.getId() != null) {
+            userService.setUserAccess(user.getId(), "INACTIVE");
+        }
         session.invalidate();
         redirectAttributes.addFlashAttribute("success", "Đăng xuất thành công!");
         return "redirect:/";
