@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký Shop</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/assets/css/shop-register.css}">
+</head>
+<body>
+
+<div class="register-container">
+    <div class="row g-0 register-card" style="margin: 0;">
+        <!-- LEFT PANEL -->
+        <div class="col-lg-4 left-panel">
+            <div class="main-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <h2 class="mb-4 fw-bold">
+                Bắt đầu kinh doanh cùng chúng tôi
+            </h2>
+            <p class="mb-5">Tạo shop của bạn và tiếp cận hàng triệu khách hàng tiềm năng</p>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-shop fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-2">Quản lý shop dễ dàng</h5>
+                    <p class="mb-0">Công cụ quản lý toàn diện cho shop của bạn</p>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-2">Theo dõi doanh thu</h5>
+                    <p class="mb-0">Công cụ quản lý và báo cáo chi tiết</p>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-headset fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-2">Hỗ trợ 24/7</h5>
+                    <p class="mb-0">Đội ngũ hỗ trợ chuyên nghiệp luôn sẵn sàng</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANEL - FORM -->
+        <div class="col-lg-8 right-panel">
+            <div>
+                <h2>Đăng ký Shop</h2>
+                <p class="subtitle">Chuyển từ khách hàng thành người bán hàng</p>
+                
+                <!-- Alert Messages -->
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <form th:action="@{/shop/register}" method="post" th:object="${form}" enctype="multipart/form-data">
+                    
+                    <!-- Thông tin Shop -->
+                    <div class="mb-4">
+                        <h4 class="section-title">
+                            <i class="fas fa-info-circle me-2"></i>Thông tin Shop
+                        </h4>
+                        
+                        <!-- Tên Shop -->
+                        <div class="mb-3">
+                            <label for="shopName" class="form-label">
+                                Tên Shop <span class="required-star">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="shopName" 
+                                   th:field="*{shopName}"
+                                   placeholder="VD: TechStore Vietnam"
+                                   required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('shopName')}" th:errors="*{shopName}"></div>
+                            <small class="form-text text-muted">Tên hiển thị công khai của shop</small>
+                        </div>
+
+                        <!-- Mô tả ngắn -->
+                        <div class="mb-3">
+                            <label for="shortDescription" class="form-label">Mô tả ngắn</label>
+                            <textarea class="form-control" 
+                                      id="shortDescription" 
+                                      th:field="*{shortDescription}"
+                                      rows="2" 
+                                      maxlength="500"
+                                      placeholder="Mô tả ngắn gọn về shop của bạn (1-2 câu)"></textarea>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('shortDescription')}" th:errors="*{shortDescription}"></div>
+                        </div>
+
+                        <!-- Mô tả chi tiết -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Mô tả chi tiết Shop</label>
+                            <textarea class="form-control" 
+                                      id="description" 
+                                      th:field="*{description}"
+                                      rows="4" 
+                                      placeholder="Mô tả chi tiết về shop, sản phẩm kinh doanh, chính sách..."></textarea>
+                        </div>
+
+                        <!-- Danh mục -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Danh mục Shop <span class="required-star">*</span>
+                            </label>
+                            <div class="category-checkbox-container">
+                                <div th:each="category : ${allCategories}" class="form-check">
+                                    <input class="form-check-input category-checkbox" 
+                                           type="checkbox" 
+                                           th:id="${'cat_' + category.id}"
+                                           th:value="${category.categoryName}"
+                                           name="categoryCheckbox">
+                                    <label class="form-check-label" th:for="${'cat_' + category.id}">
+                                        <span th:text="${category.categoryName}">Category</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <input type="hidden" id="categories" th:field="*{categories}" required>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('categories')}" th:errors="*{categories}"></div>
+                            <small class="form-text text-muted">Chọn một hoặc nhiều danh mục sản phẩm</small>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin liên hệ -->
+                    <div class="mb-4">
+                        <h4 class="section-title">
+                            <i class="fas fa-address-book me-2"></i>Thông tin liên hệ
+                        </h4>
+                        
+                        <div class="row">
+                            <!-- Email (readonly - từ user) -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Email <span class="required-star">*</span>
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       th:value="${user.email}" 
+                                       readonly
+                                       style="background-color: #e9ecef;">
+                                <small class="form-text text-muted">Email từ tài khoản của bạn</small>
+                            </div>
+
+                            <!-- Số điện thoại -->
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">
+                                    Số điện thoại <span class="required-star">*</span>
+                                </label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone" 
+                                       th:field="*{phone}"
+                                       placeholder="0912345678"
+                                       pattern="0[0-9]{9}"
+                                       required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                                <small class="form-text text-muted">10 số, bắt đầu bằng 0</small>
+                            </div>
+                        </div>
+
+                        <!-- Link Facebook -->
+                        <div class="mb-3">
+                            <label for="fbLink" class="form-label">
+                                <i class="fab fa-facebook text-primary me-2"></i>Link Facebook (không bắt buộc)
+                            </label>
+                            <input type="url" 
+                                   class="form-control" 
+                                   id="fbLink" 
+                                   th:field="*{fbLink}"
+                                   placeholder="https://facebook.com/yourshop">
+                            <small class="form-text text-muted">Link trang Facebook của shop</small>
+                        </div>
+                    </div>
+
+                    <!-- Hình ảnh -->
+                    <div class="mb-4">
+                        <h4 class="section-title">
+                            <i class="fas fa-images me-2"></i>Hình ảnh Shop
+                        </h4>
+                        
+                        <div class="row">
+                            <!-- Logo Shop -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Logo Shop (Ảnh đại diện)</label>
+                                <div class="image-preview mx-auto" id="logoPreviewContainer" onclick="document.getElementById('logoImage').click()">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                                        <p class="mb-0">Click để tải logo</p>
+                                        <small>PNG, JPG (Max 5MB)</small>
+                                    </div>
+                                    <img id="logoPreview" style="display: none;">
+                                </div>
+                                <input type="file" 
+                                       id="logoImage" 
+                                       name="logoImage" 
+                                       accept="image/*" 
+                                       style="display: none;"
+                                       onchange="previewImage(this, 'logoPreview', 'logoPreviewContainer')">
+                            </div>
+
+                            <!-- Banner Shop -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Banner Shop (Ảnh bìa)</label>
+                                <div class="banner-preview" id="bannerPreviewContainer" onclick="document.getElementById('bannerImage').click()">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                                        <p class="mb-0">Click để tải banner</p>
+                                        <small>1200x300px, PNG/JPG (Max 5MB)</small>
+                                    </div>
+                                    <img id="bannerPreview" style="display: none;">
+                                </div>
+                                <input type="file" 
+                                       id="bannerImage" 
+                                       name="bannerImage" 
+                                       accept="image/*" 
+                                       style="display: none;"
+                                       onchange="previewImage(this, 'bannerPreview', 'bannerPreviewContainer')">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Điều khoản -->
+                    <div class="mb-4">
+                        <div class="terms-box">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="agreeToTerms" 
+                                       th:field="*{agreeToTerms}"
+                                       required>
+                                <label class="form-check-label" for="agreeToTerms">
+                                    <strong>Tôi đồng ý với</strong> 
+                                    <a href="#" class="text-primary">Điều khoản dịch vụ</a> và 
+                                    <a href="#" class="text-primary">Chính sách bán hàng</a> 
+                                    <span class="required-star">*</span>
+                                </label>
+                            </div>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('agreeToTerms')}" th:errors="*{agreeToTerms}"></div>
+                            <small class="text-muted d-block mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Bạn phải đồng ý với điều khoản để tiếp tục
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary btn-register flex-grow-1">
+                            <i class="fas fa-paper-plane me-2"></i>Đăng ký Shop
+                        </button>
+                        <a th:href="@{/shop/register/cancel}" class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-times me-2"></i>Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Preview image function
+    function previewImage(input, imgId, containerId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(imgId);
+                const container = document.getElementById(containerId);
+                img.src = e.target.result;
+                img.style.display = 'block';
+                container.querySelector('.text-center').style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Handle category checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.category-checkbox');
+        const hiddenInput = document.getElementById('categories');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const selected = Array.from(checkboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+                hiddenInput.value = selected.join(', ');
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
