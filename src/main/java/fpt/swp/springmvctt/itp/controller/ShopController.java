@@ -692,11 +692,11 @@ public class    ShopController {
             response.put("message", "Upload ảnh thành công!");
             response.put("imagePath", imagePath);
 
-            System.out.println("✅ Image uploaded successfully: " + imagePath);
+            System.out.println(" Image uploaded successfully: " + imagePath);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.err.println("❌ Error uploading image: " + e.getMessage());
+            System.err.println(" Error uploading image: " + e.getMessage());
             e.printStackTrace();
             response.put("success", false);
             response.put("message", "Lỗi khi upload ảnh: " + e.getMessage());
@@ -903,16 +903,18 @@ public class    ShopController {
             shop.setShortDescription(shortDescription != null ? shortDescription.trim() : null);
             shop.setDescription(description != null ? description.trim() : null);
             
-            // Upload shop banner image if provided
+            // Upload shop banner image if provided (lưu local + copy to target)
             if (shopImage != null && !shopImage.isEmpty()) {
-                String imageUrl = storageService.uploadImage(shopImage);
+                String imageUrl = storageService.saveShopBanner(shopImage);
                 shop.setImage(imageUrl);
+                System.out.println(" Shop banner updated: " + imageUrl);
             }
             
-            // Upload shop logo if provided
+            // Upload shop logo if provided (lưu local + copy to target)
             if (logoImage != null && !logoImage.isEmpty()) {
-                String logoUrl = storageService.uploadImage(logoImage);
+                String logoUrl = storageService.saveShopLogo(logoImage);
                 shop.setImageUrl(logoUrl);
+                System.out.println(" Shop logo updated: " + logoUrl);
             }
             
             shopRepository.save(shop);
