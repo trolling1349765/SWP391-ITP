@@ -64,49 +64,8 @@ public class ProductServiceImpl implements ProductService {
         System.out.println(" Created product ID: " + savedProduct.getId() + " - Name: " + savedProduct.getProductName());
         System.out.println(" Detailed Description: " + savedProduct.getDetailedDescription());
 
-        // Import serials from Excel file if provided
-        System.out.println(" Checking for Excel file...");
-        System.out.println("   - form.getSerialFile() = " + (form.getSerialFile() != null ? "NOT NULL" : "NULL"));
-        if (form.getSerialFile() != null) {
-            System.out.println("   - file.isEmpty() = " + form.getSerialFile().isEmpty());
-            System.out.println("   - file.getOriginalFilename() = " + form.getSerialFile().getOriginalFilename());
-            System.out.println("   - file.getSize() = " + form.getSerialFile().getSize() + " bytes");
-        }
-
-        if (form.getSerialFile() != null && !form.getSerialFile().isEmpty()) {
-            try {
-                System.out.println(" Starting Excel import for product " + savedProduct.getId() + "...");
-                ExcelImportForm importForm = new ExcelImportForm();
-                importForm.setProductId(savedProduct.getId());
-                importForm.setExcelFile(form.getSerialFile());
-                importForm.setOverrideExisting(false);
-
-                ImportResult result = excelImportService.importSerialsFromExcel(importForm);
-                System.out.println(" Import completed!");
-                System.out.println("   - Imported: " + result.getImportedCount());
-                System.out.println("   - Skipped: " + result.getSkippedCount());
-                System.out.println("   - Errors: " + result.getErrors().size());
-                System.out.println("   - Warnings: " + result.getWarnings().size());
-
-                if (result.getErrors().size() > 0) {
-                    System.out.println(" Import errors: " + result.getErrors());
-                }
-                if (result.getWarnings().size() > 0) {
-                    System.out.println(" Import warnings: " + result.getWarnings());
-                }
-
-                // Rebuild product quantity after import
-                System.out.println("Rebuilding product quantity...");
-                savedProduct = inventoryService.rebuildProductQuantity(savedProduct.getId());
-                System.out.println(" Final availableStock: " + savedProduct.getAvailableStock());
-
-            } catch (Exception e) {
-                System.err.println("Error importing serials: " + e.getMessage());
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println(" No Excel file provided - product created without serials");
-        }
+        // Excel import will be handled in updateProduct, not during creation
+        System.out.println(" Product created successfully. Serial codes can be added later via updateProduct.");
 
         return savedProduct;
     }

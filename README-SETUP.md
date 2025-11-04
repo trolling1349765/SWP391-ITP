@@ -7,7 +7,7 @@
 ### Bước 1: Tạo file
 ```bash
 cd src/main/resources
-cp application-local.properties.example application-local.properties
+cp application-local.properties.example application-dev.properties
 ```
 
 ### Bước 2: Điền thông tin
@@ -38,7 +38,7 @@ spring.mail.password=your_gmail_app_password
 ```
 
 ## ⚠️ LƯU Ý
-- **KHÔNG BAO GIỜ** commit file `application-local.properties`
+- **KHÔNG BAO GIỜ** commit file `application-dev.properties`
 - File này đã được thêm vào `.gitignore`
 - Liên hệ team leader để lấy credentials cho development
 

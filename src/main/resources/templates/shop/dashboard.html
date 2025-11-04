@@ -208,8 +208,8 @@
                                      th:attr="data-original-path=${p.image},data-product-id=${p.id}"
                                      class="img-thumbnail" 
                                      style="width:56px;height:56px;object-fit:cover;"
-                                     onerror="console.error('❌ Product #' + this.getAttribute('data-product-id') + ' image failed. DB path:', this.getAttribute('data-original-path'), 'Full URL:', this.src); this.parentElement.innerHTML='<span class=\'badge bg-danger\' title=\'' + this.getAttribute('data-original-path') + '\'>Lỗi ảnh</span>';"
-                                     onload="console.log('✅ Product #' + this.getAttribute('data-product-id') + ' loaded:', this.getAttribute('data-original-path'));"/>
+                                     onerror="console.error(' Product #' + this.getAttribute('data-product-id') + ' image failed. DB path:', this.getAttribute('data-original-path'), 'Full URL:', this.src); this.parentElement.innerHTML='<span class=\'badge bg-danger\' title=\'' + this.getAttribute('data-original-path') + '\'>Lỗi ảnh</span>';"
+                                     onload="console.log(' Product #' + this.getAttribute('data-product-id') + ' loaded:', this.getAttribute('data-original-path'));"/>
                             </div>
                             <span th:unless="${p.image}" class="badge bg-secondary">Chưa có ảnh</span>
                         </td>

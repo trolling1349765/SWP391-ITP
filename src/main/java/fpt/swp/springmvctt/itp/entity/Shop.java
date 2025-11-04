@@ -39,6 +39,7 @@ public class Shop extends BaseEntity {
     @Column(length=255) private String img;
     @Column(name="image_url", length=500) private String imageUrl;
     @Column(name="image", length=255)     private String image;
+    @Column(name="facebook_link", length=500) private String facebookLink;
 
     // === Relations ===
     // One shop -> many products (relationship handled via shopId in Product)

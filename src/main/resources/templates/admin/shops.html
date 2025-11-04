@@ -27,13 +27,20 @@
             <div class="card shadow-sm">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <h3 th:if="${errorMessage != null}"
-                            th:text="${errorMessage}"
-                            class="text-danger"></h3>
-                        <!--            error-->
-                        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-                            <span th:text="${errorMessage}"></span>
-                        </div>
+            <h3 th:if="${errorMessage != null}"
+                th:text="${errorMessage}"
+                class="text-danger"></h3>
+<!--            error-->
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Success Message -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
 
                         <form th:action="@{/admin/shops}" method="get">
                             <table class="table table-hover align-middle mb-0">
@@ -62,6 +69,7 @@
                                                    th:value="${shopName}">
                                         </label>
                                     </td>
+
                                     <td>
                                         <select class="form-select form-select-sm" name="status">
                                             <option value="">All</option>
@@ -73,6 +81,7 @@
                                             </option>
                                         </select>
                                     </td>
+
                                     <!-- User Name Filter -->
                                     <td>
                                         <label>
@@ -129,13 +138,27 @@
                                     <td th:text="${shop.updateAt}"></td>
                                     <td th:text="${shop.rating}">4.5</td>
                                     <td>
-                                        <div>
-                                        <a th:href="@{'/admin/shopDetail/' + ${shop.id}}"
+                                        <div class="d-flex gap-2 flex-wrap">
+                                        <a th:href="@{'/admin/shops/shopDetail/' + ${shop.id}}"
                                            class="btn btn-success btn-sm">Details</a>
-                                        <form th:if="${!shop.isDeleted}" th:action="@{/admin/shops/delete/{id}(id=${shop.id})}" method="post"
-                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa dòng này?');">
+
+                                        <!-- Soft Delete button (chỉ hiện khi shop chưa bị xóa) -->
+                                        <form th:if="${shop.isDeleted == null or !shop.isDeleted}"
+                                              th:action="@{/admin/shops/delete/{id}(id=${shop.id})}"
+                                              method="post"
+                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa shop này?');"
+                                              style="display: inline;">
                                             <input type="hidden" name="_method" value="delete">
                                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        </form>
+
+                                        <!-- Allow Re-registration button (chỉ hiện khi shop đã bị xóa) -->
+                                        <form th:if="${shop.isDeleted != null and shop.isDeleted}"
+                                              th:action="@{/admin/shops/allowReRegistration/{id}(id=${shop.id})}"
+                                              method="post"
+                                              onsubmit="return confirm('Bạn có chắc chắn muốn mở khóa user này? User sẽ có thể đăng ký shop mới. Shop cũ vẫn được giữ lại làm bằng chứng.');"
+                                              style="display: inline;">
+                                            <button type="submit" class="btn btn-warning btn-sm">Allow Re-registration</button>
                                         </form>
                                         </div>
                                     </td>

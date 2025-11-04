@@ -22,5 +22,13 @@ public interface ShopService {
     void delete(Long id);
 
     void activateShop(Long id);
+    
+    Shop save(Shop shop);
+    
+    // Unlock user để cho phép đăng ký shop mới (giữ shop cũ trong DB làm bằng chứng)
+    void allowReRegistration(Long id);
+    
+    // Reject shop mới và unlock luôn để user có thể đăng ký lại
+    void rejectAndUnlock(Long id);
 //    public Page<Shop> findByFilter(String status, int page, int size, Pageable pageable);
 }
