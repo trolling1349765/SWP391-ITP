@@ -19,6 +19,12 @@
             <div class="d-flex gap-2">
                 <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
                 <a th:href="@{|/shop/updateProduct/${product.id}|}" class="btn btn-primary btn-sm">Sửa</a>
+                <!-- Nút thêm mã sản phẩm nếu chưa có serial -->
+                <a th:if="${serials == null || serials.empty}"
+                   th:href="@{|/shop/updateProduct/${product.id}|}" 
+                   class="btn btn-success btn-sm">
+                    Thêm mã sản phẩm
+                </a>
                 <button th:onclick="'deleteProduct(' + ${product.id} + ')'" class="btn btn-sm btn-outline-danger">Xóa</button>
             </div>
         </div>
@@ -67,6 +73,11 @@
                         <div class="mb-3"><strong>Tổng số serial:</strong> 
                             <span th:if="${serials != null && !serials.empty}" class="badge bg-success" th:text="${serialCount}">0</span>
                             <span th:if="${serials == null || serials.empty}" class="badge bg-warning">Chưa có serial</span>
+                            <span th:if="${serials == null || serials.empty}" class="ms-2">
+                                <a th:href="@{|/shop/updateProduct/${product.id}|}" class="btn btn-sm btn-success">
+                                    Thêm mã sản phẩm từ Excel
+                                </a>
+                            </span>
                         </div>
                     </div>
                 </div>

@@ -217,11 +217,10 @@ public class    ShopController {
             Long shopId = getShopIdFromSession(session);
             Product created = productService.createProduct(shopId, form); // HIDDEN
 
-            // ProductService already handles Excel import, just show success message with product name
-            String successMsg = String.format("Đã tạo sản phẩm '%s' (#%d) thành công! Đã import %d serials.",
+            // Product created successfully - serials will be added later via updateProduct
+            String successMsg = String.format("Đã tạo sản phẩm '%s' (#%d) thành công! Vui lòng vào 'Sửa' để thêm mã sản phẩm từ Excel.",
                     created.getProductName(),
-                    created.getId(),
-                    created.getAvailableStock());
+                    created.getId());
             ra.addFlashAttribute("ok", successMsg);
 
             return "redirect:/shop/dashboard";
@@ -263,6 +262,34 @@ public class    ShopController {
         try {
             Product updated = productService.updateProduct(id, form);
 
+            // Import serials from Excel file if provided
+            if (form.getSerialFile() != null && !form.getSerialFile().isEmpty()) {
+                try {
+                    System.out.println(" Starting Excel import for product " + id + "...");
+                    ExcelImportForm importForm = new ExcelImportForm();
+                    importForm.setProductId(id);
+                    importForm.setExcelFile(form.getSerialFile());
+                    importForm.setOverrideExisting(false);
+
+                    ImportResult result = excelImportService.importSerialsFromExcel(importForm);
+                    System.out.println(" Import completed!");
+                    System.out.println("   - Imported: " + result.getImportedCount());
+                    System.out.println("   - Skipped: " + result.getSkippedCount());
+                    System.out.println("   - Errors: " + result.getErrors().size());
+                    System.out.println("   - Warnings: " + result.getWarnings().size());
+
+                    // Rebuild product quantity after import
+                    updated = inventoryService.rebuildProductQuantity(id);
+                    System.out.println(" Final availableStock: " + updated.getAvailableStock());
+
+                } catch (Exception e) {
+                    System.err.println("Error importing serials: " + e.getMessage());
+                    e.printStackTrace();
+                    ra.addFlashAttribute("error", "Lỗi khi import Excel: " + e.getMessage());
+                    return "redirect:/shop/updateProduct/" + id;
+                }
+            }
+
             // Cập nhật status
             if (status != null) {
                 updated = productService.changeStatus(id, status);
@@ -270,11 +297,17 @@ public class    ShopController {
                         updated.getProductName(),
                         updated.getId(),
                         status);
+                if (form.getSerialFile() != null && !form.getSerialFile().isEmpty()) {
+                    successMsg += " | Đã import " + updated.getAvailableStock() + " serials từ Excel";
+                }
                 ra.addFlashAttribute("ok", successMsg);
             } else {
                 String successMsg = String.format("Đã cập nhật sản phẩm '%s' (#%d) thành công!",
                         updated.getProductName(),
                         updated.getId());
+                if (form.getSerialFile() != null && !form.getSerialFile().isEmpty()) {
+                    successMsg += " | Đã import " + updated.getAvailableStock() + " serials từ Excel";
+                }
                 ra.addFlashAttribute("ok", successMsg);
             }
             return "redirect:/shop/dashboard";
