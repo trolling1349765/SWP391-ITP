@@ -160,4 +160,9 @@ public class ShopServiceImpl implements ShopService {
         return shopRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Shop not found: " + id));
     }
+
+    @Override
+    public Shop save(Shop shop) {
+        return shopRepository.save(shop);
+    }
 }
