@@ -1,7 +1,10 @@
 package fpt.swp.springmvctt.itp.controller;
 
+import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.Shop;
+import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.service.ShopService;
+import fpt.swp.springmvctt.itp.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -10,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -17,6 +21,12 @@ public class ShopAdminController {
 
     @Autowired
     ShopService shopService;
+    
+    @Autowired
+    StorageService storageService;
+    
+    @Autowired
+    ProductRepository productRepository;
 
     @GetMapping("/registerDetail/{id}")
     public String registerDetail(
@@ -24,6 +34,52 @@ public class ShopAdminController {
             @PathVariable Long id
     ) {
         Shop shop = shopService.findById(id);
+        
+        // Sync images from database to target/classes for immediate display
+        if (shop != null) {
+            System.out.println("Loading shop ID: " + id);
+            System.out.println("Shop name: " + shop.getShopName());
+            System.out.println("ImageUrl from DB: " + shop.getImageUrl());
+            System.out.println("Image from DB: " + shop.getImage());
+            
+            if (shop.getImageUrl() != null && !shop.getImageUrl().isEmpty()) {
+                System.out.println("   Syncing logo (imageUrl)...");
+                storageService.syncShopImagesFromDatabase(shop.getImageUrl());
+            } else {
+                System.out.println("Shop imageUrl is null or empty");
+            }
+            
+            if (shop.getImage() != null && !shop.getImage().isEmpty()) {
+                System.out.println("   Syncing banner (image)...");
+                storageService.syncShopImagesFromDatabase(shop.getImage());
+            } else {
+                System.out.println("Shop image is null or empty");
+            }
+            
+            // Calculate product statistics
+            List<Product> products = productRepository.findByShopIdOrderByIdDesc(shop.getId());
+            int totalProducts = products.size();
+            int inStock = 0;
+            int lowStock = 0;
+            int outOfStock = 0;
+            
+            for (Product p : products) {
+                int stock = p.getAvailableStock() != null ? p.getAvailableStock() : 0;
+                if (stock == 0) {
+                    outOfStock++;
+                } else if (stock <= 10) {
+                    lowStock++;
+                } else {
+                    inStock++;
+                }
+            }
+            
+            model.addAttribute("totalProducts", totalProducts);
+            model.addAttribute("inStock", inStock);
+            model.addAttribute("lowStock", lowStock);
+            model.addAttribute("outOfStock", outOfStock);
+        }
+        
         model.addAttribute("shop", shop);
         return "shop/shop-detail";
     }

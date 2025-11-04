@@ -32,8 +32,8 @@
                              th:attr="data-original-path=${product.image}"
                              class="img-fluid rounded border" 
                              alt="image"
-                             onerror="console.error('❌ Failed to load image:', this.getAttribute('data-original-path'), 'Full URL:', this.src); this.style.display='none';"
-                             onload="console.log('✅ Image loaded:', this.getAttribute('data-original-path'), 'Full URL:', this.src);"/>
+                             onerror="console.error(' Failed to load image:', this.getAttribute('data-original-path'), 'Full URL:', this.src); this.style.display='none';"
+                             onload="console.log(' Image loaded:', this.getAttribute('data-original-path'), 'Full URL:', this.src);"/>
                         <div th:unless="${product.image}" class="alert alert-secondary">Chưa có ảnh</div>
                     </div>
                     <div class="col-md-8">

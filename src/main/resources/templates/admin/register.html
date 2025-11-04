@@ -2,13 +2,17 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Shop Management</title>
+    <title>Shop Registration Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/assets/css/sidebar.css}">
     <style>
         .table thead {
             background-color: #1f2937;
             color: white;
+        }
+        .table td {
+            vertical-align: middle;
         }
     </style>
 </head>
@@ -31,17 +35,18 @@
                 <span th:text="${errorMessage}"></span>
             </div>
             <form th:action="@{/admin/registers}" method="get">
-                <table class="table table-bordered">
+                <table class="table table-bordered table-hover">
                     <thead>
                     <tr>
                         <th>ID</th>
                         <th>Shop Name</th>
+                        <th>Categories</th>
+                        <th>Phone</th>
                         <th>Status</th>
                         <th>User</th>
                         <th>Created At</th>
                         <th>Is Delete</th>
                         <th>Delete By</th>
-                        <th>Rating</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -77,8 +82,7 @@
                             </label>
                         </td>
 
-                        <!-- Rating Filter -->
-                        <td></td>
+                        <!-- Other empty filter columns -->
                         <td></td>
                         <td></td>
 
@@ -92,22 +96,41 @@
                     <!-- Hiển thị danh sách shop -->
                     <tr th:each="shop : ${shops}">
                         <td th:text="${shop.id}">1</td>
-                        <td th:text="${shop.shopName}">Shop A</td>
-                        <td th:text="${shop.status}">Inactive</td>
+                        <td>
+                            <strong th:text="${shop.shopName}">Shop A</strong>
+                            <br>
+                            <small class="text-muted" th:text="${shop.email}"></small>
+                        </td>
+                        <td>
+                            <small th:text="${shop.category}">Category</small>
+                        </td>
+                        <td th:text="${shop.phone}">0123456789</td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${shop.status == 'ACTIVE' ? 'bg-success' : (shop.status == 'INACTIVE' ? 'bg-warning' : 'bg-secondary')}"
+                                  th:text="${shop.status}">
+                                Inactive
+                            </span>
+                        </td>
                         <td th:text="${shop.user != null ? shop.user.username : 'N/A'}">user01</td>
                         <td th:text="${#temporals.format(shop.createAt, 'yyyy-MM-dd')}"></td>
-                        <td th:text="${shop.isDeleted ? 'Yes' : 'No'}"></td>
-                        <td th:text="${shop.isDeleted ? shop.deleteBy : ''}"></td>
-                        <td th:text="${shop.rating}">4.5</td>
+                        <td th:text="${shop.isDeleted != null and shop.isDeleted ? 'Yes' : 'No'}"></td>
+                        <td th:text="${shop.isDeleted != null and shop.isDeleted ? (shop.deleteBy ?: '') : ''}"></td>
                         <td>
                             <a th:href="@{'/admin/registerDetail/' + ${shop.id}}"
-                               class="btn btn-success btn-sm">Details</a>
+                               class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Details
+                            </a>
                         </td>
                     </tr>
 
                     <!-- Không có dữ liệu -->
                     <tr th:if="${#lists.isEmpty(shops)}">
-                        <td colspan="8" class="text-center">No shops found</td>
+                        <td colspan="10" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <br>
+                            Không có shop nào đang chờ duyệt
+                        </td>
                     </tr>
                     </tbody>
                 </table>

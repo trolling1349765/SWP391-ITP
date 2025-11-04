@@ -15,6 +15,17 @@ public class SellerFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
+        
+        String requestPath = req.getRequestURI();
+        String contextPath = req.getContextPath();
+        
+        // Exclude shop registration URLs - cho phép CUSTOMER đăng ký shop
+        if (requestPath.startsWith(contextPath + "/shop/register")) {
+            // Cho phép CUSTOMER truy cập trang đăng ký shop
+            chain.doFilter(request, response);
+            return;
+        }
+        
         HttpSession session = req.getSession(false); // lấy session nếu có
 
         // lấy role của user trong session
@@ -25,7 +36,6 @@ public class SellerFilter implements Filter {
             res.sendRedirect(req.getContextPath() + "/?message=not_authorized");
             return; // không cho đi tiếp
         }
-
 
         // Nếu có quyền → đi tiếp
         chain.doFilter(request, response);
