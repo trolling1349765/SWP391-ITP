@@ -217,7 +217,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void sendPasswordResetEmail(String email) {
         String token = generatePasswordResetToken(email);
-        String resetLink = "http://localhost:8080/reset-password?token=" + token;
+        String resetLink = "http://localhost:8080/itp/reset-password?token=" + token;
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();

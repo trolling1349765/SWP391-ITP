@@ -168,7 +168,7 @@ public class AuthController {
     public String showResetPasswordForm(@RequestParam("token") String token, Model model) {
         if (userService.isValidPasswordResetToken(token)) {
             model.addAttribute("token", token);
-            return "login/reset-password-form";
+            return "login/reset-password";
         } else {
             model.addAttribute("error", "Token không hợp lệ hoặc đã hết hạn");
             return "login/forgot-password";
