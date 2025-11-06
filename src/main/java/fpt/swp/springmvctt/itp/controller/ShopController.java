@@ -633,7 +633,7 @@ public class    ShopController {
             System.out.println("Product not found: " + e.getMessage());
             response.put("success", false);
             response.put("message", "Không tìm thấy sản phẩm");
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body(response);
         } catch (Exception e) {
             System.out.println("Error deleting product: " + e.getMessage());
             e.printStackTrace();
