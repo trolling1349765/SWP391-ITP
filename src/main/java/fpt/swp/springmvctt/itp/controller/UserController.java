@@ -2,15 +2,12 @@ package fpt.swp.springmvctt.itp.controller;
 
 import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.service.UserService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import fpt.swp.springmvctt.itp.repository.ShopRepository;
 
 import java.time.LocalDate;
 
