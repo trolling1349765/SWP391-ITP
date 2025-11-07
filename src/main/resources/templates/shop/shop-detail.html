@@ -64,7 +64,7 @@
                 <span th:if="${!shop.isDeleted
                    and shop.status.equalsIgnoreCase('INACTIVE')
                    and session.user != null
-                   and session.user.role.name.equalsIgnoreCase('ADMIN')
+                   and session.role == 'ADMIN'
                    }">
                     <a th:href="@{'/admin/registers/activate/' + ${shop.id}}" class="btn btn-success">
                         Accept
@@ -94,7 +94,7 @@
                 <!-- Admin: Allow Re-registration button for deleted shops -->
                 <span th:if="${shop.isDeleted != null and shop.isDeleted
                    and session.user != null
-                   and session.user.role.name.equalsIgnoreCase('ADMIN')
+                   and session.role == 'ADMIN'
                    }">
                     <form th:action="@{/admin/shops/allowReRegistration/{id}(id=${shop.id})}" method="post" 
                           onsubmit="return confirm('Bạn có chắc chắn muốn mở khóa user này? User sẽ có thể đăng ký shop mới. Shop cũ vẫn được giữ lại làm bằng chứng.');" 
@@ -112,7 +112,7 @@
                 <span th:if="${!shop.isDeleted
                    and shop.status.equalsIgnoreCase('ACTIVE')
                    and session.user != null
-                   and session.user.role.name.equalsIgnoreCase('SELLER')
+                   and session.role == 'SELLER'
                    }">
                     <a href="#" class="btn btn-primary">
                         Edit

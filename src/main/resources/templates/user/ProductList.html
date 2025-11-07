@@ -71,16 +71,14 @@
             <div class="product-card position-relative">
 
                 <!-- Ảnh: fallback khi null/empty -->
-                <img th:src="${product.img} ?: 'https://picsum.photos/seed/placeholder/400/300'"
+                <img th:src="${product.image} ?: 'https://picsum.photos/seed/placeholder/400/300'"
                      alt="Ảnh sản phẩm" class="product-img"/>
 
                 <div class="product-body">
                     <h6 class="fw-bold mb-1" th:text="${product.productName}">Tên sản phẩm</h6>
 
                     <!-- Hiển thị category của sản phẩm nếu có -->
-                    <div class="mb-1 text-muted small" th:if="${product.category != null}">
-                        <span class="badge text-bg-light" th:text="${product.category.categoryName}">Danh mục</span>
-                    </div>
+                    <!-- Category hiện không được hiển thị vì Product entity chỉ có categoryId -->
 
                     <div class="product-price mb-1">
                         <span th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + '₫'">0₫</span>

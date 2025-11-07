@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Arrays;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
+import fpt.swp.springmvctt.itp.repository.OrderItemRepository;
 import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.repository.ProductStoreRepository;
+import fpt.swp.springmvctt.itp.repository.UserRepository;
 import fpt.swp.springmvctt.itp.service.CategoryService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
 import fpt.swp.springmvctt.itp.service.ProductService;
@@ -61,6 +63,8 @@ public class    ShopController {
     private final CategoryRepository categoryRepository;
     private final ShopRepository shopRepository;
     private final StorageService storageService;
+    private final OrderItemRepository orderItemRepository;
+    private final UserRepository userRepository;
 
 
     private Long getShopIdFromSession(HttpSession session) {
@@ -87,6 +91,14 @@ public class    ShopController {
             Long shopId = getShopIdFromSession(session);
             Shop shop = shopRepository.findById(shopId).orElse(null);
             model.addAttribute("shop", shop);
+            
+            // Thêm user balance vào model để hiển thị tiền
+            User sessionUser = (User) session.getAttribute("user");
+            if (sessionUser != null) {
+                // Reload user từ DB để lấy balance mới nhất
+                User user = userRepository.findById(sessionUser.getId()).orElse(sessionUser);
+                model.addAttribute("userBalance", user.getBalance());
+            }
         } catch (Exception e) {
             // If error, just don't add shop to model (will show default "Admin")
             System.err.println("Could not load shop for header: " + e.getMessage());
@@ -417,6 +429,13 @@ public class    ShopController {
             int activeCount = 0, hiddenCount = 0, blockedCount = 0;
 
             for (ProductStore ps : productStores) {
+                // ============================================================
+                // FIX: Kiểm tra xem serial đã bán chưa
+                // ============================================================
+                // Nếu ProductStore có OrderItem với order status = COMPLETED hoặc PENDING
+                // thì coi như đã bán
+                boolean isSold = orderItemRepository.isProductStoreSold(ps.getId());
+                
                 Map<String, Object> serialMap = new LinkedHashMap<>();
                 serialMap.put("serialCode", ps.getSerialCode());
                 serialMap.put("secretCode", ps.getSecretCode());
@@ -425,7 +444,7 @@ public class    ShopController {
                 serialMap.put("information", ps.getInfomation());
                 serialMap.put("status", ps.getStatus().name());
                 serialMap.put("importDate", ps.getCreateAt() != null ? ps.getCreateAt().toString() : "N/A");
-                serialMap.put("isSold", false); // Mới add chưa bán, luôn là false
+                serialMap.put("isSold", isSold); // Kiểm tra từ database
                 serials.add(serialMap);
 
                 // Count by status
