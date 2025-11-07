@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -16,6 +17,33 @@ public class ProductController {
 
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
+
+    /**
+     * Product detail page for customers
+     */
+    @GetMapping("/product/{id}")
+    public String productDetail(@PathVariable Long id, Model model, jakarta.servlet.http.HttpSession session) {
+        try {
+            fpt.swp.springmvctt.itp.entity.Product product = productService.get(id);
+            
+            // Check if product is active
+            if (product.getStatus() != fpt.swp.springmvctt.itp.entity.enums.ProductStatus.ACTIVE) {
+                return "redirect:/products?error=product_not_available";
+            }
+            
+            model.addAttribute("product", product);
+            
+            // Get user balance if logged in
+            fpt.swp.springmvctt.itp.entity.User user = (fpt.swp.springmvctt.itp.entity.User) session.getAttribute("user");
+            if (user != null) {
+                model.addAttribute("userBalance", user.getBalance());
+            }
+            
+            return "product/detail-customer";
+        } catch (Exception e) {
+            return "redirect:/products?error=product_not_found";
+        }
+    }
 
     @GetMapping("/products")
     public String showAllProducts(
