@@ -1012,7 +1012,8 @@ public class    ShopController {
             // Update basic info
             shop.setShopName(shopName.trim());
             shop.setCategory(category.trim());
-            shop.setEmail(email.trim().toLowerCase());
+            // DO NOT update email - it's used for login and cannot be changed
+            // shop.setEmail(email.trim().toLowerCase()); // REMOVED: Email is locked
             shop.setPhone(phone.trim());
             shop.setShortDescription(shortDescription != null ? shortDescription.trim() : null);
             shop.setDescription(description != null ? description.trim() : null);
