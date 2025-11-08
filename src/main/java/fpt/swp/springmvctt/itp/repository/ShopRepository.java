@@ -33,5 +33,5 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
                            @Param("toDate") LocalDate toDate,
                            Pageable pageable);
 
-    List<Shop> findTop10ByOrderByCreateAtDesc();
+    List<Shop> findTop10ByOrderByIdDesc();
 }

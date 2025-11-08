@@ -49,7 +49,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         }
 
         // ===== 2. user gần đây =====
-        List<User> recentUserEntities = userRepository.findTop10ByOrderByCreateAtDesc();
+        List<User> recentUserEntities = userRepository.findTop10ByOrderByIdDesc();
         List<UserSimpleResponse> recentUsers = new ArrayList<>();
         for (User u : recentUserEntities) {
             // convert LocalDate -> LocalDateTime
@@ -71,7 +71,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         }
 
         // ===== 3. shop gần đây =====
-        List<Shop> recentShopEntities = shopRepository.findTop10ByOrderByCreateAtDesc();
+        List<Shop> recentShopEntities = shopRepository.findTop10ByOrderByIdDesc();
         List<ShopSimpleResponse> recentShops = new ArrayList<>();
         for (Shop s : recentShopEntities) {
             LocalDate shopCreateDate = s.getCreateAt();
