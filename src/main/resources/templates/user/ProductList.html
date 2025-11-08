@@ -9,7 +9,7 @@
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
         .product-card { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: #fff; transition: all 0.2s ease; }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .product-img { width: 100%; height: 200px; object-fit: cover; }
+        .product-image { width: 100%; height: 200px; object-fit: cover; }
         .product-body { padding: 1rem; }
         .product-price { font-weight: 700; color: #0ea5e9; }
         .product-footer { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; }
@@ -33,9 +33,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-bold">Tất cả sản phẩm</h2>
 
-        <!-- Form sort: chỉ có Giá tăng dần / Giá giảm dần -->
         <form class="d-flex align-items-center" method="get" th:action="@{/products}">
-            <!-- giữ state trang & filter -->
             <input type="hidden" name="page" th:value="${currentPage}" />
             <input type="hidden" name="size" th:value="${size}" />
             <input type="hidden" name="categoryId" th:value="${selectedCategoryId}" />
@@ -49,14 +47,12 @@
 
     <!-- Bộ lọc Category nạp từ DB -->
     <div class="mb-4 cat-filter">
-        <!-- Nút "Tất cả" (xóa lọc) -->
         <a class="btn btn-sm"
            th:classappend="${selectedCategoryId} == null ? 'btn-primary' : 'btn-outline-secondary'"
            th:href="@{'/products'(page=1, size=${size}, sort=${sort})}">
             Tất cả
         </a>
 
-        <!-- Render các category -->
         <a class="btn btn-sm"
            th:each="c : ${categories}"
            th:text="${c.categoryName}"
@@ -70,16 +66,19 @@
         <div class="col-md-3" th:each="product : ${products}">
             <div class="product-card position-relative">
 
-                <!-- Ảnh: fallback khi null/empty -->
-                <img th:src="${product.img} ?: 'https://picsum.photos/seed/placeholder/400/300'"
-                     alt="Ảnh sản phẩm" class="product-img"/>
+                <!-- Ảnh -->
+                <img class="product-image"
+                     th:src="${product.image} != null ? product.image : 'https://picsum.photos/seed/placeholder/400/300'"
+                     alt="Ảnh sản phẩm"/>
 
                 <div class="product-body">
                     <h6 class="fw-bold mb-1" th:text="${product.productName}">Tên sản phẩm</h6>
 
-                    <!-- Hiển thị category của sản phẩm nếu có -->
-                    <div class="mb-1 text-muted small" th:if="${product.category != null}">
-                        <span class="badge text-bg-light" th:text="${product.category.categoryName}">Danh mục</span>
+                    <!-- HIỆN TÊN CATEGORY TỪ MAP -->
+                    <div class="mb-1 text-muted small"
+                         th:if="${product.categoryId != null and categoryNameMap[product.categoryId] != null}">
+                        <span class="badge text-bg-light"
+                              th:text="${categoryNameMap[product.categoryId]}">Danh mục</span>
                     </div>
 
                     <div class="product-price mb-1">
@@ -104,7 +103,7 @@
         </div>
     </div>
 
-    <!-- Trạng thái rỗng (khi lọc không có kết quả) -->
+    <!-- Trạng thái rỗng -->
     <div class="text-center py-5 text-muted"
          th:if="${products == null or #lists.isEmpty(products)}">
         <h5 class="mb-3">Không có sản phẩm trong danh mục đã chọn.</h5>
@@ -114,21 +113,17 @@
         </a>
     </div>
 
-    <!-- Pagination (3-number window, chỉ hiện khi có dữ liệu) -->
+    <!-- Pagination -->
     <nav aria-label="Page navigation" class="mt-5"
          th:if="${products != null and !#lists.isEmpty(products) and totalPages > 1}">
         <ul class="pagination justify-content-center">
-
-            <!-- Prev -->
             <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
                 <a class="page-link"
-                   th:href="@{'/products'(page=${currentPage - 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}"
-                   aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
+                   th:href="@{'/products'(page=${currentPage - 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">
+                    &laquo;
                 </a>
             </li>
 
-            <!-- Ellipsis trước -->
             <li class="page-item" th:if="${startPage > 1}">
                 <a class="page-link"
                    th:href="@{'/products'(page=${1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
@@ -137,7 +132,6 @@
                 <span class="page-link">…</span>
             </li>
 
-            <!-- Window 3 số -->
             <li class="page-item"
                 th:each="i : ${#numbers.sequence(startPage, endPage)}"
                 th:classappend="${i == currentPage} ? ' active'">
@@ -146,7 +140,6 @@
                    th:href="@{'/products'(page=${i}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
             </li>
 
-            <!-- Ellipsis sau -->
             <li class="page-item disabled" th:if="${endPage < totalPages - 1}">
                 <span class="page-link">…</span>
             </li>
@@ -156,15 +149,12 @@
                    th:href="@{'/products'(page=${totalPages}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">0</a>
             </li>
 
-            <!-- Next -->
             <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
                 <a class="page-link"
-                   th:href="@{'/products'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}"
-                   aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
+                   th:href="@{'/products'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">
+                    &raquo;
                 </a>
             </li>
-
         </ul>
     </nav>
 </div>

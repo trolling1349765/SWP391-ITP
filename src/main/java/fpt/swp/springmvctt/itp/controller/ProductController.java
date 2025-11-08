@@ -1,5 +1,6 @@
 package fpt.swp.springmvctt.itp.controller;
 
+import fpt.swp.springmvctt.itp.entity.Category;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
 import fpt.swp.springmvctt.itp.service.ProductService;
@@ -9,6 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,13 +25,13 @@ public class ProductController {
     @GetMapping("/products")
     public String showAllProducts(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "12") int size,   // <= mặc định 12
+            @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "newest") String sort,
             Model model) {
 
         int safePage = Math.max(page, 1);
-        int safeSize = Math.min(Math.max(size, 1), 12); // <= luôn <= 12
+        int safeSize = Math.min(Math.max(size, 1), 12);
 
         Page<Product> productPage = productService.getProductsPage(safePage, safeSize, categoryId, sort);
 
@@ -37,7 +42,16 @@ public class ProductController {
             totalPages = Math.max(productPage.getTotalPages(), 1);
         }
 
-        model.addAttribute("products", productPage.getContent());
+        List<Product> products = productPage.getContent();
+
+        // Lấy tất cả categories để hiển thị filter
+        List<Category> categories = categoryRepository.findAll();
+
+        // Tạo map id -> name dùng cho view (không join DB)
+        Map<Long, String> categoryNameMap = categories.stream()
+                .collect(Collectors.toMap(Category::getId, Category::getCategoryName));
+
+        model.addAttribute("products", products);
         model.addAttribute("currentPage", safePage);
         model.addAttribute("totalPages", totalPages);
 
@@ -49,12 +63,12 @@ public class ProductController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
 
-        model.addAttribute("categories", categoryRepository.findAll());
+        model.addAttribute("categories", categories);
+        model.addAttribute("categoryNameMap", categoryNameMap);   // <-- thêm dòng này
         model.addAttribute("selectedCategoryId", categoryId);
         model.addAttribute("sort", sort);
-        model.addAttribute("size", safeSize); // giữ size khi chuyển trang
+        model.addAttribute("size", safeSize);
 
         return "user/ProductList";
     }
-
 }
