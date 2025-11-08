@@ -59,10 +59,10 @@ public class AuthController {
             session.setAttribute("user", user.get());
 
             //  (Remember Me)
-            if (rememberMe != null) { // nếu người dùng có tick chọn checkbox rememberMe
+            if (rememberMe != null) {
                 Cookie cookie = new Cookie("rememberMe",
                         user.get().getEmail());
-                cookie.setMaxAge(7 * 24 * 60 * 60); // 7 ngày
+                cookie.setMaxAge(7 * 24 * 60 * 60);
                 cookie.setPath("/");
                 response.addCookie(cookie);
             }
