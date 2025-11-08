@@ -175,7 +175,10 @@ public class    ShopController {
 
             for (Product p : products) {
                 try {
-                    stockMap.put(p.getId(), p.getAvailableStock());
+                    // Rebuild stock from database to ensure accuracy (count only ACTIVE items)
+                    Product updated = inventoryService.rebuildProductQuantity(p.getId());
+                    stockMap.put(p.getId(), updated.getAvailableStock());
+                    
                     Map<java.math.BigDecimal, Long> batches = inventoryService.getStockByBatches(p.getId());
                     batchMap.put(p.getId(), batches != null ? batches : new LinkedHashMap<>());
                 } catch (Exception e) {
@@ -436,29 +439,37 @@ public class    ShopController {
                 // thì coi như đã bán
                 boolean isSold = orderItemRepository.isProductStoreSold(ps.getId());
                 
+                // If sold, override status to BLOCKED (regardless of DB status)
+                String actualStatus = isSold ? "BLOCKED" : ps.getStatus().name();
+                
                 Map<String, Object> serialMap = new LinkedHashMap<>();
                 serialMap.put("serialCode", ps.getSerialCode());
                 serialMap.put("secretCode", ps.getSecretCode());
                 serialMap.put("quantity", 1); // Each serial = 1 item
                 serialMap.put("faceValue", ps.getFaceValue());
                 serialMap.put("information", ps.getInfomation());
-                serialMap.put("status", ps.getStatus().name());
+                serialMap.put("status", actualStatus); // Use actualStatus instead of DB status
                 serialMap.put("importDate", ps.getCreateAt() != null ? ps.getCreateAt().toString() : "N/A");
                 serialMap.put("isSold", isSold); // Kiểm tra từ database
                 serials.add(serialMap);
 
-                // Count by status
-                switch (ps.getStatus()) {
-                    case ACTIVE: activeCount++; break;
-                    case HIDDEN: hiddenCount++; break;
-                    case BLOCKED: blockedCount++; break;
+                // Count by actual status (considering sold items as BLOCKED)
+                if (isSold) {
+                    blockedCount++;
+                } else {
+                    switch (ps.getStatus()) {
+                        case ACTIVE: activeCount++; break;
+                        case HIDDEN: hiddenCount++; break;
+                        case BLOCKED: blockedCount++; break;
+                    }
                 }
             }
 
             model.addAttribute("productDetail", p);
             model.addAttribute("product", p);
             model.addAttribute("serials", serials);
-            model.addAttribute("serialCount", serials.size());
+            // serialCount: Only count available items (ACTIVE + HIDDEN), exclude BLOCKED/sold items
+            model.addAttribute("serialCount", activeCount + hiddenCount);
             model.addAttribute("activeCount", activeCount);
             model.addAttribute("hiddenCount", hiddenCount);
             model.addAttribute("blockedCount", blockedCount);
@@ -756,6 +767,52 @@ public class    ShopController {
         }
     }
 
+    /**
+     * Admin endpoint to rebuild stock for all products
+     * Call this once to fix incorrect stock values
+     */
+    @PostMapping("/admin/rebuild-all-stock")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> rebuildAllProductStock() {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            List<Product> allProducts = productRepository.findAll();
+            int updatedCount = 0;
+            
+            System.out.println("🔄 Starting rebuild stock for all products...");
+            
+            for (Product product : allProducts) {
+                // Get old stock
+                int oldStock = product.getAvailableStock() != null ? product.getAvailableStock() : 0;
+                
+                // Rebuild from database (only count ACTIVE items)
+                Product updated = inventoryService.rebuildProductQuantity(product.getId());
+                int newStock = updated.getAvailableStock();
+                
+                if (oldStock != newStock) {
+                    System.out.println("  📊 Product #" + product.getId() + " (" + product.getProductName() + 
+                                     "): " + oldStock + " → " + newStock);
+                    updatedCount++;
+                }
+            }
+            
+            System.out.println("✅ Rebuild completed! Updated " + updatedCount + " products.");
+            
+            response.put("success", true);
+            response.put("message", "Đã rebuild stock cho tất cả sản phẩm!");
+            response.put("totalProducts", allProducts.size());
+            response.put("updatedCount", updatedCount);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("❌ Error rebuilding stock: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Lỗi: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
     @PostMapping("/importSerials")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> importSerials(@ModelAttribute ExcelImportForm form) {
@@ -770,6 +827,10 @@ public class    ShopController {
             }
 
             ImportResult result = excelImportService.importSerialsFromExcel(form);
+            
+            // Rebuild product quantity after import (only count ACTIVE items)
+            Product product = inventoryService.rebuildProductQuantity(form.getProductId());
+            System.out.println("📊 Rebuilt stock for product " + form.getProductId() + ": " + product.getAvailableStock() + " items available");
 
             response.put("success", true);
             response.put("message", "Import hoàn thành!");
@@ -780,6 +841,7 @@ public class    ShopController {
             response.put("warnings", result.getWarnings());
             response.put("duplicateSerials", result.getDuplicateSerials());
             response.put("invalidSerials", result.getInvalidSerials());
+            response.put("availableStock", product.getAvailableStock());
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -845,11 +907,11 @@ public class    ShopController {
                     .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
                     .count();
             
-            // Calculate total stock
+            // Calculate total stock (only ACTIVE items)
             long totalStock = 0;
             for (Product product : allProducts) {
-                List<ProductStore> stores = productStoreRepository.findByProductIdOrderByIdDesc(product.getId());
-                totalStock += stores.size();
+                // Use availableStock from product (already counts only ACTIVE items after rebuild)
+                totalStock += (product.getAvailableStock() != null ? product.getAvailableStock() : 0);
             }
             
             model.addAttribute("shop", shop);
