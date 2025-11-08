@@ -160,7 +160,7 @@
     });
     
     if (hasPendingOrders) {
-        console.log('🔄 Phát hiện ' + pendingOrderRows.length + ' đơn hàng đang hold tiền. Bắt đầu polling để cập nhật trạng thái real-time...');
+        console.log(' Phát hiện ' + pendingOrderRows.length + ' đơn hàng đang hold tiền. Bắt đầu polling để cập nhật trạng thái real-time...');
         
         // Polling mỗi 2 giây để kiểm tra trạng thái
         let pollCount = 0;
@@ -168,7 +168,7 @@
         
         const pollInterval = setInterval(function() {
             pollCount++;
-            console.log('🔄 Polling lần ' + pollCount + ' để kiểm tra trạng thái đơn hàng...');
+            console.log(' Polling lần ' + pollCount + ' để kiểm tra trạng thái đơn hàng...');
             
             // Gửi request để lấy trạng thái mới nhất
             fetch('/itp/orders/api/status', {
@@ -188,7 +188,7 @@
                                 // Cập nhật trạng thái trong UI
                                 item.statusCell.className = 'status-badge status-completed';
                                 item.statusCell.textContent = 'Đã thanh toán';
-                                console.log('✅ Order ' + item.orderId + ' đã chuyển sang trạng thái: Đã thanh toán');
+                                console.log(' Order ' + item.orderId + ' đã chuyển sang trạng thái: Đã thanh toán');
                             } else {
                                 allCompleted = false;
                             }
@@ -199,18 +199,18 @@
                     
                     // Nếu tất cả đã hoàn thành, dừng polling
                     if (allCompleted) {
-                        console.log('✅ Tất cả đơn hàng đã hoàn thành. Dừng polling.');
+                        console.log(' Tất cả đơn hàng đã hoàn thành. Dừng polling.');
                         clearInterval(pollInterval);
                     }
                 }
             })
             .catch(error => {
-                console.error('❌ Lỗi khi polling trạng thái:', error);
+                console.error(' Lỗi khi polling trạng thái:', error);
             });
             
             // Dừng polling sau maxPolls lần
             if (pollCount >= maxPolls) {
-                console.log('⏱️ Đã polling đủ số lần. Reload trang để cập nhật trạng thái cuối cùng...');
+                console.log(' Đã polling đủ số lần. Reload trang để cập nhật trạng thái cuối cùng...');
                 clearInterval(pollInterval);
                 setTimeout(function() {
                     window.location.reload();
@@ -223,7 +223,7 @@
             if (pollInterval) {
                 clearInterval(pollInterval);
             }
-            console.log('🔄 Auto-refresh trang sau 25 giây để cập nhật trạng thái cuối cùng...');
+            console.log(' Auto-refresh trang sau 25 giây để cập nhật trạng thái cuối cùng...');
             window.location.reload();
         }, 25000); // 25 giây (20s + 5s buffer)
     }
