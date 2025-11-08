@@ -191,7 +191,7 @@
                                           th:classappend="${s.status} == 'ACTIVE' ? ' bg-success' : ' bg-secondary'"
                                           th:text="${s.status}">ACTIVE</span>
                                 </td>
-                                <td th:text="${#temporals.format(s.createAt, 'yyyy-MM-dd HH:mm')}">2025-11-02</td>
+                                <td th:text="${#temporals.format(s.createAt, 'yyyy-MM-dd')}">2025-11-02</td>
                             </tr>
                             </tbody>
                         </table>
