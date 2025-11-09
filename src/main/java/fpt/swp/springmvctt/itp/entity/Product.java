@@ -40,7 +40,7 @@ public class Product extends BaseEntity {
     private ProductStatus status = ProductStatus.HIDDEN;
 
     @Column(name="available_stock", nullable=false)
-    private Integer availableStock = 0;              // tổng tồn
+    private Integer availableStock = 0;
 
     @Column(name="image", length=255)
     private String image;                             // /assets/img/xxx\\
@@ -49,4 +49,8 @@ public class Product extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", insertable = false, updatable = false)
     private Shop shop;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", insertable = false, updatable = false)
+    private Category category;
 }

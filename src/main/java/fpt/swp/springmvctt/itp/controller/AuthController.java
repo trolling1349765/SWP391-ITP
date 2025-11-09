@@ -59,10 +59,10 @@ public class AuthController {
             session.setAttribute("user", user.get());
 
             //  (Remember Me)
-            if (rememberMe != null) { // nếu người dùng có tick chọn checkbox rememberMe
+            if (rememberMe != null) {
                 Cookie cookie = new Cookie("rememberMe",
                         user.get().getEmail());
-                cookie.setMaxAge(7 * 24 * 60 * 60); // 7 ngày
+                cookie.setMaxAge(7 * 24 * 60 * 60);
                 cookie.setPath("/");
                 response.addCookie(cookie);
             }
@@ -174,7 +174,7 @@ public class AuthController {
     public String showResetPasswordForm(@RequestParam("token") String token, Model model) {
         if (userService.isValidPasswordResetToken(token)) {
             model.addAttribute("token", token);
-            return "login/reset-password-form";
+            return "login/reset-password";
         } else {
             model.addAttribute("error", "Token không hợp lệ hoặc đã hết hạn");
             return "login/forgot-password";
