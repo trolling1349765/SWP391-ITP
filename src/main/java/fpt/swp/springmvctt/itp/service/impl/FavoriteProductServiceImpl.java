@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime; // ✅ thêm import này
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,10 +20,10 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
 
+    /** ✅ Thêm sản phẩm yêu thích */
     @Transactional
     @Override
     public void addFavorite(String email, Long productId) {
-        // ✅ vì findByEmail trả về User, nên check null
         User user = userRepo.findByEmail(email);
         if (user == null) {
             throw new RuntimeException("User not found");
@@ -37,12 +37,13 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
             FavoriteProduct fav = FavoriteProduct.builder()
                     .user(user)
                     .product(product)
-                    .createdAt(LocalDateTime.now()) // ✅ Thêm dòng này
+                    .createdAt(LocalDateTime.now()) // ✅ set thời gian tạo
                     .build();
             favoriteRepo.save(fav);
         }
     }
 
+    /** ✅ Xóa sản phẩm khỏi yêu thích */
     @Transactional
     @Override
     public void removeFavorite(String email, Long productId) {
@@ -57,6 +58,7 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
         favoriteRepo.deleteByUserAndProduct(user, product);
     }
 
+    /** ✅ Lấy danh sách yêu thích của user */
     @Override
     public List<FavoriteProductDTO> getFavorites(String email) {
         User user = userRepo.findByEmail(email);
@@ -65,13 +67,19 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
         }
 
         return favoriteRepo.findByUser(user).stream()
-                .map(fav -> FavoriteProductDTO.builder()
-                        .id(fav.getId())
-                        .productId(fav.getProduct().getId())
-                        .productName(fav.getProduct().getProductName())
-                        .productImage(fav.getProduct().getImage())
-                        .createdAt(fav.getCreatedAt())
-                        .build())
+                .map(fav -> {
+                    Product p = fav.getProduct();
+                    return FavoriteProductDTO.builder()
+                            .id(fav.getId())
+                            .productId(p.getId())
+                            .productName(p.getProductName())
+                            .productImage(p.getImage())
+                            .price(p.getPrice())
+                            .categoryId(p.getCategory() != null ? p.getCategory().getId() : null)
+                            .shopName(p.getShop() != null ? p.getShop().getShopName() : null)
+                            .createdAt(fav.getCreatedAt())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 }
