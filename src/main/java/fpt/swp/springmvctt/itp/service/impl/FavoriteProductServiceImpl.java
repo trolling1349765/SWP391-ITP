@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime; // ✅ thêm import này
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,9 +22,12 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
 
     @Transactional
     @Override
-    public void addFavorite(String username, Long productId) {
-        User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void addFavorite(String email, Long productId) {
+        // ✅ vì findByEmail trả về User, nên check null
+        User user = userRepo.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
 
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -33,6 +37,7 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
             FavoriteProduct fav = FavoriteProduct.builder()
                     .user(user)
                     .product(product)
+                    .createdAt(LocalDateTime.now()) // ✅ Thêm dòng này
                     .build();
             favoriteRepo.save(fav);
         }
@@ -40,9 +45,11 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
 
     @Transactional
     @Override
-    public void removeFavorite(String username, Long productId) {
-        User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void removeFavorite(String email, Long productId) {
+        User user = userRepo.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
 
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -51,19 +58,20 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
     }
 
     @Override
-    public List<FavoriteProductDTO> getFavorites(String username) {
-        User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public List<FavoriteProductDTO> getFavorites(String email) {
+        User user = userRepo.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
 
         return favoriteRepo.findByUser(user).stream()
                 .map(fav -> FavoriteProductDTO.builder()
                         .id(fav.getId())
                         .productId(fav.getProduct().getId())
-                        .productName(fav.getProduct().getProductName()) // ✅ sửa ở đây
-                        .productImage(fav.getProduct().getImage())      // ✅ nếu tên field là image
+                        .productName(fav.getProduct().getProductName())
+                        .productImage(fav.getProduct().getImage())
                         .createdAt(fav.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
-
     }
 }
