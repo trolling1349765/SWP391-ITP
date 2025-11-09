@@ -96,6 +96,8 @@
 .product-card {
     transition: transform 0.3s, box-shadow 0.3s;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card:hover {
@@ -104,8 +106,21 @@
 }
 
 .product-img {
+    width: 100%;
     height: 200px;
     object-fit: cover;
+    object-position: center;
+    flex-shrink: 0;
+}
+
+.product-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card .card-body .btn {
+    margin-top: auto;
 }
 
 .badge-stock {
