@@ -104,7 +104,13 @@
         <!-- Left Column - Product Image -->
         <div class="col-lg-5">
             <div class="text-center">
-                <img th:src="${product.image != null ? product.image : 'https://via.placeholder.com/500x400?text=No+Image'}"
+                <img th:if="${product.image != null and !#strings.isEmpty(product.image)}"
+                     th:src="${'/itp' + product.image}"
+                     th:alt="${product.productName}"
+                     class="product-image"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/500x400?text=No+Image';">
+                <img th:if="${product.image == null or #strings.isEmpty(product.image)}"
+                     src="https://via.placeholder.com/500x400?text=No+Image"
                      th:alt="${product.productName}"
                      class="product-image">
             </div>
