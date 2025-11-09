@@ -212,7 +212,8 @@
                         </button>
                     </div> -->
                     <div class="col-6">
-                        <form th:if="${#httpServletRequest.remoteUser != null}""
+                        <!-- Nếu người dùng đã đăng nhập -->
+                        <form th:if="${#session.getAttribute('user') != null}"
                               th:action="@{'/favorites/add/' + ${product.id}}"
                               method="post" class="w-100">
                             <button type="submit" class="btn btn-outline-secondary w-100">
@@ -220,13 +221,15 @@
                             </button>
                         </form>
 
-                        <!-- Nếu chưa đăng nhập -->
-                        <button th:if="${#httpServletRequest.remoteUser != null}""
+                        <!-- Nếu người dùng chưa đăng nhập -->
+                        <button th:if="${#session.getAttribute('user') == null}"
                                 class="btn btn-outline-secondary w-100"
                                 onclick="window.location.href='/login'">
                             <i class="far fa-heart me-2"></i>Đăng nhập để yêu thích
                         </button>
                     </div>
+
+
 
                 </div>
 
