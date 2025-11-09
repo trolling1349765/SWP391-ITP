@@ -160,12 +160,18 @@
                         <a th:href="@{/products}" class="btn btn-link text-decoration-none">Xem tất cả →</a>
                     </div>
 
-                    <!-- Có dữ liệu -->
                     <div class="row g-4" th:if="${featuredProducts != null and !featuredProducts.isEmpty()}">
                         <div class="col-6 col-md-3" th:each="p : ${featuredProducts}">
                             <div class="card h-100 shadow-sm">
-                                <img th:src="${p.image != null ? p.image : 'https://picsum.photos/seed/placeholder/400/300'}"
-                                     class="card-img-top" alt="Product Image">
+                                <img th:if="${p.image != null and !#strings.isEmpty(p.image)}"
+                                     th:src="${'/itp' + p.image}"
+                                     class="card-img-top"
+                                     alt="Product Image"
+                                     onerror="this.onerror=null; this.src='https://picsum.photos/seed/placeholder/400/300';">
+                                <img th:if="${p.image == null or #strings.isEmpty(p.image)}"
+                                     src="https://picsum.photos/seed/placeholder/400/300"
+                                     class="card-img-top"
+                                     alt="Product Image">
                                 <div class="card-body">
                                     <h6 th:text="${p.productName}" class="card-title mb-2">Tên sản phẩm</h6>
                                     <p class="card-text fw-bold text-primary mb-3"
