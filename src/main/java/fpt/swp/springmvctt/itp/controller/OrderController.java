@@ -167,7 +167,11 @@ public class OrderController {
      * Lịch sử mua hàng
      */
     @GetMapping("/history")
-    public String orderHistory(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String orderHistory(@RequestParam(defaultValue = "1") int page,
+                               @RequestParam(defaultValue = "10") int size,
+                               Model model, 
+                               HttpSession session, 
+                               RedirectAttributes redirectAttributes) {
         // Kiểm tra đăng nhập
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -183,9 +187,39 @@ public class OrderController {
                     .orElse(user);
             session.setAttribute("user", updatedUser); // Cập nhật session
             
-            List<Order> orders = orderService.getOrdersByUserId(user.getId());
+            // Lấy tất cả orders
+            List<Order> allOrders = orderService.getOrdersByUserId(user.getId());
+            
+            // Pagination
+            int totalOrders = allOrders.size();
+            int totalPages = Math.max(1, (int) Math.ceil((double) totalOrders / size));
+            page = Math.max(1, Math.min(page, totalPages));
+            
+            int startIndex = (page - 1) * size;
+            int endIndex = Math.min(startIndex + size, totalOrders);
+            
+            List<Order> orders;
+            if (startIndex >= totalOrders) {
+                orders = new java.util.ArrayList<>();
+            } else {
+                orders = allOrders.subList(startIndex, endIndex);
+            }
+            
+            // Calculate pagination window
+            int window = 3;
+            int startPage = Math.max(1, page - 1);
+            int endPage = Math.min(totalPages, startPage + window - 1);
+            startPage = Math.max(1, endPage - window + 1);
+            
             model.addAttribute("orders", orders);
-            model.addAttribute("user", updatedUser); // Dùng user đã reload
+            model.addAttribute("user", updatedUser);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("startPage", startPage);
+            model.addAttribute("endPage", endPage);
+            model.addAttribute("size", size);
+            model.addAttribute("totalOrders", totalOrders);
+            
             return "order/history";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());

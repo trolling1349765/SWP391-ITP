@@ -64,7 +64,7 @@ function updateTotal() {
         document.getElementById('submitBtn').disabled = true;
         document.getElementById('submitBtn').classList.add('btn-secondary');
         document.getElementById('submitBtn').classList.remove('btn-primary');
-        document.getElementById('submitBtn').textContent = '⛔ Không đủ tiền - Vui lòng nạp tiền';
+        document.getElementById('submitBtn').textContent = 'Không đủ tiền - Vui lòng nạp thêm tiền vào tài khoản';
         
         // Show alert banner if not already shown
         showInsufficientBalanceAlert(needTopUp);
@@ -135,16 +135,13 @@ function confirmPurchase() {
     // Check if balance is sufficient
     if (needTopUp > 0) {
         // Show error alert with detailed information
-        const alertMessage = `
-️ Tài khoản của bạn không đủ tiền để thanh toán!
+        const alertMessage = `Tài khoản của bạn không đủ tiền để thanh toán!
 
- Số dư hiện tại: ${formatCurrency(userBalance)}
- Tổng tiền cần thanh toán: ${formatCurrency(total)}
- Số tiền cần nạp thêm: ${formatCurrency(needTopUp)}
+Số dư hiện tại: ${formatCurrency(userBalance)}
+Tổng tiền cần thanh toán: ${formatCurrency(total)}
+Số tiền cần nạp thêm: ${formatCurrency(needTopUp)}
 
-Vui lòng nạp tiền vào tài khoản để tiếp tục mua hàng.
-Liên hệ admin để được hỗ trợ nạp tiền.
-        `.trim();
+Vui lòng nạp thêm tiền vào tài khoản để tiếp tục mua hàng.`;
         
         alert(alertMessage);
         return;
@@ -174,7 +171,7 @@ Liên hệ admin để được hỗ trợ nạp tiền.
  */
 function submitPurchase() {
     try {
-        console.log('🛒 [Frontend] Bắt đầu quá trình mua hàng...');
+        console.log('[Frontend] Bắt đầu quá trình mua hàng...');
         
         // Double-check balance before submitting
         const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
@@ -182,15 +179,13 @@ function submitPurchase() {
         const needTopUp = total - userBalance;
         
         if (needTopUp > 0) {
-            const alertMessage = `
- Tài khoản của bạn không đủ tiền!
+            const alertMessage = `Tài khoản của bạn không đủ tiền!
 
 Số dư hiện tại: ${formatCurrency(userBalance)}
 Tổng tiền cần thanh toán: ${formatCurrency(total)}
 Cần nạp thêm: ${formatCurrency(needTopUp)}
 
-Vui lòng nạp tiền vào tài khoản để tiếp tục.
-            `.trim();
+Vui lòng nạp thêm tiền vào tài khoản để tiếp tục.`;
             
             alert(alertMessage);
             return;
@@ -238,15 +233,12 @@ function showInsufficientBalanceAlert(needTopUp) {
     alertDiv.setAttribute('role', 'alert');
     alertDiv.innerHTML = `
         <div class="d-flex align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
-                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-            </svg>
             <div class="flex-grow-1">
-                <strong> Tài khoản không đủ tiền!</strong>
+                <strong>Tài khoản không đủ tiền!</strong>
                 <div class="mt-1">
                     Bạn cần nạp thêm <strong class="text-danger">${formatCurrency(needTopUp)}</strong> vào tài khoản để thanh toán đơn hàng này.
                     <br>
-                    <small>Vui lòng liên hệ admin để được hỗ trợ nạp tiền.</small>
+                    <small>Vui lòng nạp thêm tiền vào tài khoản.</small>
                 </div>
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

@@ -5,6 +5,10 @@
     <title>Thanh toán | ITP System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/assets/css/order/checkout.css}">
+    <style>
+        body { min-height: 100vh; display: flex; flex-direction: column; }
+        .checkout-container { flex: 1; }
+    </style>
 </head>
 <body>
 <!-- Header -->
@@ -21,19 +25,16 @@
 
     <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
         <div class="d-flex align-items-start">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0" viewBox="0 0 16 16" style="margin-top: 2px;">
-                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-            </svg>
             <div class="flex-grow-1">
                 <div th:if="${refunded}" class="mb-2">
-                    <strong class="text-success">✅ Tiền đã được hoàn lại vào tài khoản của bạn.</strong>
+                    <strong class="text-success">Tiền đã được hoàn lại vào tài khoản của bạn.</strong>
                 </div>
-                <strong class="d-block mb-2">⚠️ Không thể đặt hàng!</strong>
+                <strong class="d-block mb-2">Không thể đặt hàng!</strong>
                 <div th:utext="${#strings.replace(error, T(java.lang.System).lineSeparator(), '<br>')}"></div>
                 <div th:if="${error != null and (#strings.contains(error, 'không đủ tiền') or #strings.contains(error, 'không đủ') or #strings.contains(error, 'đủ tiền'))}" class="mt-3 p-3 bg-light rounded border">
-                    <strong>💡 Hướng dẫn nạp tiền:</strong>
+                    <strong>Hướng dẫn:</strong>
                     <ul class="mb-0 mt-2">
-                        <li>Liên hệ admin để được hỗ trợ nạp tiền vào tài khoản</li>
+                        <li>Vui lòng nạp thêm tiền vào tài khoản</li>
                         <li>Kiểm tra số dư hiện tại của bạn ở góc trên bên phải màn hình</li>
                         <li>Sau khi nạp tiền, quay lại trang này để tiếp tục đặt hàng</li>
                     </ul>
@@ -164,13 +165,13 @@
                         <span class="fw-bold" id="totalAmountDisplay" th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-2" id="needTopUpSection" style="display: none;">
-                        <span class="text-danger fw-bold">💳 Cần nạp thêm:</span>
+                        <span class="text-danger fw-bold">Cần nạp thêm:</span>
                         <span class="text-danger fw-bold" id="needTopUpAmount">0 ₫</span>
                     </div>
                     <div class="alert alert-warning mt-2 mb-0" id="insufficientBalanceInfo" style="display: none;">
                         <small>
-                            <strong>⚠️ Lưu ý:</strong> Bạn không đủ tiền để thanh toán đơn hàng này. 
-                            Vui lòng nạp tiền vào tài khoản hoặc giảm số lượng sản phẩm.
+                            <strong>Lưu ý:</strong> Bạn không đủ tiền để thanh toán đơn hàng này. 
+                            Vui lòng nạp thêm tiền vào tài khoản hoặc giảm số lượng sản phẩm.
                         </small>
                     </div>
                 </div>
@@ -219,6 +220,9 @@
     initCheckout(price, stock, balance);
     /*]]>*/
 </script>
+
+<!-- Footer -->
+<div th:replace="~{/Included/Footer :: footer}"></div>
 </body>
 </html>
 

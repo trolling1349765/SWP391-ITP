@@ -95,11 +95,11 @@ public class OrderServiceImpl implements OrderService {
             if (buyerWithLock.getBalance().compareTo(totalAmount) < 0) {
                 BigDecimal needAmount = totalAmount.subtract(buyerWithLock.getBalance());
                 String errorMessage = String.format(
-                    " Tài khoản của bạn không đủ tiền để thanh toán!%n" +
-                    " Số dư hiện tại: %s VND%n" +
-                    " Tổng tiền cần thanh toán: %s VND%n" +
-                    " Số tiền cần nạp thêm: %s VND%n%n" +
-                    "Vui lòng nạp tiền vào tài khoản để tiếp tục mua hàng. " ,
+                    "Tài khoản của bạn không đủ tiền để thanh toán!%n" +
+                    "Số dư hiện tại: %s VND%n" +
+                    "Tổng tiền cần thanh toán: %s VND%n" +
+                    "Số tiền cần nạp thêm: %s VND%n%n" +
+                    "Vui lòng nạp thêm tiền vào tài khoản để tiếp tục mua hàng.",
                     buyerWithLock.getBalance(),
                     totalAmount,
                     needAmount
