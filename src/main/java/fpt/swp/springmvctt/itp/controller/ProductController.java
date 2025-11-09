@@ -4,6 +4,7 @@ import fpt.swp.springmvctt.itp.entity.Category;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
 import fpt.swp.springmvctt.itp.service.ProductService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -29,7 +30,9 @@ public class ProductController {
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "newest") String sort,
-            Model model) {
+            Model model,
+            HttpSession session // ✅ thêm session vào để lấy thông tin user đăng nhập
+    ) {
 
         int safePage = Math.max(page, 1);
         int safeSize = Math.min(Math.max(size, 1), 12);
@@ -52,6 +55,10 @@ public class ProductController {
         Map<Long, String> categoryNameMap = categories.stream()
                 .collect(Collectors.toMap(Category::getId, Category::getCategoryName));
 
+        // ✅ Truyền thêm user session vào model để Thymeleaf check
+        Object user = session.getAttribute("user");
+        model.addAttribute("sessionUser", user);
+
         model.addAttribute("products", products);
         model.addAttribute("currentPage", safePage);
         model.addAttribute("totalPages", totalPages);
@@ -65,7 +72,7 @@ public class ProductController {
         model.addAttribute("endPage", endPage);
 
         model.addAttribute("categories", categories);
-        model.addAttribute("categoryNameMap", categoryNameMap);   // <-- thêm dòng này
+        model.addAttribute("categoryNameMap", categoryNameMap);
         model.addAttribute("selectedCategoryId", categoryId);
         model.addAttribute("sort", sort);
         model.addAttribute("size", safeSize);
@@ -77,15 +84,17 @@ public class ProductController {
      * Xem chi tiết sản phẩm (Customer)
      */
     @GetMapping("/product/{id}")
-    public String viewProductDetail(@PathVariable Long id, Model model) {
+    public String viewProductDetail(@PathVariable Long id, Model model, HttpSession session) {
         Product product = productService.getProductById(id);
 
         if (product == null) {
             throw new RuntimeException("Sản phẩm không tồn tại!");
         }
 
+        // ✅ cũng truyền sessionUser vào trang chi tiết (nếu cần tim ở đó sau này)
         model.addAttribute("product", product);
+        model.addAttribute("sessionUser", session.getAttribute("user"));
+
         return "user/product-detail";
     }
-
 }

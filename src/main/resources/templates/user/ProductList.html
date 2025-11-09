@@ -5,15 +5,42 @@
     <title>Tất cả sản phẩm | ITP System</title>
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .product-card { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: #fff; transition: all 0.2s ease; }
+        .product-card { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: #fff; transition: all 0.2s ease; position: relative; }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .product-image { width: 100%; height: 200px; object-fit: cover; }
         .product-body { padding: 1rem; }
         .product-price { font-weight: 700; color: #0ea5e9; }
         .product-footer { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; }
         .cat-filter .btn { margin-right: .5rem; margin-bottom: .5rem; }
+
+        /* ❤️ style icon tim */
+        .favorite-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            transition: all 0.2s ease-in-out;
+        }
+        .favorite-btn:hover {
+            background: #fee2e2;
+            transform: scale(1.1);
+        }
+        .favorite-btn i {
+            color: #dc3545;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -65,12 +92,21 @@
     <!-- Grid sản phẩm -->
     <div class="row g-4" th:if="${products != null and !#lists.isEmpty(products)}">
         <div class="col-md-3" th:each="product : ${products}">
-            <div class="product-card position-relative">
+            <div class="product-card">
 
-                <!-- Ảnh sản phẩm (có logic fallback từ Home) -->
+                <!-- ❤️ Nút thêm vào yêu thích (hiện khi đăng nhập) -->
+                <div th:if="${sessionUser != null}">
+                    <form th:action="@{'/favorites/add/' + ${product.id}}" method="post">
+                        <button type="submit" class="favorite-btn" title="Thêm vào yêu thích">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Ảnh sản phẩm -->
                 <img class="product-image"
                      th:src="${product.image != null ? product.image : 'https://picsum.photos/seed/placeholder/400/300'}"
-                     alt="Ảnh sản phẩm"/>
+                     th:alt="${product.productName}" />
 
                 <div class="product-body">
                     <h6 class="fw-bold mb-1" th:text="${product.productName}">Tên sản phẩm</h6>
@@ -133,37 +169,4 @@
                    th:href="@{'/products'(page=${1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
             </li>
             <li class="page-item disabled" th:if="${startPage > 2}">
-                <span class="page-link">…</span>
-            </li>
-
-            <li class="page-item"
-                th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                th:classappend="${i == currentPage} ? ' active'">
-                <a class="page-link"
-                   th:text="${i}"
-                   th:href="@{'/products'(page=${i}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
-            </li>
-
-            <li class="page-item disabled" th:if="${endPage < totalPages - 1}">
-                <span class="page-link">…</span>
-            </li>
-            <li class="page-item" th:if="${endPage < totalPages}">
-                <a class="page-link"
-                   th:text="${totalPages}"
-                   th:href="@{'/products'(page=${totalPages}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">0</a>
-            </li>
-
-            <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
-                <a class="page-link"
-                   th:href="@{'/products'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">
-                    &raquo;
-                </a>
-            </li>
-        </ul>
-    </nav>
-</div>
-
-<!-- Footer -->
-<div th:replace="~{/Included/Footer :: footer}"></div>
-</body>
-</html>
+                <span class="page
