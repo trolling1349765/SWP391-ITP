@@ -169,4 +169,37 @@
                    th:href="@{'/products'(page=${1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
             </li>
             <li class="page-item disabled" th:if="${startPage > 2}">
-                <span class="page
+                <span class="page-link">…</span>
+            </li>
+
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                th:classappend="${i == currentPage} ? ' active'">
+                <a class="page-link"
+                   th:text="${i}"
+                   th:href="@{'/products'(page=${i}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
+            </li>
+
+            <li class="page-item disabled" th:if="${endPage < totalPages - 1}">
+                <span class="page-link">…</span>
+            </li>
+            <li class="page-item" th:if="${endPage < totalPages}">
+                <a class="page-link"
+                   th:text="${totalPages}"
+                   th:href="@{'/products'(page=${totalPages}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">0</a>
+            </li>
+
+            <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
+                <a class="page-link"
+                   th:href="@{'/products'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">
+                    &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Footer -->
+<div th:replace="~{/Included/Footer :: footer}"></div>
+</body>
+</html>
