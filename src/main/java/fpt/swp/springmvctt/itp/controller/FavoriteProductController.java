@@ -19,9 +19,11 @@ public class FavoriteProductController {
 
     private final FavoriteProductService favoriteService;
 
+    /** ✅ Trang xem danh sách sản phẩm yêu thích */
     @GetMapping
     public String getFavorites(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
+
         if (user == null) {
             redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để xem danh sách yêu thích!");
             return "redirect:/login";
@@ -29,32 +31,50 @@ public class FavoriteProductController {
 
         List<FavoriteProductDTO> favorites = favoriteService.getFavorites(user.getEmail());
         model.addAttribute("favorites", favorites);
-        return "user/favorites";
+        return "user/favProduct"; // ✅ trỏ đúng tên file bạn có (favProduct.html)
     }
 
+    /** ✅ Thêm sản phẩm vào danh sách yêu thích */
     @PostMapping("/add/{productId}")
-    public String addFavorite(@PathVariable Long productId, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String addFavorite(@PathVariable Long productId,
+                              HttpSession session,
+                              RedirectAttributes redirectAttributes) {
+
         User user = (User) session.getAttribute("user");
         if (user == null) {
             redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để thêm sản phẩm yêu thích!");
             return "redirect:/login";
         }
 
-        favoriteService.addFavorite(user.getEmail(), productId);
-        redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào danh sách yêu thích!");
+        try {
+            favoriteService.addFavorite(user.getEmail(), productId);
+            redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào danh sách yêu thích!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi thêm sản phẩm yêu thích!");
+        }
+
         return "redirect:/products";
     }
 
+    /** ✅ Xóa sản phẩm khỏi danh sách yêu thích */
     @PostMapping("/remove/{productId}")
-    public String removeFavorite(@PathVariable Long productId, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String removeFavorite(@PathVariable Long productId,
+                                 HttpSession session,
+                                 RedirectAttributes redirectAttributes) {
+
         User user = (User) session.getAttribute("user");
         if (user == null) {
             redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để xóa sản phẩm yêu thích!");
             return "redirect:/login";
         }
 
-        favoriteService.removeFavorite(user.getEmail(), productId);
-        redirectAttributes.addFlashAttribute("success", "Đã xóa sản phẩm khỏi danh sách yêu thích!");
+        try {
+            favoriteService.removeFavorite(user.getEmail(), productId);
+            redirectAttributes.addFlashAttribute("success", "Đã xóa sản phẩm khỏi danh sách yêu thích!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Không thể xóa sản phẩm yêu thích!");
+        }
+
         return "redirect:/favorites";
     }
 }

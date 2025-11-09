@@ -21,7 +21,12 @@
     <nav class="nav" style="justify-self:center;display:flex;gap:1.25rem;">
         <a th:href="@{/}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Trang chủ</a>
         <a th:href="@{/products}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Sản phẩm</a>
-        <a th:href="@{/services}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Dịch vụ</a>
+
+        <!-- ✅ Đổi từ 'Dịch vụ' → 'Yêu thích' -->
+        <a th:href="@{/favorites}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">
+            Yêu thích
+        </a>
+
         <a th:href="@{/support}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Hỗ trợ</a>
     </nav>
 
@@ -36,10 +41,10 @@
 
     <!-- Đã đăng nhập -->
     <div th:if="${session.user != null}" style="justify-self:end;display:flex;align-items:center;gap:.75rem;white-space:nowrap;">
-    <span style="color:#cbd5e1;">
-      Xin chào,
-      <strong th:text="${session.user.fullName != null ? session.user.fullName : session.user.username}">User</strong>
-    </span>
+        <span style="color:#cbd5e1;">
+          Xin chào,
+          <strong th:text="${session.user.fullName != null ? session.user.fullName : session.user.username}">User</strong>
+        </span>
         <a th:href="@{/logout}" style="color:#cbd5e1;border:1px solid #334155;border-radius:.4rem;
        padding:.35rem .75rem;text-decoration:none;">Đăng xuất</a>
     </div>
