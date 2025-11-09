@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -55,6 +56,21 @@ public class ProductController {
         model.addAttribute("size", safeSize); // giữ size khi chuyển trang
 
         return "user/ProductList";
+    }
+
+    /**
+     * Xem chi tiết sản phẩm (Customer)
+     */
+    @GetMapping("/product/{id}")
+    public String viewProductDetail(@PathVariable Long id, Model model) {
+        Product product = productService.getProductById(id);
+
+        if (product == null) {
+            throw new RuntimeException("Sản phẩm không tồn tại!");
+        }
+
+        model.addAttribute("product", product);
+        return "user/product-detail";
     }
 
 }

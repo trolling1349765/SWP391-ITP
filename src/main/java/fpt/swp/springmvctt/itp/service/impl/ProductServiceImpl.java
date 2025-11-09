@@ -95,7 +95,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductById(Long id) {
-        return productRepository.findById(id).orElse(null);
+        // Sử dụng findByIdWithShop để eager load shop information
+        return productRepository.findByIdWithShop(id).orElse(null);
     }
 
     @Override

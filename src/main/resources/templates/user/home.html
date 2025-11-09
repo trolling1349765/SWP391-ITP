@@ -59,16 +59,16 @@
                                 Uy tín – Chất lượng – Bảo hành.
                             </p>
                             <a th:href="@{/products}" class="btn btn-dark btn-lg">Khám phá ngay</a>
-                            
+
                             <!-- Nút Shop Dashboard cho SELLER -->
-                            <a th:href="@{/shop/dashboard}" 
+                            <a th:href="@{/shop/dashboard}"
                                th:if="${session.user != null and session.user.role.name == 'SELLER'}"
                                class="btn btn-outline-primary btn-lg ms-2">
                                 <i class="fas fa-store me-2"></i>Shop Dashboard
                             </a>
-                            
+
                             <!-- Nút Đăng ký Shop cho CUSTOMER -->
-                            <a th:href="@{/shop/register}" 
+                            <a th:href="@{/shop/register}"
                                th:if="${session.user != null and session.user.role.name == 'CUSTOMER'}"
                                class="btn btn-success btn-lg ms-2">
                                 <i class="fas fa-shop me-2"></i>Đăng ký Shop
