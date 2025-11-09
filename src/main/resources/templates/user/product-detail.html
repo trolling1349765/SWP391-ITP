@@ -211,23 +211,23 @@
                             <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
                         </button>
                     </div> -->
-                    <div class="col-6">
-                        <!-- Nếu người dùng đã đăng nhập -->
-                        <form th:if="${#session.getAttribute('user') != null}"
-                              th:action="@{'/favorites/add/' + ${product.id}}"
-                              method="post" class="w-100">
-                            <button type="submit" class="btn btn-outline-secondary w-100">
-                                <i class="far fa-heart me-2"></i>Thêm vào yêu thích
-                            </button>
-                        </form>
+<!--                    <div class="col-6">-->
+<!--                        &lt;!&ndash; Nếu người dùng đã đăng nhập &ndash;&gt;-->
+<!--                        <form th:if="${#session.getAttribute('user') != null}"-->
+<!--                              th:action="@{'/favorites/add/' + ${product.id}}"-->
+<!--                              method="post" class="w-100">-->
+<!--                            <button type="submit" class="btn btn-outline-secondary w-100">-->
+<!--                                <i class="far fa-heart me-2"></i>Thêm vào yêu thích-->
+<!--                            </button>-->
+<!--                        </form>-->
 
-                        <!-- Nếu người dùng chưa đăng nhập -->
-                        <button th:if="${#session.getAttribute('user') == null}"
-                                class="btn btn-outline-secondary w-100"
-                                onclick="window.location.href='/login'">
-                            <i class="far fa-heart me-2"></i>Đăng nhập để yêu thích
-                        </button>
-                    </div>
+<!--                        &lt;!&ndash; Nếu người dùng chưa đăng nhập &ndash;&gt;-->
+<!--                        <button th:if="${#session.getAttribute('user') == null}"-->
+<!--                                class="btn btn-outline-secondary w-100"-->
+<!--                                onclick="window.location.href='/login'">-->
+<!--                            <i class="far fa-heart me-2"></i>Đăng nhập để yêu thích-->
+<!--                        </button>-->
+<!--                    </div>-->
 
 
 
