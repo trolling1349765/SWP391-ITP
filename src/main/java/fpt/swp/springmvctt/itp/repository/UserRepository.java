@@ -33,8 +33,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findTop10ByOrderByIdDesc();
 
     @Query("""
-        SELECT u
+        SELECT DISTINCT u
     FROM User u
+    LEFT JOIN FETCH u.role
     WHERE (:username IS NULL OR u.username LIKE CONCAT('%', :username, '%'))
       AND (:status IS NULL OR u.status = :status)
       AND (:startDate IS NULL OR u.createAt >= :startDate)

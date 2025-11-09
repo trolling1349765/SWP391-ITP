@@ -114,8 +114,8 @@
             <!-- Ảnh sản phẩm -->
             <div>
                 <img class="img-preview"
-                     th:src="${product.img != null && !#strings.isEmpty(product.img)} ?
-                             @{/assets/img/{f}(f=${product.img})} :
+                     th:src="${product.image != null && !#strings.isEmpty(product.image)} ?
+                             @{${product.image}} :
                              @{/assets/img/products/default.jpg}"
                      th:alt="${product.productName}">
             </div>

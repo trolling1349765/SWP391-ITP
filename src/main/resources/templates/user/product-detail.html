@@ -192,13 +192,16 @@
                     </div>
                 </div>
 
-                <!-- Buy Button -->
+                <!-- Buy Button - Link to checkout flow from feature_v5 -->
                 <div class="d-grid gap-2 mb-3">
-                    <button class="btn btn-danger btn-buy"
-                            th:disabled="${product.availableStock == 0 or product.status.name() != 'ACTIVE'}"
-                            onclick="alert('Chức năng mua hàng đang được phát triển!')">
+                    <a th:href="@{/orders/checkout/{productId}(productId=${product.id})}"
+                       th:if="${product.availableStock > 0 and product.status.name() == 'ACTIVE'}"
+                       class="btn btn-danger btn-buy">
+                        <i class="fas fa-shopping-cart me-2"></i>Mua ngay
+                    </a>
+                    <button class="btn btn-danger btn-buy" disabled
+                            th:if="${product.availableStock == 0 or (product.availableStock > 0 and product.status.name() != 'ACTIVE')}">
                         <i class="fas fa-shopping-cart me-2"></i>
-                        <span th:if="${product.availableStock > 0 and product.status.name() == 'ACTIVE'}">Mua ngay</span>
                         <span th:if="${product.availableStock == 0}">Hết hàng</span>
                         <span th:if="${product.availableStock > 0 and product.status.name() != 'ACTIVE'}">Không khả dụng</span>
                     </button>

@@ -67,15 +67,15 @@
         <div class="col-md-3" th:each="product : ${products}">
             <div class="product-card position-relative">
 
-                <!-- Ảnh sản phẩm (có logic fallback từ Home) -->
+                <!-- Ảnh sản phẩm: Elvis operator từ feature_v5 (đơn giản hơn) -->
                 <img class="product-image"
-                     th:src="${product.image != null ? product.image : 'https://picsum.photos/seed/placeholder/400/300'}"
+                     th:src="${product.image} ?: 'https://picsum.photos/seed/placeholder/400/300'"
                      alt="Ảnh sản phẩm"/>
 
                 <div class="product-body">
                     <h6 class="fw-bold mb-1" th:text="${product.productName}">Tên sản phẩm</h6>
 
-                    <!-- Tên danh mục -->
+                    <!-- Tên danh mục (Main branch feature - quan trọng của team) -->
                     <div class="mb-1 text-muted small"
                          th:if="${product.categoryId != null and categoryNameMap[product.categoryId] != null}">
                         <span class="badge text-bg-light"

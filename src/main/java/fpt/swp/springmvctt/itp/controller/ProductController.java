@@ -23,6 +23,9 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
 
+    /**
+     * Xem danh sách sản phẩm với pagination và filter
+     */
     @GetMapping("/products")
     public String showAllProducts(
             @RequestParam(defaultValue = "1") int page,
@@ -65,7 +68,7 @@ public class ProductController {
         model.addAttribute("endPage", endPage);
 
         model.addAttribute("categories", categories);
-        model.addAttribute("categoryNameMap", categoryNameMap);   // <-- thêm dòng này
+        model.addAttribute("categoryNameMap", categoryNameMap);
         model.addAttribute("selectedCategoryId", categoryId);
         model.addAttribute("sort", sort);
         model.addAttribute("size", safeSize);
@@ -74,7 +77,9 @@ public class ProductController {
     }
 
     /**
-     * Xem chi tiết sản phẩm (Customer)
+     * Xem chi tiết sản phẩm (Main branch - có shop homepage links)
+     * Route này dùng để xem thông tin sản phẩm với layout đẹp
+     * Khi user click "Mua ngay" sẽ chuyển sang /orders/checkout/{productId}
      */
     @GetMapping("/product/{id}")
     public String viewProductDetail(@PathVariable Long id, Model model) {

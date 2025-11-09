@@ -17,10 +17,12 @@ function enableEdit() {
         facebookLink: document.getElementById('facebookLink') ? document.getElementById('facebookLink').value : ''
     };
     
-    // Enable all form fields
+    // Enable all form fields EXCEPT email (email is used for login, cannot be changed)
     document.querySelectorAll('.edit-field').forEach(el => {
-        el.readOnly = false;
-        el.disabled = false;
+        if (el.id !== 'email') {  // Skip email field - it's locked
+            el.readOnly = false;
+            el.disabled = false;
+        }
     });
     
     // Enable upload buttons
@@ -286,5 +288,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize selected categories
     updateSelectedCategories();
+    
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 });
 

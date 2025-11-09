@@ -41,7 +41,6 @@ public class VNPayTransaction extends BaseEntity {
 
     @OneToOne
     private PaymentTransaction paymentTransaction;
-
     @ManyToOne
     @JoinColumn(name = "user_id",  nullable = false)
     private User user;
