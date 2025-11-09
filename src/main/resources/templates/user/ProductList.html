@@ -67,9 +67,14 @@
         <div class="col-md-3" th:each="product : ${products}">
             <div class="product-card position-relative">
 
-                <!-- Ảnh sản phẩm: Elvis operator từ feature_v5 (đơn giản hơn) -->
                 <img class="product-image"
-                     th:src="${product.image} ?: 'https://picsum.photos/seed/placeholder/400/300'"
+                     th:if="${product.image != null and !#strings.isEmpty(product.image)}"
+                     th:src="${'/itp' + product.image}"
+                     alt="Ảnh sản phẩm"
+                     onerror="this.onerror=null; this.src='https://picsum.photos/seed/placeholder/400/300';">
+                <img class="product-image"
+                     th:if="${product.image == null or #strings.isEmpty(product.image)}"
+                     src="https://picsum.photos/seed/placeholder/400/300"
                      alt="Ảnh sản phẩm"/>
 
                 <div class="product-body">
