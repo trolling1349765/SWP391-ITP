@@ -98,4 +98,9 @@ public class User extends BaseEntity {
     @Column(name = "oauth_provider")
     private String oauthProvider;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<FavoriteProduct> favoriteProducts;
+
 }
