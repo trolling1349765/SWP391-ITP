@@ -212,7 +212,7 @@
                         </button>
                     </div> -->
                     <div class="col-6">
-                        <form th:if="${#authorization.expression('isAuthenticated()')}"
+                        <form th:if="${#httpServletRequest.remoteUser != null}""
                               th:action="@{'/favorites/add/' + ${product.id}}"
                               method="post" class="w-100">
                             <button type="submit" class="btn btn-outline-secondary w-100">
@@ -221,7 +221,7 @@
                         </form>
 
                         <!-- Nếu chưa đăng nhập -->
-                        <button th:if="${!#authorization.expression('isAuthenticated()')}"
+                        <button th:if="${#httpServletRequest.remoteUser != null}""
                                 class="btn btn-outline-secondary w-100"
                                 onclick="window.location.href='/login'">
                             <i class="far fa-heart me-2"></i>Đăng nhập để yêu thích
