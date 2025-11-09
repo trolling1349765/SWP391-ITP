@@ -190,7 +190,13 @@
                     Hết hàng
                 </span>
 
-                <img th:src="${product.image != null ? product.image : 'https://via.placeholder.com/300x200'}"
+                <img th:if="${product.image != null and !#strings.isEmpty(product.image)}"
+                     th:src="${'/itp' + product.image}"
+                     class="card-img-top product-img"
+                     alt="Product Image"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200';">
+                <img th:if="${product.image == null or #strings.isEmpty(product.image)}"
+                     src="https://via.placeholder.com/300x200"
                      class="card-img-top product-img"
                      alt="Product Image">
 
