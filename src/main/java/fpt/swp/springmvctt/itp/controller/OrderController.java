@@ -111,34 +111,15 @@ public class OrderController {
         try {
             System.out.println(" Bắt đầu xử lý đơn hàng cho user: " + user.getUsername());
             
-            // Tạo order (acquire lock, check stock, deduct money, call async)
+            // Tạo order (acquire lock, check stock, deduct money)
             Order order = orderService.createOrder(form, user);
             
-            System.out.println(" Order đã được tạo: " + order.getOrderCode());
-            System.out.println(" Đang hold request 15 giây để xử lý hàng đợi, close DB, hoàn tiền nếu cần...");
+            System.out.println(" Order đã được tạo: " + order.getOrderCode() + " (Status: " + order.getStatus() + ")");
             
             // ============================================================
-            // HOLD 15 GIÂY ĐỂ XỬ LÝ HÀNG ĐỢI, CLOSE DB
+            // Bắt đầu xử lý async (15s hold + 20s hold)
             // ============================================================
-            for (int i = 15; i > 0; i--) {
-                Thread.sleep(1000);
-                if (i > 12) {
-                    System.out.println(" Đang xử lý hàng đợi và close database... " + i + "s còn lại");
-                } else if (i > 8) {
-                    System.out.println(" Đang kiểm tra tồn kho và serial codes... " + i + "s còn lại");
-                } else if (i > 4) {
-                    System.out.println(" Đang xác nhận giao dịch... " + i + "s còn lại");
-                } else {
-                    System.out.println(" Hoàn tất xử lý, chuẩn bị trả response... " + i + "s còn lại");
-                }
-            }
-            
-            System.out.println(" Hoàn tất hold 15 giây. Order status: " + order.getStatus());
-            
-            // ============================================================
-            // Giai đoạn 3: Bắt đầu hold tiền 20s (chạy async)
-            // ============================================================
-            System.out.println(" Bắt đầu giai đoạn 3: Hold tiền 20 giây trước khi chuyển cho seller...");
+            System.out.println(" Bắt đầu xử lý async: Hold 15s (queue, DB) → Hold 20s (money transfer)...");
             orderService.processOrderAsync(order.getId());
             
             // ============================================================
@@ -148,18 +129,13 @@ public class OrderController {
                     .orElse(user);
             session.setAttribute("user", updatedUser);
             System.out.println(" Balance đã được cập nhật trong session: " + updatedUser.getBalance());
-            System.out.println(" Trả response về frontend. Frontend sẽ redirect sang /orders/history");
+            System.out.println(" Redirect ngay về /orders/history. Frontend sẽ poll để cập nhật trạng thái real-time.");
             
             redirectAttributes.addFlashAttribute("success", 
                 "Đặt hàng thành công! Mã đơn hàng: " + order.getOrderCode() + 
-                ". Đơn hàng đang được xử lý, tiền sẽ được chuyển cho người bán sau 20 giây.");
+                ".Đơn hàng đang được xử lý, tiền sẽ được chuyển cho người bán.");
             
             return "redirect:/orders/history";
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.err.println(" Thread bị interrupt trong lúc hold: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi xử lý đơn hàng. Vui lòng thử lại.");
-            return "redirect:/orders/checkout/" + form.getProductId();
         } catch (IllegalStateException e) {
             // Lỗi về balance, stock, hoặc đã hoàn tiền
             String errorMessage = e.getMessage();
@@ -219,6 +195,7 @@ public class OrderController {
 
     /**
      * API endpoint để lấy trạng thái orders cho polling
+     * Luôn reload từ database để lấy status mới nhất
      */
     @GetMapping("/api/status")
     @ResponseBody
@@ -229,13 +206,19 @@ public class OrderController {
         User user = (User) session.getAttribute("user");
         if (user != null) {
             try {
+                // Reload từ database để đảm bảo lấy status mới nhất
                 List<Order> orders = orderService.getOrdersByUserId(user.getId());
+                System.out.println("📡 [API] Lấy trạng thái cho " + orders.size() + " đơn hàng của user " + user.getId());
                 for (Order order : orders) {
-                    orderStatusMap.put(order.getId().toString(), order.getStatus());
+                    String status = order.getStatus();
+                    orderStatusMap.put(order.getId().toString(), status);
+                    System.out.println("  - Order " + order.getId() + " (" + order.getOrderCode() + "): " + status);
                 }
                 response.put("success", true);
                 response.put("orders", orderStatusMap);
             } catch (Exception e) {
+                System.err.println("❌ [API] Lỗi khi lấy trạng thái đơn hàng: " + e.getMessage());
+                e.printStackTrace();
                 response.put("success", false);
                 response.put("error", e.getMessage());
             }

@@ -55,7 +55,7 @@ public class SampleDataInitializer {
                     cat.setIsDeleted(false);
                     categories.add(categoryRepository.save(cat));
                 }
-                System.out.println("✅ Đã tạo " + categories.size() + " categories");
+                System.out.println(" Đã tạo " + categories.size() + " categories");
             } else {
                 categories = categoryRepository.findAll();
             }
@@ -93,7 +93,7 @@ public class SampleDataInitializer {
             shop1.setCreateBy("system");
             shop1.setIsDeleted(false);
             shop1 = shopRepository.save(shop1);
-            System.out.println("✅ Đã tạo SHOP 1: " + shop1.getShopName());
+            System.out.println(" Đã tạo SHOP 1: " + shop1.getShopName());
 
             // === TẠO SẢN PHẨM CHO SHOP 1 ===
             String[] productNames1 = {
@@ -147,7 +147,7 @@ public class SampleDataInitializer {
                 product.setIsDeleted(false);
                 productRepository.save(product);
             }
-            System.out.println("✅ Đã tạo " + productNames1.length + " sản phẩm cho SHOP 1");
+            System.out.println(" Đã tạo " + productNames1.length + " sản phẩm cho SHOP 1");
 
             // === TẠO SELLER 2 ===
             User seller2 = new User();
@@ -164,7 +164,7 @@ public class SampleDataInitializer {
             seller2.setCreateBy("system");
             seller2.setIsDeleted(false);
             seller2 = userRepository.save(seller2);
-            System.out.println("✅ Đã tạo SELLER 2: " + seller2.getEmail());
+            System.out.println(" Đã tạo SELLER 2: " + seller2.getEmail());
 
             // === TẠO SHOP 2 ===
             Shop shop2 = new Shop();
@@ -182,7 +182,7 @@ public class SampleDataInitializer {
             shop2.setCreateBy("system");
             shop2.setIsDeleted(false);
             shop2 = shopRepository.save(shop2);
-            System.out.println("✅ Đã tạo SHOP 2: " + shop2.getShopName());
+            System.out.println(" Đã tạo SHOP 2: " + shop2.getShopName());
 
             // === TẠO SẢN PHẨM CHO SHOP 2 ===
             String[] productNames2 = {
@@ -223,7 +223,7 @@ public class SampleDataInitializer {
                 product.setIsDeleted(false);
                 productRepository.save(product);
             }
-            System.out.println("✅ Đã tạo " + productNames2.length + " sản phẩm cho SHOP 2");
+            System.out.println(" Đã tạo " + productNames2.length + " sản phẩm cho SHOP 2");
 
             // === TẠO SELLER 3 ===
             User seller3 = new User();
@@ -240,7 +240,7 @@ public class SampleDataInitializer {
             seller3.setCreateBy("system");
             seller3.setIsDeleted(false);
             seller3 = userRepository.save(seller3);
-            System.out.println("✅ Đã tạo SELLER 3: " + seller3.getEmail());
+            System.out.println(" Đã tạo SELLER 3: " + seller3.getEmail());
 
             // === TẠO SHOP 3 ===
             Shop shop3 = new Shop();
@@ -258,7 +258,7 @@ public class SampleDataInitializer {
             shop3.setCreateBy("system");
             shop3.setIsDeleted(false);
             shop3 = shopRepository.save(shop3);
-            System.out.println("✅ Đã tạo SHOP 3: " + shop3.getShopName());
+            System.out.println(" Đã tạo SHOP 3: " + shop3.getShopName());
 
             // === TẠO SẢN PHẨM CHO SHOP 3 ===
             String[] productNames3 = {
@@ -297,7 +297,7 @@ public class SampleDataInitializer {
                 product.setIsDeleted(false);
                 productRepository.save(product);
             }
-            System.out.println("✅ Đã tạo " + productNames3.length + " sản phẩm cho SHOP 3");
+            System.out.println(" Đã tạo " + productNames3.length + " sản phẩm cho SHOP 3");
 
             // === TẠO VÀI CUSTOMER MẪU ===
             for (int i = 1; i <= 3; i++) {
@@ -316,15 +316,15 @@ public class SampleDataInitializer {
                 customer.setIsDeleted(false);
                 userRepository.save(customer);
             }
-            System.out.println("✅ Đã tạo 3 CUSTOMER mẫu");
+            System.out.println(" Đã tạo 3 CUSTOMER mẫu");
 
             System.out.println("=== Hoàn thành khởi tạo dữ liệu mẫu ===");
-            System.out.println("📊 Tổng kết:");
+            System.out.println(" Tổng kết:");
             System.out.println("   - " + userRepository.count() + " users");
             System.out.println("   - " + shopRepository.count() + " shops");
             System.out.println("   - " + productRepository.count() + " products");
             System.out.println("   - " + categoryRepository.count() + " categories");
-            System.out.println("\n🔑 Tài khoản test:");
+            System.out.println("\n Tài khoản test:");
             System.out.println("   SELLER 1: seller1@gmail.com / 123456");
             System.out.println("   SELLER 2: seller2@gmail.com / 123456");
             System.out.println("   SELLER 3: seller3@gmail.com / 123456");

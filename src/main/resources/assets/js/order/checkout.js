@@ -48,17 +48,43 @@ function updateTotal() {
     
     // Check balance
     const needTopUp = total - userBalance;
+    const insufficientBalanceInfo = document.getElementById('insufficientBalanceInfo');
+    
     if (needTopUp > 0) {
+        // Show warning section
         document.getElementById('needTopUpSection').style.display = 'flex';
         document.getElementById('needTopUpAmount').textContent = formatCurrency(needTopUp);
+        
+        // Show insufficient balance info
+        if (insufficientBalanceInfo) {
+            insufficientBalanceInfo.style.display = 'block';
+        }
+        
+        // Disable submit button and change style
         document.getElementById('submitBtn').disabled = true;
         document.getElementById('submitBtn').classList.add('btn-secondary');
         document.getElementById('submitBtn').classList.remove('btn-primary');
+        document.getElementById('submitBtn').textContent = '⛔ Không đủ tiền - Vui lòng nạp tiền';
+        
+        // Show alert banner if not already shown
+        showInsufficientBalanceAlert(needTopUp);
     } else {
+        // Hide warning section
         document.getElementById('needTopUpSection').style.display = 'none';
+        
+        // Hide insufficient balance info
+        if (insufficientBalanceInfo) {
+            insufficientBalanceInfo.style.display = 'none';
+        }
+        
+        // Enable submit button
         document.getElementById('submitBtn').disabled = false;
         document.getElementById('submitBtn').classList.remove('btn-secondary');
         document.getElementById('submitBtn').classList.add('btn-primary');
+        document.getElementById('submitBtn').textContent = 'Đặt hàng';
+        
+        // Hide alert banner if shown
+        hideInsufficientBalanceAlert();
     }
 }
 
@@ -104,6 +130,25 @@ function confirmPurchase() {
     const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
     const total = unitPrice * quantity;
     const remaining = userBalance - total;
+    const needTopUp = total - userBalance;
+    
+    // Check if balance is sufficient
+    if (needTopUp > 0) {
+        // Show error alert with detailed information
+        const alertMessage = `
+️ Tài khoản của bạn không đủ tiền để thanh toán!
+
+ Số dư hiện tại: ${formatCurrency(userBalance)}
+ Tổng tiền cần thanh toán: ${formatCurrency(total)}
+ Số tiền cần nạp thêm: ${formatCurrency(needTopUp)}
+
+Vui lòng nạp tiền vào tài khoản để tiếp tục mua hàng.
+Liên hệ admin để được hỗ trợ nạp tiền.
+        `.trim();
+        
+        alert(alertMessage);
+        return;
+    }
     
     // Update modal content
     document.getElementById('confirmQuantity').textContent = quantity;
@@ -117,8 +162,6 @@ function confirmPurchase() {
         document.getElementById('confirmRemainingAmount').classList.add('text-success');
     } else {
         document.getElementById('confirmRemainingBalance').style.display = 'none';
-        alert('Số dư không đủ! Vui lòng nạp thêm tiền.');
-        return;
     }
     
     // Show modal
@@ -133,9 +176,28 @@ function submitPurchase() {
     try {
         console.log('🛒 [Frontend] Bắt đầu quá trình mua hàng...');
         
+        // Double-check balance before submitting
+        const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
+        const total = unitPrice * quantity;
+        const needTopUp = total - userBalance;
+        
+        if (needTopUp > 0) {
+            const alertMessage = `
+ Tài khoản của bạn không đủ tiền!
+
+Số dư hiện tại: ${formatCurrency(userBalance)}
+Tổng tiền cần thanh toán: ${formatCurrency(total)}
+Cần nạp thêm: ${formatCurrency(needTopUp)}
+
+Vui lòng nạp tiền vào tài khoản để tiếp tục.
+            `.trim();
+            
+            alert(alertMessage);
+            return;
+        }
+        
         // Update message and quantity in form
         const message = document.getElementById('messageToSeller').value;
-        const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
         
         document.getElementById('formMessage').value = message;
         document.getElementById('formQuantity').value = quantity;
@@ -149,7 +211,7 @@ function submitPurchase() {
             }
         }
         
-        console.log('📤 [Frontend] Submit form. Backend sẽ xử lý và hold 15 giây...');
+        console.log(' Submit form. Hệ thống sẽ xử lý và hold ...');
         
         // Submit form normally - backend will handle everything
         setTimeout(function() {
@@ -157,8 +219,60 @@ function submitPurchase() {
         }, 100);
         
     } catch (error) {
-        console.error('❌ [Frontend] Error in submitPurchase:', error);
+        console.error(' Error in submitPurchase:', error);
         alert('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.');
+    }
+}
+
+/**
+ * Show insufficient balance alert banner
+ */
+function showInsufficientBalanceAlert(needTopUp) {
+    // Remove existing alert if any
+    hideInsufficientBalanceAlert();
+    
+    // Create alert banner
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'insufficientBalanceAlert';
+    alertDiv.className = 'alert alert-warning alert-dismissible fade show mt-3';
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        <div class="d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+            </svg>
+            <div class="flex-grow-1">
+                <strong> Tài khoản không đủ tiền!</strong>
+                <div class="mt-1">
+                    Bạn cần nạp thêm <strong class="text-danger">${formatCurrency(needTopUp)}</strong> vào tài khoản để thanh toán đơn hàng này.
+                    <br>
+                    <small>Vui lòng liên hệ admin để được hỗ trợ nạp tiền.</small>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Insert after the error message div or at the top of checkout container
+    const checkoutContainer = document.querySelector('.checkout-container');
+    const errorDiv = document.querySelector('.alert-danger');
+    if (errorDiv && errorDiv.nextSibling) {
+        checkoutContainer.insertBefore(alertDiv, errorDiv.nextSibling);
+    } else if (checkoutContainer) {
+        const h2 = checkoutContainer.querySelector('h2');
+        if (h2 && h2.nextSibling) {
+            checkoutContainer.insertBefore(alertDiv, h2.nextSibling);
+        }
+    }
+}
+
+/**
+ * Hide insufficient balance alert banner
+ */
+function hideInsufficientBalanceAlert() {
+    const existingAlert = document.getElementById('insufficientBalanceAlert');
+    if (existingAlert) {
+        existingAlert.remove();
     }
 }
 

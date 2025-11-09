@@ -93,11 +93,18 @@ public class OrderServiceImpl implements OrderService {
             }
             
             if (buyerWithLock.getBalance().compareTo(totalAmount) < 0) {
-                throw new IllegalStateException(
-                    "Tài khoản quý khách không đủ tiền. Số dư hiện tại: " + 
-                    buyerWithLock.getBalance() + " VND. Cần nạp thêm: " + 
-                    totalAmount.subtract(buyerWithLock.getBalance()) + " VND"
+                BigDecimal needAmount = totalAmount.subtract(buyerWithLock.getBalance());
+                String errorMessage = String.format(
+                    " Tài khoản của bạn không đủ tiền để thanh toán!%n" +
+                    " Số dư hiện tại: %s VND%n" +
+                    " Tổng tiền cần thanh toán: %s VND%n" +
+                    " Số tiền cần nạp thêm: %s VND%n%n" +
+                    "Vui lòng nạp tiền vào tài khoản để tiếp tục mua hàng. " ,
+                    buyerWithLock.getBalance(),
+                    totalAmount,
+                    needAmount
                 );
+                throw new IllegalStateException(errorMessage);
             }
             // 6. Lấy seller user từ shop
             Shop shop = shopRepository.findById(product.getShopId())
@@ -250,22 +257,42 @@ public class OrderServiceImpl implements OrderService {
     @Async("taskExecutor")
     public void processOrderAsync(Long orderId) {
         try {
-            System.out.println(" Processing order " + orderId + " - Đang hold tiền trong 20 giây...");
+            System.out.println(" [Order " + orderId + "] Bắt đầu xử lý async - Giai đoạn 1: Hold 15 giây (queue, DB close, refunds)...");
             
-            // Đếm ngược 20 giây để hold tiền trước khi chuyển cho seller
+            // ============================================================
+            // GIAI ĐOẠN 1: HOLD 15 GIÂY (Queue, DB close, refunds)
+            // ============================================================
+            for (int i = 15; i > 0; i--) {
+                Thread.sleep(1000);
+                if (i > 12) {
+                    System.out.println(" [Order " + orderId + "] Đang xử lý hàng đợi và close database... " + i + "s còn lại");
+                } else if (i > 8) {
+                    System.out.println(" [Order " + orderId + "] Đang kiểm tra tồn kho và serial codes... " + i + "s còn lại");
+                } else if (i > 4) {
+                    System.out.println(" [Order " + orderId + "] Đang xác nhận giao dịch... " + i + "s còn lại");
+                } else {
+                    System.out.println(" [Order " + orderId + "] Hoàn tất xử lý, chuẩn bị hold tiền... " + i + "s còn lại");
+                }
+            }
+            
+            System.out.println(" [Order " + orderId + "]  Hoàn tất giai đoạn 1 (15 giây). Bắt đầu giai đoạn 2: Hold tiền 20 giây...");
+            
+            // ============================================================
+            // GIAI ĐOẠN 2: HOLD 20 GIÂY (Money transfer hold)
+            // ============================================================
             for (int i = 20; i > 0; i--) {
-                Thread.sleep(1000); // Sleep 1 giây mỗi lần
+                Thread.sleep(1000);
                 System.out.println("⏱ [Order " + orderId + "] Đang hold tiền... " + i + " giây còn lại (Tiền sẽ được chuyển cho seller sau khi hết thời gian)");
             }
             
-            System.out.println(" [Order " + orderId + "] Hết thời gian hold. Đang chuyển tiền cho seller...");
+            System.out.println(" [Order " + orderId + "]  Hết thời gian hold tiền. Đang chuyển tiền cho seller...");
             // Sau 20 giây, chuyển tiền cho seller
             transferToSeller(orderId);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            System.err.println(" Error processing order async: " + e.getMessage());
+            System.err.println(" [Order " + orderId + "]  Thread bị interrupt: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println(" Error processing order async: " + e.getMessage());
+            System.err.println(" [Order " + orderId + "]  Error processing order async: " + e.getMessage());
             e.printStackTrace();
         }
     }

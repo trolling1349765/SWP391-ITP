@@ -140,68 +140,104 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Polling để cập nhật trạng thái real-time
-    // Order sẽ chuyển từ PENDING → COMPLETED sau 20 giây
+    // Order sẽ chuyển từ PENDING → COMPLETED sau 35 giây (15s xử lý + 20s hold tiền)
     let hasPendingOrders = false;
     const pendingOrderRows = [];
     
+    // Tìm tất cả các đơn hàng có status PENDING
     document.querySelectorAll('tbody tr[data-order-id]').forEach(function(row) {
-        const statusCell = row.querySelector('.status-pending');
-        if (statusCell && (statusCell.textContent.includes('Đang giữ tiền') || statusCell.textContent.includes('Đang hold tiền'))) {
-            hasPendingOrders = true;
-            const orderId = row.getAttribute('data-order-id');
-            if (orderId) {
-                pendingOrderRows.push({
-                    row: row,
-                    orderId: orderId,
-                    statusCell: statusCell
-                });
+        const orderId = row.getAttribute('data-order-id');
+        if (orderId) {
+            // Tìm status cell - có thể là .status-pending hoặc bất kỳ status badge nào
+            const statusCell = row.querySelector('td:last-child .status-badge');
+            if (statusCell) {
+                const statusText = statusCell.textContent.trim();
+                // Kiểm tra nếu là PENDING status
+                if (statusText.includes('Đang giữ tiền') || statusText.includes('Đang hold tiền') || statusCell.classList.contains('status-pending')) {
+                    hasPendingOrders = true;
+                    pendingOrderRows.push({
+                        row: row,
+                        orderId: orderId,
+                        statusCell: statusCell,
+                        statusText: statusText
+                    });
+                    console.log('✅ Phát hiện đơn hàng PENDING: Order ID = ' + orderId);
+                }
             }
         }
     });
     
     if (hasPendingOrders) {
         console.log(' Phát hiện ' + pendingOrderRows.length + ' đơn hàng đang hold tiền. Bắt đầu polling để cập nhật trạng thái real-time...');
+        console.log('⏱ Thời gian xử lý: 15s (queue, DB) + 20s (hold tiền) = 35s tổng cộng');
         
         // Polling mỗi 2 giây để kiểm tra trạng thái
         let pollCount = 0;
-        const maxPolls = 15; // 15 lần * 2 giây = 30 giây (đủ thời gian cho 20s + buffer)
+        const maxPolls = 20; // 20 lần * 2 giây = 40 giây (đủ thời gian cho 35s + buffer)
+        const startTime = Date.now();
         
         const pollInterval = setInterval(function() {
             pollCount++;
-            console.log(' Polling lần ' + pollCount + ' để kiểm tra trạng thái đơn hàng...');
+            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+            console.log('📡 Polling lần ' + pollCount + ' (đã qua ' + elapsedSeconds + 's) - Kiểm tra trạng thái đơn hàng...');
             
             // Gửi request để lấy trạng thái mới nhất
             fetch('/itp/orders/api/status', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'same-origin' // Đảm bảo gửi session cookie
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log(' Response từ API:', data);
                 if (data && data.success && data.orders) {
                     let allCompleted = true;
+                    let updatedCount = 0;
+                    
                     pendingOrderRows.forEach(function(item) {
                         const orderStatus = data.orders[item.orderId];
+                        console.log('  - Order ' + item.orderId + ': status = ' + orderStatus);
+                        
                         if (orderStatus) {
                             if (orderStatus === 'COMPLETED') {
                                 // Cập nhật trạng thái trong UI
                                 item.statusCell.className = 'status-badge status-completed';
                                 item.statusCell.textContent = 'Đã thanh toán';
                                 console.log(' Order ' + item.orderId + ' đã chuyển sang trạng thái: Đã thanh toán');
-                            } else {
+                                updatedCount++;
+                            } else if (orderStatus === 'PENDING') {
+                                // Vẫn đang xử lý
                                 allCompleted = false;
+                                console.log(' Order ' + item.orderId + ' vẫn đang xử lý (PENDING)...');
+                            } else {
+                                // Status khác (FAILED, etc.)
+                                allCompleted = false;
+                                console.log('️ Order ' + item.orderId + ' có status: ' + orderStatus);
                             }
                         } else {
                             allCompleted = false;
+                            console.log(' Không tìm thấy status cho Order ' + item.orderId);
                         }
                     });
+                    
+                    if (updatedCount > 0) {
+                        console.log(' Đã cập nhật ' + updatedCount + ' đơn hàng sang trạng thái COMPLETED');
+                    }
                     
                     // Nếu tất cả đã hoàn thành, dừng polling
                     if (allCompleted) {
                         console.log(' Tất cả đơn hàng đã hoàn thành. Dừng polling.');
                         clearInterval(pollInterval);
                     }
+                } else {
+                    console.warn('⚠ API response không hợp lệ:', data);
                 }
             })
             .catch(error => {
@@ -210,7 +246,7 @@
             
             // Dừng polling sau maxPolls lần
             if (pollCount >= maxPolls) {
-                console.log(' Đã polling đủ số lần. Reload trang để cập nhật trạng thái cuối cùng...');
+                console.log(' Đã polling đủ số lần (' + maxPolls + '). Reload trang để cập nhật trạng thái cuối cùng...');
                 clearInterval(pollInterval);
                 setTimeout(function() {
                     window.location.reload();
@@ -218,14 +254,16 @@
             }
         }, 2000); // Poll mỗi 2 giây
         
-        // Fallback: Auto-refresh sau 25 giây để đảm bảo cập nhật
+        // Fallback: Auto-refresh sau 40 giây để đảm bảo cập nhật
         setTimeout(function() {
             if (pollInterval) {
                 clearInterval(pollInterval);
             }
-            console.log(' Auto-refresh trang sau 25 giây để cập nhật trạng thái cuối cùng...');
+            console.log(' Auto-refresh trang sau 40 giây để cập nhật trạng thái cuối cùng...');
             window.location.reload();
-        }, 25000); // 25 giây (20s + 5s buffer)
+        }, 40000); // 40 giây (35s + 5s buffer)
+    } else {
+        console.log(' Không có đơn hàng nào đang ở trạng thái PENDING. Không cần polling.');
     }
 </script>
 </body>
