@@ -34,7 +34,7 @@ public class ConfigSettingController {
         Boolean delete = deleted.isEmpty() ? null : deleted.equals("true");
 
         Page<Configuration> configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
-        if (!configs.isEmpty() && page >= configs.getTotalPages()) {
+        if (!configs.isEmpty() || page >= configs.getTotalPages()) {
             page = configs.getTotalPages() - 1;
             configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
         }

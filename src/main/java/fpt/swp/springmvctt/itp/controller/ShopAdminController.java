@@ -102,7 +102,7 @@ public class ShopAdminController {
         // Gọi service để lấy các shop có status "inactive" + điều kiện lọc
         Page<Shop> shops = shopService.filterInactiveShops(shopName, username, fromDate, toDate, page, size);
 
-        if(!shops.isEmpty() && page >= shops.getTotalPages()){
+        if(!shops.isEmpty() || page >= shops.getTotalPages()){
             page = shops.getTotalPages() - 1;
             model.addAttribute("errorMessage", "Page number too big.");
             shops = shopService.filterInactiveShops(shopName, username, fromDate, toDate, page, size);
@@ -201,7 +201,7 @@ public class ShopAdminController {
                 size
         );
 
-        if (!shops.isEmpty() && page >= shops.getTotalPages()) {
+        if (!shops.isEmpty() || page >= shops.getTotalPages()) {
             page = shops.getTotalPages() - 1;
             shops = shopService.findByFilter(
                     shopName,
