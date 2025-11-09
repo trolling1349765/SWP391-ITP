@@ -88,7 +88,7 @@ public class AuthController {
         }
 
         model.addAttribute("error", "Email hoặc mật khẩu không đúng!");
-        return "login/login";  // Fixed: Must match template path
+        return "login/login";
     }
 
     @GetMapping("/register")
