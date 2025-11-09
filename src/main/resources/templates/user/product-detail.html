@@ -212,10 +212,22 @@
                         </button>
                     </div> -->
                     <div class="col-6">
-                        <button class="btn btn-outline-secondary w-100" onclick="alert('Chức năng yêu thích đang được phát triển!')">
-                            <i class="far fa-heart me-2"></i>Yêu thích
+                        <form th:if="${#authorization.expression('isAuthenticated()')}"
+                              th:action="@{'/favorites/add/' + ${product.id}}"
+                              method="post" class="w-100">
+                            <button type="submit" class="btn btn-outline-secondary w-100">
+                                <i class="far fa-heart me-2"></i>Thêm vào yêu thích
+                            </button>
+                        </form>
+
+                        <!-- Nếu chưa đăng nhập -->
+                        <button th:if="${!#authorization.expression('isAuthenticated()')}"
+                                class="btn btn-outline-secondary w-100"
+                                onclick="window.location.href='/login'">
+                            <i class="far fa-heart me-2"></i>Đăng nhập để yêu thích
                         </button>
                     </div>
+
                 </div>
 
                 <!-- Share Buttons -->
