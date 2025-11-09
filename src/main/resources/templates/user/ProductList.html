@@ -17,6 +17,7 @@
     </style>
 </head>
 <body>
+
 <!-- Header -->
 <div th:replace="~{/Included/Header :: header}"></div>
 
@@ -29,7 +30,7 @@
         </ol>
     </nav>
 
-    <!-- Tiêu đề + Sort theo giá -->
+    <!-- Tiêu đề + Sort -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-bold">Tất cả sản phẩm</h2>
 
@@ -45,7 +46,7 @@
         </form>
     </div>
 
-    <!-- Bộ lọc Category nạp từ DB -->
+    <!-- Bộ lọc Category -->
     <div class="mb-4 cat-filter">
         <a class="btn btn-sm"
            th:classappend="${selectedCategoryId} == null ? 'btn-primary' : 'btn-outline-secondary'"
@@ -61,30 +62,32 @@
         </a>
     </div>
 
-    <!-- Grid (có dữ liệu) -->
+    <!-- Grid sản phẩm -->
     <div class="row g-4" th:if="${products != null and !#lists.isEmpty(products)}">
         <div class="col-md-3" th:each="product : ${products}">
             <div class="product-card position-relative">
 
-                <!-- Ảnh -->
+                <!-- Ảnh sản phẩm (có logic fallback từ Home) -->
                 <img class="product-image"
-                     th:src="${product.image} != null ? product.image : 'https://picsum.photos/seed/placeholder/400/300'"
+                     th:src="${product.image != null ? product.image : 'https://picsum.photos/seed/placeholder/400/300'}"
                      alt="Ảnh sản phẩm"/>
 
                 <div class="product-body">
                     <h6 class="fw-bold mb-1" th:text="${product.productName}">Tên sản phẩm</h6>
 
-                    <!-- HIỆN TÊN CATEGORY TỪ MAP -->
+                    <!-- Tên danh mục -->
                     <div class="mb-1 text-muted small"
                          th:if="${product.categoryId != null and categoryNameMap[product.categoryId] != null}">
                         <span class="badge text-bg-light"
                               th:text="${categoryNameMap[product.categoryId]}">Danh mục</span>
                     </div>
 
+                    <!-- Giá -->
                     <div class="product-price mb-1">
-                        <span th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + '₫'">0₫</span>
+                        <span th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</span>
                     </div>
 
+                    <!-- Shop -->
                     <div class="product-footer">
                         <span>Shop: </span>
                         <a th:if="${product.shop != null}"
@@ -94,6 +97,7 @@
                         <span th:if="${product.shop == null}">ITP Marketplace</span>
                     </div>
 
+                    <!-- Nút xem chi tiết -->
                     <a th:href="@{'/product/' + ${product.id}}"
                        class="btn btn-sm btn-outline-primary mt-2 w-100">
                         Xem chi tiết
@@ -103,7 +107,7 @@
         </div>
     </div>
 
-    <!-- Trạng thái rỗng -->
+    <!-- Khi rỗng -->
     <div class="text-center py-5 text-muted"
          th:if="${products == null or #lists.isEmpty(products)}">
         <h5 class="mb-3">Không có sản phẩm trong danh mục đã chọn.</h5>
