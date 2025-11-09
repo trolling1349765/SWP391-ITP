@@ -23,10 +23,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
     @Query("""
-        select r.name, count(u.id)
-        from User u join u.role r
-        group by r.name
-        """)
+    SELECT COALESCE(r.name, 'UNKNOWN') AS roleName, COUNT(u.id)
+    FROM User u
+    LEFT JOIN u.role r
+    GROUP BY r.name
+    """)
     List<Object[]> countUsersByRole();
 
     List<User> findTop10ByOrderByIdDesc();

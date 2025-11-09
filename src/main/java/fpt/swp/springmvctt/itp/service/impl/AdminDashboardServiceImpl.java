@@ -97,17 +97,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 new ComplaintSummaryResponse("Khiếu nại đang xử lý", processing, "PROCESSING")
         );
 
-        // ===== 5. doanh thu theo tháng =====
-        Map<Integer, BigDecimal> monthlyRevenue = new LinkedHashMap<>();
-        for (int m = 1; m <= 12; m++) {
-            monthlyRevenue.put(m, BigDecimal.ZERO);
-        }
-        List<Object[]> revenueRows = orderRepository.sumRevenueByMonth(year);
-        for (Object[] r : revenueRows) {
-            Integer month = ((Number) r[0]).intValue();
-            BigDecimal amount = (r[1] != null) ? (BigDecimal) r[1] : BigDecimal.ZERO;
-            monthlyRevenue.put(month, amount);
-        }
+
 
         return AdminDashboardResponse.builder()
                 .totalUsers(totalUsers)
@@ -120,7 +110,6 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .complaintDetails(complaintDetails)
                 .recentUsers(recentUsers)
                 .recentShops(recentShops)
-                .monthlyRevenue(monthlyRevenue)
                 .build();
     }
 }
