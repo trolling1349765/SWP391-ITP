@@ -59,10 +59,11 @@ public class FavoriteProductServiceImpl implements FavoriteProductService {
                 .map(fav -> FavoriteProductDTO.builder()
                         .id(fav.getId())
                         .productId(fav.getProduct().getId())
-                        .productName(fav.getProduct().getName())
-                        .productImage(fav.getProduct().getImageUrl()) // field tuỳ bạn đặt
+                        .productName(fav.getProduct().getProductName()) // ✅ sửa ở đây
+                        .productImage(fav.getProduct().getImage())      // ✅ nếu tên field là image
                         .createdAt(fav.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
+
     }
 }
