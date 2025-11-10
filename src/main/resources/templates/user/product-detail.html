@@ -220,11 +220,37 @@
                             <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
                         </button>
                     </div> -->
-                    <div class="col-6">
-                        <button class="btn btn-outline-secondary w-100" onclick="alert('Chức năng yêu thích đang được phát triển!')">
-                            <i class="far fa-heart me-2"></i>Yêu thích
+                    <!-- ❤️ Nút thêm / xóa khỏi yêu thích (hoạt động thực tế) -->
+                    <div class="col-6" th:if="${sessionUser != null}">
+                        <!-- Nếu đã yêu thích -->
+                        <form th:if="${favoriteProductIds != null and favoriteProductIds.contains(product.id)}"
+                              th:action="@{'/favorites/remove/' + ${product.id}}" method="post" class="w-100">
+<!--                            <input type="hidden" name="redirect" th:value="${requestURI}" />-->
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="fa-solid fa-heart-crack me-2"></i>Xóa khỏi yêu thích
+                            </button>
+                        </form>
+
+                        <!-- Nếu chưa yêu thích -->
+                        <form th:if="${favoriteProductIds == null or !favoriteProductIds.contains(product.id)}"
+                              th:action="@{'/favorites/add/' + ${product.id}}"
+                              method="post" class="w-100">
+<!--                            <input type="hidden" name="redirect" th:value="${requestURI}" />-->
+                            <button type="submit" class="btn btn-outline-secondary w-100">
+                                <i class="fa-regular fa-heart me-2"></i>Thêm vào yêu thích
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Nếu chưa đăng nhập -->
+                    <div class="col-6" th:if="${sessionUser == null}">
+                        <button class="btn btn-outline-secondary w-100" onclick="window.location.href='/itp/login'">
+                            <i class="far fa-heart me-2"></i>Đăng nhập để yêu thích
                         </button>
                     </div>
+
+
+
                 </div>
 
                 <!-- Share Buttons -->

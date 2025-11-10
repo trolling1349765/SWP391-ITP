@@ -23,7 +23,12 @@
     <nav class="nav" style="justify-self:center;display:flex;gap:1.25rem;">
         <a th:href="@{/}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Trang chủ</a>
         <a th:href="@{/products}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Sản phẩm</a>
-        <a th:href="@{/services}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Dịch vụ</a>
+
+        <!-- ✅ Đổi từ 'Dịch vụ' → 'Yêu thích' -->
+        <a th:href="@{/favorites}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">
+            Yêu thích
+        </a>
+
         <a th:href="@{/support}" style="color:#cbd5e1;text-decoration:none;font-weight:500;">Hỗ trợ</a>
     </nav>
 
@@ -44,10 +49,10 @@
             </span>
             <span style="color:#22c55e;font-weight:600;font-size:0.85rem;" th:text="${'Số dư: ' + #numbers.formatDecimal(session.user.balance, 0, 'COMMA', 0, 'POINT') + ' ₫'}">Số dư: 0 ₫</span>
         </div>
-        
+
         <!-- User Dropdown Menu -->
         <div class="dropdown" style="position:relative;">
-            <button class="btn btn-link" type="button" id="userDropdownMenu" data-bs-toggle="dropdown" 
+            <button class="btn btn-link" type="button" id="userDropdownMenu" data-bs-toggle="dropdown"
                     aria-expanded="false" style="
                         color:#cbd5e1;text-decoration:none;border:none;background:transparent;padding:.5rem;
                         border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;
@@ -57,10 +62,10 @@
                     <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
                 </svg>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdownMenu" 
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdownMenu"
                 style="background:#1e293b;border:1px solid #334155;min-width:200px;padding:.5rem 0;">
                 <li>
-                    <a class="dropdown-item" th:href="@{/orders/history}" 
+                    <a class="dropdown-item" th:href="@{/orders/history}"
                        style="color:#cbd5e1;padding:.5rem 1rem;text-decoration:none;display:flex;align-items:center;gap:.5rem;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm15 2h-4v3h4V4zm0 4h-4v3h4V8zm0 4h-4v3h3a1 1 0 0 0 1-1v-2zm-5 3v-3H6v3h4zm-5 0v-3H1v2a1 1 0 0 0 1 1h3zm-4-4h4V8H1v3zm0-4h4V4H1v3zm5-3v3h4V4H6zm4 4H6v3h4V8z"/>
@@ -70,7 +75,7 @@
                 </li>
                 <li><hr class="dropdown-divider" style="border-color:#334155;margin:.5rem 0;"></li>
                 <li>
-                    <a class="dropdown-item" th:href="@{/logout}" 
+                    <a class="dropdown-item" th:href="@{/logout}"
                        style="color:#cbd5e1;padding:.5rem 1rem;text-decoration:none;display:flex;align-items:center;gap:.5rem;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>

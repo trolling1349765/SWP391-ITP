@@ -10,7 +10,29 @@
         .main-content { background-color: #fff; min-height: 100vh; }
         body { margin: 0; overflow-x: hidden; }
         .img-fluid { width: 50%; height: auto;}
-        
+        /* ❤️ style tim yêu thích */
+        .favorite-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #dc3545;
+            font-size: 1.2rem;
+            transition: all 0.2s ease-in-out;
+            z-index: 10;
+        }
+        .favorite-btn:hover {
+            background: #fee2e2;
+            transform: scale(1.1);
+        }
+
         .featured-product-card {
             height: 100%;
             display: flex;
@@ -148,7 +170,6 @@
                 </div>
             </section>
 
-
             <!-- Seller Section -->
             <section class="py-5" th:if="${session.user != null and session.role == 'SELLER'}">
                 <div class="container">
@@ -180,18 +201,37 @@
                         <a th:href="@{/products}" class="btn btn-link text-decoration-none">Xem tất cả →</a>
                     </div>
 
+                    <!-- Có dữ liệu -->
                     <div class="row g-4" th:if="${featuredProducts != null and !featuredProducts.isEmpty()}">
                         <div class="col-6 col-md-3" th:each="p : ${featuredProducts}">
                             <div class="card featured-product-card shadow-sm">
-                                <img th:if="${p.image != null and !#strings.isEmpty(p.image)}"
-                                     th:src="${'/itp' + p.image}"
-                                     class="card-img-top"
-                                     alt="Product Image"
-                                     onerror="this.onerror=null; this.src='https://picsum.photos/seed/placeholder/400/300';">
                                 <img th:if="${p.image == null or #strings.isEmpty(p.image)}"
                                      src="https://picsum.photos/seed/placeholder/400/300"
                                      class="card-img-top"
                                      alt="Product Image">
+                            <div class="card h-100 shadow-sm position-relative">
+
+                                <!-- ❤️ Yêu thích -->
+                                <div th:if="${user != null}">
+                                    <!-- Nếu đã yêu thích -->
+                                    <form th:if="${favoriteProductIds != null and favoriteProductIds.contains(p.id)}"
+                                          th:action="@{'/favorites/remove/' + ${p.id}}" method="post">
+                                        <button type="submit" class="favorite-btn" title="Xóa khỏi yêu thích">
+                                            <i class="fa-solid fa-heart-crack"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Nếu chưa yêu thích -->
+                                    <form th:if="${favoriteProductIds == null or !favoriteProductIds.contains(p.id)}"
+                                          th:action="@{'/favorites/add/' + ${p.id}}" method="post">
+                                        <button type="submit" class="favorite-btn" title="Thêm vào yêu thích">
+                                            <i class="fa-regular fa-heart"></i>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <img th:src="${p.image != null ? p.image : 'https://picsum.photos/seed/placeholder/400/300'}"
+                                     class="card-img-top" alt="Product Image">
                                 <div class="card-body">
                                     <h6 th:text="${p.productName}" class="card-title mb-2">Tên sản phẩm</h6>
                                     <p class="card-text fw-bold text-primary mb-3"
@@ -214,10 +254,10 @@
                 </div>
             </section>
 
-
         </div>
     </div>
 </div>
+
 <!-- Footer -->
 <div th:replace="~{/Included/Footer :: footer}"></div>
 
