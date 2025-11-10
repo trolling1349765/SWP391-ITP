@@ -74,10 +74,11 @@ public class InventoryServiceImpl implements InventoryService {
         Product p = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
 
-        // Count only ACTIVE serials (exclude BLOCKED/sold items)
-        long activeCount = productStoreRepository.countByProductIdAndStatus(productId, ProductStatus.ACTIVE);
-        p.setAvailableStock((int) Math.max(0L, Math.min(Integer.MAX_VALUE, activeCount)));
-        System.out.println("📊 Rebuilt stock for product " + productId + ": " + activeCount + " ACTIVE serials");
+        // ⚠️ QUAN TRỌNG: Đếm chỉ ProductStore thực sự chưa bán (ACTIVE + không có OrderItem)
+        // Không đếm những ProductStore đã có OrderItem với order status = COMPLETED/PENDING
+        long availableCount = productStoreRepository.countAvailableStock(productId);
+        p.setAvailableStock((int) Math.max(0L, Math.min(Integer.MAX_VALUE, availableCount)));
+        System.out.println("📊 Rebuilt stock for product " + productId + ": " + availableCount + " serials thực sự chưa bán");
         return productRepository.save(p);
     }
     

@@ -29,4 +29,19 @@ public interface ProductStoreRepository extends JpaRepository<ProductStore, Long
     
     // Count available ACTIVE serials
     long countByProductIdAndStatus(Long productId, fpt.swp.springmvctt.itp.entity.enums.ProductStatus status);
+    
+    // ⚠️ QUAN TRỌNG: Đếm chỉ ProductStore chưa bán (không có OrderItem hoặc OrderItem có order status = FAILED/CANCELLED)
+    // Đây là query chính xác nhất để đếm tồn kho thực tế
+    @Query("""
+        SELECT COUNT(ps) 
+        FROM ProductStore ps 
+        WHERE ps.productId = :productId 
+          AND ps.status = 'ACTIVE'
+          AND NOT EXISTS (
+              SELECT 1 FROM OrderItem oi 
+              WHERE oi.productStoreId = ps.id 
+                AND (oi.order.status = 'COMPLETED' OR oi.order.status = 'PENDING')
+          )
+        """)
+    long countAvailableStock(@Param("productId") Long productId);
 }
