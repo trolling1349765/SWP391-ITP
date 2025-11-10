@@ -165,14 +165,21 @@
                                     <div class="col-md-6 mb-3">
                                         <label for="email" class="form-label fw-semibold">
                                             Email liên hệ <span class="text-danger">*</span>
+                                            <i class="fas fa-lock text-warning ms-1" 
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-placement="top" 
+                                               title="Email không thể thay đổi vì dùng để đăng nhập"></i>
                                         </label>
                                         <div class="input-group">
-                                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                            <input type="email" class="form-control edit-field" id="email" name="email" 
+                                            <span class="input-group-text bg-light"><i class="fas fa-envelope"></i></span>
+                                            <input type="email" class="form-control edit-field bg-light" id="email" name="email" 
                                                    th:value="${shop.email}" 
-                                                   placeholder="shop@example.com" required readonly>
+                                                   placeholder="shop@example.com" required readonly 
+                                                   style="cursor: not-allowed;">
                                         </div>
-                                        <small class="form-text text-muted">Email hỗ trợ khách hàng</small>
+                                        <small class="form-text text-warning">
+                                            <i class="fas fa-info-circle me-1"></i>Email dùng để đăng nhập, không thể thay đổi
+                                        </small>
                                     </div>
 
                                     <!-- Phone -->

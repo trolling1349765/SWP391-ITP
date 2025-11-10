@@ -234,6 +234,12 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
 function confirmDelete(productId) {
     console.log('Confirming delete for product ID:', productId);
     
+    // Hiển thị loading state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xóa...';
+    
     fetch(`/itp/shop/products/${productId}`, {
         method: 'DELETE',
         headers: {
@@ -242,44 +248,71 @@ function confirmDelete(productId) {
     })
     .then(response => {
         console.log('Response status:', response.status);
-        return response.json();
+        
+        // Kiểm tra nếu response không phải JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();
+        } else {
+            // Nếu không phải JSON, kiểm tra status code
+            if (response.ok || response.status === 200) {
+                return { success: true, message: 'Đã xóa sản phẩm thành công' };
+            } else {
+                return { success: false, message: 'Lỗi khi xóa sản phẩm' };
+            }
+        }
     })
     .then(data => {
         console.log('Response data:', data);
         
-        if (data.success) {
-            showAlert('success', data.message);
-            
-            // Đóng modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+        // Đóng modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+        if (modal) {
             modal.hide();
+        }
+        
+        if (data && data.success) {
+            showAlert('success', data.message || 'Đã xóa sản phẩm thành công');
             
-            // Redirect về dashboard sau 1.5 giây后就
+            // Redirect về dashboard sau 1 giây
             setTimeout(() => {
                 window.location.href = '/itp/shop/dashboard';
-            }, 1500);
+            }, 1000);
         } else {
-            showAlert('danger', data.message);
+            showAlert('danger', data?.message || 'Có lỗi xảy ra khi xóa sản phẩm');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showAlert('danger', 'Có lỗi xảy ra khi xóa sản phẩm');
+        
+        // Đóng modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+        if (modal) {
+            modal.hide();
+        }
+        
+        showAlert('danger', 'Có lỗi xảy ra khi xóa sản phẩm: ' + error.message);
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
     });
 }
 
 function showAlert(type, message) {
     // Tạo alert element
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    alertDiv.style.maxWidth = '500px';
     alertDiv.innerHTML = `
-        ${message}
+        <strong>${type === 'success' ? '✓' : '✗'}</strong> ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     
-    // Thêm vào đầu trang
-    const container = document.querySelector('.container-fluid .col-md-9');
-    container.insertBefore(alertDiv, container.firstChild);
+    // Thêm vào body
+    document.body.appendChild(alertDiv);
     
     // Tự động ẩn sau 5 giây
     setTimeout(() => {

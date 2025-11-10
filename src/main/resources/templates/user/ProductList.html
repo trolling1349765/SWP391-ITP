@@ -9,10 +9,33 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .product-card { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: #fff; transition: all 0.2s ease; position: relative; }
+        .product-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: #fff;
+            transition: all 0.2s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .product-image { width: 100%; height: 200px; object-fit: cover; }
-        .product-body { padding: 1rem; }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            object-position: center;
+            flex-shrink: 0;
+        }
+        .product-body {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-body .btn {
+            margin-top: auto;
+        }
         .product-price { font-weight: 700; color: #0ea5e9; }
         .product-footer { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; }
         .cat-filter .btn { margin-right: .5rem; margin-bottom: .5rem; }
@@ -119,13 +142,19 @@
 
                 <!-- Ảnh sản phẩm -->
                 <img class="product-image"
-                     th:src="${product.image != null ? product.image : 'https://picsum.photos/seed/placeholder/400/300'}"
-                     th:alt="${product.productName}" />
+                     th:if="${product.image != null and !#strings.isEmpty(product.image)}"
+                     th:src="${'/itp' + product.image}"
+                     alt="Ảnh sản phẩm"
+                     onerror="this.onerror=null; this.src='https://picsum.photos/seed/placeholder/400/300';">
+                <img class="product-image"
+                     th:if="${product.image == null or #strings.isEmpty(product.image)}"
+                     src="https://picsum.photos/seed/placeholder/400/300"
+                     alt="Ảnh sản phẩm"/>
 
                 <div class="product-body">
                     <h6 class="fw-bold mb-1" th:text="${product.productName}">Tên sản phẩm</h6>
 
-                    <!-- Tên danh mục -->
+                    <!-- Tên danh mục (Main branch feature - quan trọng của team) -->
                     <div class="mb-1 text-muted small"
                          th:if="${product.categoryId != null and categoryNameMap[product.categoryId] != null}">
                         <span class="badge text-bg-light"

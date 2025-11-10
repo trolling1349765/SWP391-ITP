@@ -112,7 +112,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <div class="text-muted small mb-1">Đang hoạt động</div>
-                                <h4 class="mb-0 fw-bold text-success" th:text="${products.?[status.name()=='ACTIVE'].size()}">0</h4>
+                                <h4 class="mb-0 fw-bold text-success" th:text="${#lists.size(products.?[status.name()=='ACTIVE'])}">0</h4>
                             </div>
                             <div class="text-success" style="font-size:2rem;opacity:.3;">
                                 <i class="fas fa-check-circle"></i>
@@ -127,7 +127,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <div class="text-muted small mb-1">Đang ẩn</div>
-                                <h4 class="mb-0 fw-bold text-secondary" th:text="${products.?[status.name()=='HIDDEN'].size()}">0</h4>
+                                <h4 class="mb-0 fw-bold text-secondary" th:text="${#lists.size(products.?[status.name()=='HIDDEN'])}">0</h4>
                             </div>
                             <div class="text-secondary" style="font-size:2rem;opacity:.3;">
                                 <i class="fas fa-eye-slash"></i>
@@ -142,7 +142,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <div class="text-muted small mb-1">Bị khóa</div>
-                                <h4 class="mb-0 fw-bold text-danger" th:text="${products.?[status.name()=='BLOCKED'].size()}">0</h4>
+                                <h4 class="mb-0 fw-bold text-danger" th:text="${#lists.size(products.?[status.name()=='BLOCKED'])}">0</h4>
                             </div>
                             <div class="text-danger" style="font-size:2rem;opacity:.3;">
                                 <i class="fas fa-ban"></i>

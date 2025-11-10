@@ -71,9 +71,10 @@ public class InventoryServiceImpl implements InventoryService {
         Product p = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
 
-        // Count total number of serials (all batches combined)
-        long totalCount = productStoreRepository.countByProductId(productId);
-        p.setAvailableStock((int) Math.max(0L, Math.min(Integer.MAX_VALUE, totalCount)));
+        // Count only ACTIVE serials (exclude BLOCKED/sold items)
+        long activeCount = productStoreRepository.countByProductIdAndStatus(productId, ProductStatus.ACTIVE);
+        p.setAvailableStock((int) Math.max(0L, Math.min(Integer.MAX_VALUE, activeCount)));
+        System.out.println("📊 Rebuilt stock for product " + productId + ": " + activeCount + " ACTIVE serials");
         return productRepository.save(p);
     }
     
@@ -95,10 +96,10 @@ public class InventoryServiceImpl implements InventoryService {
     }
     
     /**
-     * Get stock count for a specific batch (product_id + price)
+     * Get stock count for a specific batch (product_id + price) - only ACTIVE items
      */
     public long getStockForBatch(Long productId, java.math.BigDecimal price) {
-        return productStoreRepository.countByProductIdAndFaceValue(productId, price);
+        return productStoreRepository.countByProductIdAndFaceValueAndStatus(productId, price, ProductStatus.ACTIVE);
     }
 
     @Override

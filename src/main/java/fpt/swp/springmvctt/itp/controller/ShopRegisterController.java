@@ -171,9 +171,9 @@ public class ShopRegisterController {
                 try {
                     String logoUrl = storageService.saveShopLogo(form.getLogoImage());
                     shop.setImageUrl(logoUrl); // Logo shop (avatar)
-                    System.out.println("✅ Logo uploaded: " + logoUrl);
+                    System.out.println(" Logo uploaded: " + logoUrl);
                 } catch (Exception e) {
-                    System.err.println("❌ Error uploading logo: " + e.getMessage());
+                    System.err.println(" Error uploading logo: " + e.getMessage());
                     model.addAttribute("error", "Lỗi khi upload logo: " + e.getMessage());
                     List<Category> categories = categoryService.findAll();
                     model.addAttribute("allCategories", categories);
@@ -187,9 +187,9 @@ public class ShopRegisterController {
                 try {
                     String bannerUrl = storageService.saveShopBanner(form.getBannerImage());
                     shop.setImage(bannerUrl); // Banner shop
-                    System.out.println("✅ Banner uploaded: " + bannerUrl);
+                    System.out.println(" Banner uploaded: " + bannerUrl);
                 } catch (Exception e) {
-                    System.err.println("❌ Error uploading banner: " + e.getMessage());
+                    System.err.println(" Error uploading banner: " + e.getMessage());
                     model.addAttribute("error", "Lỗi khi upload banner: " + e.getMessage());
                     List<Category> categories = categoryService.findAll();
                     model.addAttribute("allCategories", categories);
@@ -214,14 +214,14 @@ public class ShopRegisterController {
             // Lưu shop
             shopService.save(shop);
             
-            System.out.println("✅ Shop registered successfully: " + shop.getShopName() + " (ID: " + shop.getId() + ")");
+            System.out.println(" Shop registered successfully: " + shop.getShopName() + " (ID: " + shop.getId() + ")");
 
             redirectAttributes.addFlashAttribute("success", 
                 "Bạn đã tạo shop thành công, vui lòng đợi xét duyệt.");
             return "redirect:/";
 
         } catch (org.hibernate.exception.ConstraintViolationException e) {
-            System.err.println("❌ Constraint violation: User đã có shop trong database");
+            System.err.println(" Constraint violation: User đã có shop trong database");
             e.printStackTrace();
             model.addAttribute("error", 
                 "Bạn đã có shop trong hệ thống. Vui lòng liên hệ admin nếu shop của bạn đã bị từ chối.");
@@ -230,7 +230,7 @@ public class ShopRegisterController {
             model.addAttribute("user", user);
             return "shop/shop-register";
         } catch (Exception e) {
-            System.err.println("❌ Error registering shop: " + e.getMessage());
+            System.err.println(" Error registering shop: " + e.getMessage());
             e.printStackTrace();
             String errorMsg = "Có lỗi xảy ra: " + e.getMessage();
             // Kiểm tra nếu là lỗi constraint

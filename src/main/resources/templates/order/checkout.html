@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Thanh toán | ITP System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/assets/css/order/checkout.css}">
+    <style>
+        body { min-height: 100vh; display: flex; flex-direction: column; }
+        .checkout-container { flex: 1; }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="~{/Included/Header :: header}"></div>
+
+<div class="checkout-container">
+    <h2 class="mb-4">Thanh toán</h2>
+
+    <!-- Success/Error Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+                <div th:if="${refunded}" class="mb-2">
+                    <strong class="text-success">Tiền đã được hoàn lại vào tài khoản của bạn.</strong>
+                </div>
+                <strong class="d-block mb-2">Không thể đặt hàng!</strong>
+                <div th:utext="${#strings.replace(error, T(java.lang.System).lineSeparator(), '<br>')}"></div>
+                <div th:if="${error != null and (#strings.contains(error, 'không đủ tiền') or #strings.contains(error, 'không đủ') or #strings.contains(error, 'đủ tiền'))}" class="mt-3 p-3 bg-light rounded border">
+                    <strong>Hướng dẫn:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Vui lòng nạp thêm tiền vào tài khoản</li>
+                        <li>Kiểm tra số dư hiện tại của bạn ở góc trên bên phải màn hình</li>
+                        <li>Sau khi nạp tiền, quay lại trang này để tiếp tục đặt hàng</li>
+                    </ul>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmPurchaseModal" tabindex="-1" aria-labelledby="confirmPurchaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmPurchaseModalLabel">Xác nhận đặt hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="fw-bold mb-3">Bạn có chắc chắn muốn mua sản phẩm này không?</p>
+                    
+                    <div class="border rounded p-3 mb-3" style="background-color: #f8f9fa;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sản phẩm:</span>
+                            <span class="fw-bold" th:text="${product.productName}">Product Name</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Số lượng:</span>
+                            <span class="fw-bold" id="confirmQuantity">1</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Đơn giá:</span>
+                            <span class="fw-bold" id="confirmUnitPrice" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Tổng thanh toán:</span>
+                            <span class="fw-bold text-danger" id="confirmTotalAmount">0 ₫</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span>Số dư hiện tại:</span>
+                            <span class="fw-bold" id="confirmBalance" th:text="${#numbers.formatDecimal(balance, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2" id="confirmRemainingBalance" style="display: none;">
+                            <span>Số dư còn lại:</span>
+                            <span class="fw-bold text-success" id="confirmRemainingAmount">0 ₫</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mb-0">
+                        <small>Sau khi xác nhận, tiền sẽ được trừ khỏi tài khoản và đơn hàng sẽ được xử lý. Tiền sẽ được chuyển cho người bán sau 20 giây.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="confirmPurchaseBtn">Xác nhận mua</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: Product Info -->
+        <div class="col-md-8">
+            <!-- Product Card -->
+            <div class="product-card">
+                <h5 class="mb-3">Thông tin sản phẩm</h5>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <img th:if="${product.image}" 
+                             th:src="@{${product.image}}" 
+                             class="img-fluid rounded" 
+                             alt="Product Image">
+                        <div th:unless="${product.image}" class="alert alert-secondary">Chưa có ảnh</div>
+                    </div>
+                    <div class="col-md-8">
+                        <h4 th:text="${product.productName}">Product Name</h4>
+                        <p class="text-muted mb-2">
+                            <span th:if="${product.shop != null}" th:text="${'Shop: ' + product.shop.shopName}">Shop Name</span>
+                        </p>
+                        <div class="price-highlight mb-3">
+                            <span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-success" th:if="${availableStock > 0}">Còn hàng</span>
+                            <span class="badge bg-danger" th:if="${availableStock == 0}">Hết hàng</span>
+                            <span class="ms-2">Tồn kho: <strong th:text="${availableStock}">0</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quantity Selector -->
+                <div class="mt-4 border-top pt-3">
+                    <label class="form-label fw-bold">Số lượng:</label>
+                    <div class="quantity-selector">
+                        <button type="button" onclick="decreaseQuantity()" class="btn btn-outline-secondary">-</button>
+                        <input type="number" id="quantityInput" th:value="${quantity}" min="1" th:attr="max=${availableStock}" onchange="updateTotal()">
+                        <button type="button" onclick="increaseQuantity()" class="btn btn-outline-secondary">+</button>
+                    </div>
+                    <small class="text-muted">Tồn kho: <span th:text="${availableStock}">0</span> sản phẩm</small>
+                </div>
+
+                <!-- Message to Seller -->
+                <div class="mt-4 border-top pt-3">
+                    <label class="form-label fw-bold">Lưu ý cho Người bán:</label>
+                    <textarea class="form-control" 
+                              id="messageToSeller" 
+                              name="messageToSeller" 
+                              rows="3" 
+                              placeholder="Nhập lời nhắn cho người bán (không bắt buộc)..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Order Summary -->
+        <div class="col-md-4">
+            <div class="summary-card">
+                <h5 class="mb-3">Đơn hàng</h5>
+
+                <!-- Balance Info -->
+                <div class="balance-info">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">Số dư hiện tại:</span>
+                        <span class="price-highlight" style="font-size: 1.2rem;" th:text="${#numbers.formatDecimal(balance, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Số tiền cần thanh toán:</span>
+                        <span class="fw-bold" id="totalAmountDisplay" th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2" id="needTopUpSection" style="display: none;">
+                        <span class="text-danger fw-bold">Cần nạp thêm:</span>
+                        <span class="text-danger fw-bold" id="needTopUpAmount">0 ₫</span>
+                    </div>
+                    <div class="alert alert-warning mt-2 mb-0" id="insufficientBalanceInfo" style="display: none;">
+                        <small>
+                            <strong>Lưu ý:</strong> Bạn không đủ tiền để thanh toán đơn hàng này. 
+                            Vui lòng nạp thêm tiền vào tài khoản hoặc giảm số lượng sản phẩm.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tổng giá trị sản phẩm:</span>
+                        <span id="productTotal" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Tổng thanh toán:</span>
+                        <span class="price-highlight" id="finalTotal" th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                    </div>
+                </div>
+
+                <!-- Submit Form -->
+                <form th:action="@{/orders/checkout/submit}" method="post" id="checkoutForm">
+                    <input type="hidden" name="productId" th:value="${product.id}">
+                    <input type="hidden" name="quantity" id="formQuantity" th:value="${quantity}">
+                    <input type="hidden" name="messageToSeller" id="formMessage">
+                    
+                    <button type="button" class="btn btn-primary w-100 btn-lg" id="submitBtn" onclick="confirmPurchase()">
+                        Đặt hàng
+                    </button>
+                </form>
+
+                <a th:href="@{/products}" class="btn btn-outline-secondary w-100 mt-2">
+                    Tiếp tục mua sắm
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/assets/js/order/checkout.js}"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Initialize checkout with server data
+    const price = /*[[${product.price != null ? product.price.doubleValue() : 0}]]*/ 0;
+    const stock = /*[[${availableStock != null ? availableStock : 0}]]*/ 0;
+    const balance = /*[[${balance != null ? balance.doubleValue() : 0}]]*/ 0;
+    
+    initCheckout(price, stock, balance);
+    /*]]>*/
+</script>
+
+<!-- Footer -->
+<div th:replace="~{/Included/Footer :: footer}"></div>
+</body>
+</html>
+

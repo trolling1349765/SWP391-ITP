@@ -32,6 +32,9 @@ public class ProductController {
     // ✅ chỉ thêm dòng này
     private final FavoriteProductService favoriteService;
 
+    /**
+     * Xem danh sách sản phẩm với pagination và filter
+     */
     @GetMapping("/products")
     public String showAllProducts(
             @RequestParam(defaultValue = "1") int page,
@@ -98,7 +101,9 @@ public class ProductController {
     }
 
     /**
-     * Xem chi tiết sản phẩm (Customer)
+     * Xem chi tiết sản phẩm (Main branch - có shop homepage links)
+     * Route này dùng để xem thông tin sản phẩm với layout đẹp
+     * Khi user click "Mua ngay" sẽ chuyển sang /orders/checkout/{productId}
      */
     @GetMapping("/product/{id}")
     public String viewProductDetail(@PathVariable Long id, Model model, HttpSession session, HttpServletRequest request) {
