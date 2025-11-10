@@ -1,0 +1,67 @@
+/* Checkout Page Styles */
+body { 
+    background-color: #f8fafc; 
+    font-family: 'Inter', sans-serif; 
+}
+
+.checkout-container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 20px; 
+}
+
+.product-card { 
+    background: white; 
+    border-radius: 12px; 
+    padding: 20px; 
+    margin-bottom: 20px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+}
+
+.quantity-selector { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+
+.quantity-selector button { 
+    width: 35px; 
+    height: 35px; 
+    border: 1px solid #ddd; 
+    background: white; 
+    border-radius: 4px; 
+    cursor: pointer; 
+}
+
+.quantity-selector button:hover {
+    background: #f8f9fa;
+}
+
+.quantity-selector input { 
+    width: 60px; 
+    text-align: center; 
+    border: 1px solid #ddd; 
+    border-radius: 4px; 
+    padding: 5px; 
+}
+
+.summary-card { 
+    background: white; 
+    border-radius: 12px; 
+    padding: 20px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+}
+
+.price-highlight { 
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    color: #dc3545; 
+}
+
+.balance-info { 
+    background: #e7f3ff; 
+    padding: 15px; 
+    border-radius: 8px; 
+    margin-bottom: 15px; 
+}
+

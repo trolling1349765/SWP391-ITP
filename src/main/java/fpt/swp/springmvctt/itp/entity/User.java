@@ -29,8 +29,8 @@ public class User extends BaseEntity {
     @NotBlank(message = "Email không được để trống")
     private String email;
 
-    @Column(length = 10)
-    @Pattern(regexp = "^(\\+84|0)[0-9]{9,10}$", message = "Số điện thoại không hợp lệ")
+    @Column(length = 10, unique = true)
+    @Pattern(regexp = "^(\\+84|0)[0-9]{9,10}$", message = "Số điện thoại không hợp lệ" )
     private String phone;
 
     @Column(nullable = false, length = 255)

@@ -1,0 +1,131 @@
+.shop-header {
+    position: relative;
+    color: white;
+    padding: 3rem 0;
+    overflow: hidden;
+    min-height: 300px;
+}
+
+.shop-header-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(10px);
+    transform: scale(1.1);
+    z-index: 1;
+}
+
+.shop-header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+    z-index: 2;
+}
+
+.shop-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: 0;
+}
+
+.shop-header-content {
+    position: relative;
+    z-index: 3;
+}
+
+.shop-avatar-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    background: white;
+    position: relative;
+    z-index: 4;
+}
+
+@media (max-width: 768px) {
+    .shop-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-width: 4px;
+    }
+    .shop-header {
+        min-height: 250px;
+        padding: 2rem 0;
+    }
+}
+
+.stat-card {
+    border-left: 4px solid;
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card.primary {
+    border-color: #667eea;
+}
+
+.stat-card.success {
+    border-color: #28a745;
+}
+
+.stat-card.warning {
+    border-color: #ffc107;
+}
+
+.stat-card.danger {
+    border-color: #dc3545;
+}
+
+.product-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.product-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: center;
+    flex-shrink: 0;
+}
+
+.product-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card .card-body .btn {
+    margin-top: auto;
+}
+
+.badge-stock {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+

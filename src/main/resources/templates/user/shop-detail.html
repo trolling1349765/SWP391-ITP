@@ -6,71 +6,43 @@
     <title th:text="${shop.shopName} + ' | Shop Detail'">Shop Detail</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .shop-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem 0;
-        }
-        .shop-avatar-large {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .stat-card {
-            border-left: 4px solid;
-            transition: transform 0.3s;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        .stat-card.primary { border-color: #667eea; }
-        .stat-card.success { border-color: #28a745; }
-        .stat-card.warning { border-color: #ffc107; }
-        .stat-card.danger { border-color: #dc3545; }
-        .product-card {
-            transition: transform 0.3s, box-shadow 0.3s;
-            height: 100%;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-        }
-        .product-img {
-            height: 200px;
-            object-fit: cover;
-        }
-        .badge-stock {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/assets/css/user/shop-detail.css}">
 </head>
 <body>
 
-<!-- Header -->
 <div th:replace="~{/Included/Header :: header}"></div>
 
-<!-- Shop Header Section -->
 <div class="shop-header">
-    <div class="container">
+    <img th:if="${shop.image != null and !#strings.isEmpty(shop.image)}"
+         th:src="@{${shop.image}}"
+         alt="Shop Banner"
+         class="shop-header-banner"
+         onerror="this.style.display='none';">
+    
+    <div class="shop-header-overlay"></div>
+    
+    <div class="container shop-header-content">
         <div class="row align-items-center">
-            <div class="col-auto">
-                <img th:src="${shop.imageUrl != null ? shop.imageUrl : 'https://via.placeholder.com/150'}"
+            <div class="col-auto mb-3 mb-md-0">
+                <img th:if="${shop.imageUrl != null and !#strings.isEmpty(shop.imageUrl)}"
+                     th:src="@{${shop.imageUrl}}"
                      alt="Shop Avatar"
-                     class="shop-avatar-large">
+                     class="shop-avatar-large"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=LOGO';">
+                <div th:if="${shop.imageUrl == null or #strings.isEmpty(shop.imageUrl)}"
+                     class="shop-avatar-large d-flex align-items-center justify-content-center"
+                     style="background: rgba(255,255,255,0.2); font-size: 48px;">
+                    <i class="fas fa-store"></i>
+                </div>
             </div>
+            
             <div class="col">
-                <h1 class="mb-2" th:text="${shop.shopName}">Shop Name</h1>
-                <p class="mb-2 opacity-75">
+                <h1 class="mb-2 fw-bold" th:text="${shop.shopName}">Shop Name</h1>
+                <p class="mb-2 opacity-90">
                     <i class="fas fa-tag me-2"></i>
                     <span th:text="${shop.category != null ? shop.category : 'Chưa phân loại'}">Category</span>
                 </p>
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3 mb-2">
                     <div th:if="${shop.rating != null}">
                         <i class="fas fa-star text-warning"></i>
                         <span class="fw-bold" th:text="${shop.rating}">4.5</span>
@@ -81,13 +53,17 @@
                         <span th:text="${activeProducts}">0</span> sản phẩm đang bán
                     </div>
                 </div>
-                <p class="mt-3 mb-0 opacity-90" th:text="${shop.description}">Shop description</p>
+                <p class="mt-2 mb-0 opacity-90" 
+                   th:if="${shop.shortDescription != null and !#strings.isEmpty(shop.shortDescription)}"
+                   th:text="${shop.shortDescription}">Shop description</p>
+                <p class="mt-2 mb-0 opacity-90" 
+                   th:if="${(shop.shortDescription == null or #strings.isEmpty(shop.shortDescription)) and shop.description != null and !#strings.isEmpty(shop.description)}"
+                   th:text="${shop.description}">Shop description</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Statistics Section -->
 <div class="container my-4">
     <div class="row g-3">
         <div class="col-md-3">
@@ -145,7 +121,6 @@
     </div>
 </div>
 
-<!-- Contact Info -->
 <div class="container mb-4" th:if="${shop.email != null or shop.phone != null}">
     <div class="card shadow-sm">
         <div class="card-body">
@@ -172,14 +147,12 @@
     </div>
 </div>
 
-<!-- Products Section -->
 <div class="container mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">
             <i class="fas fa-shopping-bag text-primary me-2"></i>Sản phẩm của Shop
         </h4>
 
-        <!-- Sort Dropdown -->
         <div class="dropdown">
             <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 <i class="fas fa-sort me-2"></i>Sắp xếp
@@ -204,11 +177,9 @@
         </div>
     </div>
 
-    <!-- Products Grid -->
     <div class="row g-4" th:if="${products != null and !products.isEmpty()}">
         <div class="col-md-3 col-sm-6" th:each="product : ${products}">
             <div class="card product-card border-0 shadow-sm position-relative">
-                <!-- Stock Badge -->
                 <span class="badge bg-success badge-stock" th:if="${product.availableStock > 10}">
                     Còn hàng
                 </span>
@@ -219,27 +190,28 @@
                     Hết hàng
                 </span>
 
-                <!-- Product Image -->
-                <img th:src="${product.image != null ? product.image : 'https://via.placeholder.com/300x200'}"
+                <img th:if="${product.image != null and !#strings.isEmpty(product.image)}"
+                     th:src="${'/itp' + product.image}"
+                     class="card-img-top product-img"
+                     alt="Product Image"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200';">
+                <img th:if="${product.image == null or #strings.isEmpty(product.image)}"
+                     src="https://via.placeholder.com/300x200"
                      class="card-img-top product-img"
                      alt="Product Image">
 
                 <div class="card-body">
-                    <!-- Product Name -->
                     <h6 class="card-title mb-2" th:text="${product.productName}">Product Name</h6>
 
-                    <!-- Price -->
                     <p class="fw-bold text-primary mb-2" style="font-size: 1.2rem;">
                         <span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">0</span>₫
                     </p>
 
-                    <!-- Stock Info -->
                     <p class="text-muted small mb-3">
                         <i class="fas fa-box me-1"></i>
                         Còn <span th:text="${product.availableStock}">0</span> sản phẩm
                     </p>
 
-                    <!-- View Detail Button -->
                     <a th:href="@{/product/{id}(id=${product.id})}" class="btn btn-outline-primary w-100">
                         <i class="fas fa-eye me-2"></i>Xem chi tiết
                     </a>
@@ -248,31 +220,26 @@
         </div>
     </div>
 
-    <!-- Empty State -->
     <div th:if="${products == null or products.isEmpty()}" class="text-center py-5">
         <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
         <h5 class="text-muted">Shop này chưa có sản phẩm nào</h5>
         <p class="text-muted">Hãy quay lại sau để khám phá sản phẩm mới!</p>
     </div>
 
-    <!-- Pagination -->
     <nav th:if="${totalPages > 1}" class="mt-5">
         <ul class="pagination justify-content-center">
-            <!-- Previous -->
             <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                 <a class="page-link" th:href="@{/customer/shop/{id}(id=${shop.id}, page=${currentPage - 1}, sort=${sort})}">
                     <i class="fas fa-chevron-left"></i>
                 </a>
             </li>
 
-            <!-- Page Numbers -->
             <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                 class="page-item"
                 th:classappend="${i == currentPage} ? 'active'">
                 <a class="page-link" th:href="@{/customer/shop/{id}(id=${shop.id}, page=${i}, sort=${sort})}" th:text="${i + 1}">1</a>
             </li>
 
-            <!-- Next -->
             <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
                 <a class="page-link" th:href="@{/customer/shop/{id}(id=${shop.id}, page=${currentPage + 1}, sort=${sort})}">
                     <i class="fas fa-chevron-right"></i>
@@ -281,7 +248,6 @@
         </ul>
     </nav>
 
-    <!-- Pagination Info -->
     <div class="text-center mt-3" th:if="${products != null and !products.isEmpty()}">
         <small class="text-muted">
             Hiển thị <span th:text="${products.size()}">0</span> trong tổng số
@@ -290,10 +256,8 @@
     </div>
 </div>
 
-<!-- Footer -->
 <div th:replace="~{/Included/Footer :: footer}"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
