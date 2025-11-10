@@ -53,7 +53,7 @@ public class OrderController {
 
         try {
             // Lấy product
-            Product product = productService.get(productId);
+            Product product = productService.get(productId);//
             
             // Kiểm tra product status
             if (product.getStatus() != fpt.swp.springmvctt.itp.entity.enums.ProductStatus.ACTIVE) {

@@ -95,7 +95,7 @@ public class FavoriteProductController {
 
         // ✅ Phân trang
         int safePage = Math.max(page, 1);
-        int safeSize = Math.min(Math.max(size, 1), 12);
+        int safeSize = Math.min(Math.max(size, 1), 48); // Cho phép tối đa 48 items/trang
         int start = (safePage - 1) * safeSize;
         int end = Math.min(start + safeSize, allFavorites.size());
         List<FavoriteProductDTO> favoritesPage = allFavorites.subList(start, end);
@@ -126,6 +126,7 @@ public class FavoriteProductController {
         model.addAttribute("size", safeSize);
         model.addAttribute("currentPage", safePage);
         model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalProducts", allFavorites.size()); // Tổng số sản phẩm yêu thích
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
 

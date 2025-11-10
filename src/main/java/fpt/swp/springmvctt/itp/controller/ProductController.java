@@ -7,6 +7,7 @@ import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
 import fpt.swp.springmvctt.itp.service.FavoriteProductService;
 import fpt.swp.springmvctt.itp.service.ProductService;
+import fpt.swp.springmvctt.itp.service.InventoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
+    private final InventoryService inventoryService;
 
     // ✅ chỉ thêm dòng này
     private final FavoriteProductService favoriteService;
@@ -121,8 +123,11 @@ public class ProductController {
             throw new RuntimeException("Sản phẩm không tồn tại!");
         }
 
+        // ⚠️ QUAN TRỌNG: Rebuild stock từ database để đảm bảo chỉ đếm ACTIVE items (không đếm BLOCKED/đã bán)
+        Product updated = inventoryService.rebuildProductQuantity(product.getId());
+        model.addAttribute("product", updated); // Sử dụng product đã được rebuild stock
+
         // ✅ cũng truyền sessionUser vào trang chi tiết (nếu cần tim ở đó sau này)
-        model.addAttribute("product", product);
         model.addAttribute("sessionUser", session.getAttribute("user"));
 
         String requestURI = request.getRequestURI();

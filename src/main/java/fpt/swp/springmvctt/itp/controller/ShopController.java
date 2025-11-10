@@ -4,6 +4,7 @@ import fpt.swp.springmvctt.itp.dto.request.ProductForm;
 import fpt.swp.springmvctt.itp.dto.request.StockForm;
 import fpt.swp.springmvctt.itp.dto.request.ExcelImportForm;
 import fpt.swp.springmvctt.itp.dto.response.ImportResult;
+import fpt.swp.springmvctt.itp.entity.OrderItem;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.ProductStore;
 import fpt.swp.springmvctt.itp.entity.Category;
@@ -345,32 +346,68 @@ public class    ShopController {
 
     // INVENTORY (serial)
     @GetMapping("/inventory")
-    public String inventory(Model model, HttpServletRequest request, HttpSession session) {
+    public String inventory(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model, HttpServletRequest request, HttpSession session) {
         putCurrentPath(model, request);
         addShopToModel(model, session);
         Long shopId = getShopIdFromSession(session);
-        List<Product> products = productService.listByShop(shopId);
+        
+        // Input validation
+        if (page < 1) page = 1;
+        if (size < 1 || size > 100) size = 10;
+        
+        List<Product> allProducts = productService.listByShop(shopId);
 
         // Load categories for filter
         List<Category> allCategories = categoryRepository.findAll();
         model.addAttribute("allCategories", allCategories);
 
         // Sắp xếp theo ID tăng dần (từ bé lên lớn)
-        products.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
+        allProducts.sort((p1, p2) -> Long.compare(p1.getId(), p2.getId()));
+        
+        // Calculate pagination
+        int totalProducts = allProducts.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalProducts / size));
+        page = Math.max(1, Math.min(page, totalPages));
+        
+        int startIndex = (page - 1) * size;
+        int endIndex = Math.min(startIndex + size, totalProducts);
+        
+        // Safe sublist
+        List<Product> products;
+        if (startIndex >= totalProducts) {
+            products = new ArrayList<>();
+        } else {
+            products = allProducts.subList(startIndex, endIndex);
+        }
 
-        // Tạo stockMap, batchMap và tính toán thống kê
+        // Tạo stockMap, batchMap cho products đã phân trang
+        // ⚠️ QUAN TRỌNG: Rebuild stock từ database để đảm bảo chỉ đếm ACTIVE items (không đếm BLOCKED/đã bán)
         Map<Long, Integer> stockMap = new LinkedHashMap<>();
         Map<Long, Map<java.math.BigDecimal, Long>> batchMap = new LinkedHashMap<>();
+
+        for (Product p : products) {
+            // Rebuild stock from database to ensure accuracy (count only ACTIVE items)
+            Product updated = inventoryService.rebuildProductQuantity(p.getId());
+            int stock = updated.getAvailableStock(); // Chỉ đếm ACTIVE serials
+            stockMap.put(p.getId(), stock);
+            // Get stock by batches (grouped by price) - chỉ đếm ACTIVE items
+            batchMap.put(p.getId(), inventoryService.getStockByBatches(p.getId()));
+        }
+        
+        // Tính toán thống kê từ toàn bộ sản phẩm (allProducts)
+        // ⚠️ QUAN TRỌNG: Rebuild stock cho tất cả products để tính thống kê chính xác
         int totalActiveProducts = 0;
         int lowStockProducts = 0;
         int outOfStockProducts = 0;
-
-        for (Product p : products) {
-            int stock = p.getAvailableStock();
-            stockMap.put(p.getId(), stock);
-            // Get stock by batches (grouped by price)
-            batchMap.put(p.getId(), inventoryService.getStockByBatches(p.getId()));
-
+        
+        for (Product p : allProducts) {
+            // Rebuild stock from database to ensure accuracy (count only ACTIVE items)
+            Product updated = inventoryService.rebuildProductQuantity(p.getId());
+            int stock = updated.getAvailableStock(); // Chỉ đếm ACTIVE serials
+            
             // Calculate statistics
             if (p.getStatus().name().equals("ACTIVE")) {
                 totalActiveProducts++;
@@ -389,6 +426,13 @@ public class    ShopController {
         model.addAttribute("lowStockProducts", lowStockProducts);
         model.addAttribute("outOfStockProducts", outOfStockProducts);
         model.addAttribute("form", new StockForm());
+        
+        // Pagination attributes
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalProducts", totalProducts);
+        
         return "shop/inventory";
     }
 
@@ -651,12 +695,13 @@ public class    ShopController {
                 return ResponseEntity.status(403).body(response);
             }
 
-            // Xóa sản phẩm
-            System.out.println("Deleting product: " + product.getProductName());
+            // "Xóa" sản phẩm = Ẩn sản phẩm (status = HIDDEN) để customer không thấy
+            // Shop vẫn thấy để có thể bật lại bán tiếp
+            System.out.println("Hiding product: " + product.getProductName());
             productService.delete(id);
 
             response.put("success", true);
-            response.put("message", "Đã xóa sản phẩm thành công");
+            response.put("message", "Đã ẩn sản phẩm thành công. Sản phẩm sẽ không hiển thị cho khách hàng.");
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {

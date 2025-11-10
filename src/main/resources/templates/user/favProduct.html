@@ -15,7 +15,13 @@
             background: #fff; transition: all 0.2s ease; position: relative;
         }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .product-image { width: 100%; height: 200px; object-fit: cover; }
+        .product-image { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            object-position: center;
+            display: block;
+        }
         .product-body { padding: 1rem; }
         .product-price { font-weight: 700; color: #0ea5e9; }
         .product-footer { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; }
@@ -51,14 +57,29 @@
         </ol>
     </nav>
 
-    <!-- Tiêu đề + Sort + Search -->
+    <!-- Tiêu đề + Sort + Search + Page Size -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <h2 class="fw-bold mb-0">Danh sách yêu thích</h2>
 
         <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Page size selector -->
+            <div class="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded border shadow-sm">
+                <i class="fas fa-list text-muted"></i>
+                <label class="mb-0 text-muted small fw-bold">Hiển thị:</label>
+                <select class="form-select form-select-sm fw-bold" style="width:70px;border-color:#1abc9c;" 
+                        id="pageSizeSelect"
+                        onchange="changePageSize(this.value)">
+                    <option value="6" th:selected="${size == 6}">6</option>
+                    <option value="12" th:selected="${size == 12}">12</option>
+                    <option value="24" th:selected="${size == 24}">24</option>
+                    <option value="48" th:selected="${size == 48}">48</option>
+                </select>
+                <span class="text-muted small">/ trang</span>
+            </div>
+            
             <!-- Ô tìm kiếm -->
             <form class="d-flex" method="get" th:action="@{/favorites}">
-                <input type="hidden" name="page" th:value="${currentPage}" />
+                <input type="hidden" name="page" th:value="1" />
                 <input type="hidden" name="size" th:value="${size}" />
                 <input type="hidden" name="categoryId" th:value="${selectedCategoryId}" />
                 <input type="hidden" name="sort" th:value="${sort}" />
@@ -139,12 +160,23 @@
 
 
                 <!-- Ảnh sản phẩm -->
-                <img class="product-image"
-                     th:src="${f.productImage != null ? f.productImage : 'https://picsum.photos/seed/placeholder/400/300'}"
-                     th:alt="${f.productName}" />
+                <a th:href="@{'/product/' + ${f.productId}}" style="display: block; position: relative; overflow: hidden;">
+                    <img class="product-image"
+                         th:src="${f.productImage != null and !#strings.isEmpty(f.productImage)} ? 
+                                 ('/itp' + ${f.productImage}) : 
+                                 'https://picsum.photos/seed/placeholder/400/300'"
+                         th:alt="${f.productName}"
+                         onerror="this.src='https://picsum.photos/seed/placeholder/400/300';" />
+                </a>
 
                 <div class="product-body">
-                    <h6 class="fw-bold mb-1" th:text="${f.productName}">Tên sản phẩm</h6>
+                    <h6 class="fw-bold mb-1">
+                        <a th:href="@{'/product/' + ${f.productId}}" 
+                           class="text-decoration-none text-dark" 
+                           style="cursor: pointer;">
+                            <span th:text="${f.productName}">Tên sản phẩm</span>
+                        </a>
+                    </h6>
 
                     <!-- Tên danh mục -->
                     <div class="mb-1 text-muted small"
@@ -182,36 +214,93 @@
     </div>
 
     <!-- Pagination -->
-    <nav aria-label="Page navigation" class="mt-5"
-         th:if="${favorites != null and !#lists.isEmpty(favorites) and totalPages > 1}">
-        <ul class="pagination justify-content-center">
-            <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
-                <a class="page-link"
-                   th:href="@{'/favorites'(page=${currentPage - 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">
-                    &laquo;
-                </a>
-            </li>
+    <div th:if="${favorites != null and !#lists.isEmpty(favorites) and totalPages > 1}" 
+         class="d-flex justify-content-between align-items-center mt-5">
+        <!-- Pagination info -->
+        <div class="text-muted small">
+            Hiển thị <strong th:text="${favorites.size()}">10</strong> / <strong th:text="${totalProducts}">100</strong> sản phẩm
+        </div>
 
-            <li class="page-item"
-                th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                th:classappend="${i == currentPage} ? ' active'">
-                <a class="page-link"
-                   th:text="${i}"
-                   th:href="@{'/favorites'(page=${i}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}"></a>
-            </li>
+        <!-- Pagination controls -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination mb-0">
+                <!-- Previous -->
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{'/favorites'(page=${currentPage - 1}, size=${size}, categoryId=${selectedCategoryId}, search=${search}, sort=${sort})}"
+                       tabindex="-1">
+                        &laquo;
+                    </a>
+                </li>
 
-            <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
-                <a class="page-link"
-                   th:href="@{'/favorites'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">
-                    &raquo;
-                </a>
-            </li>
-        </ul>
-    </nav>
+                <!-- Luôn hiển thị trang 1 -->
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'active'">
+                    <a class="page-link" 
+                       th:href="@{'/favorites'(page=1, size=${size}, categoryId=${selectedCategoryId}, search=${search}, sort=${sort})}">1</a>
+                </li>
+
+                <!-- Dấu ... nếu currentPage > 3 -->
+                <li class="page-item disabled" th:if="${currentPage > 3}">
+                    <span class="page-link">...</span>
+                </li>
+
+                <!-- Các trang xung quanh currentPage -->
+                <th:block th:if="${totalPages > 2}">
+                    <th:block th:each="i : ${#numbers.sequence(2, totalPages - 1)}">
+                        <li class="page-item" 
+                            th:if="${i >= currentPage - 1 && i <= currentPage + 1 && i != 1 && i != totalPages}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link" 
+                               th:text="${i}"
+                               th:href="@{'/favorites'(page=${i}, size=${size}, categoryId=${selectedCategoryId}, search=${search}, sort=${sort})}"></a>
+                        </li>
+                    </th:block>
+                </th:block>
+
+                <!-- Dấu ... nếu currentPage < totalPages - 2 -->
+                <li class="page-item disabled" th:if="${currentPage < totalPages - 2 && totalPages > 2}">
+                    <span class="page-link">...</span>
+                </li>
+
+                <!-- Luôn hiển thị trang cuối (nếu totalPages > 1) -->
+                <li class="page-item" th:if="${totalPages > 1}" th:classappend="${currentPage == totalPages} ? 'active'">
+                    <a class="page-link" 
+                       th:text="${totalPages}"
+                       th:href="@{'/favorites'(page=${totalPages}, size=${size}, categoryId=${selectedCategoryId}, search=${search}, sort=${sort})}"></a>
+                </li>
+
+                <!-- Next -->
+                <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{'/favorites'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, search=${search}, sort=${sort})}">
+                        &raquo;
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </div>
 
 <!-- Footer -->
 <div th:replace="~{/Included/Footer :: footer}"></div>
+
+<script>
+function changePageSize(newSize) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', '1');
+    url.searchParams.set('size', newSize);
+    // Giữ lại các filter hiện tại từ URL
+    const categoryId = url.searchParams.get('categoryId') || '';
+    const search = url.searchParams.get('search') || '';
+    const sort = url.searchParams.get('sort') || 'default';
+    
+    if (categoryId) url.searchParams.set('categoryId', categoryId);
+    if (search) url.searchParams.set('search', search);
+    if (sort && sort !== 'default') url.searchParams.set('sort', sort);
+    
+    window.location.href = url.toString();
+}
+</script>
 
 </body>
 </html>

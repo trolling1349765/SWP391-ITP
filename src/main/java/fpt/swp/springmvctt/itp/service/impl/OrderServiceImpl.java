@@ -36,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final EntityManager entityManager;
     private final OrderItemRepository orderItemRepository;
+    private final ConfigurationRepository configurationRepository;
     
     // Queue/Lock per product để xử lý concurrent requests
     // Khi có 5 người cùng mua product_id=1, chúng sẽ xếp hàng và xử lý tuần tự
@@ -48,7 +49,7 @@ public class OrderServiceImpl implements OrderService {
         // ============================================================
         // QUEUE MECHANISM: Xếp hàng theo productId
         // ============================================================
-        // Khi có 5 người cùng mua product_id=1:
+        // Xem bao nhiêu  người cùng mua product_id={1}:
         // - Request 1: acquire lock → process → commit → release lock
         // - Request 2-5: đợi lock → khi lock release, request tiếp theo sẽ acquire
         // => Xử lý tuần tự, đảm bảo thứ tự (FIFO)
@@ -65,7 +66,7 @@ public class OrderServiceImpl implements OrderService {
             // Khi request đầu tiên lock, các request khác sẽ không thấy được
             // product cho đến khi lock được release (sau khi commit)
             // ============================================================
-            // 1. Lấy product với lock để tránh race condition
+            // 1. Lấy product với đã có lock key
             Product product = entityManager.find(Product.class, productId, LockModeType.PESSIMISTIC_WRITE);
             if (product == null) {
                 throw new IllegalArgumentException("Sản phẩm không tồn tại");
@@ -313,16 +314,52 @@ public class OrderServiceImpl implements OrderService {
             User seller = userRepository.findById(order.getSellerUserId())
                     .orElseThrow(() -> new IllegalArgumentException("Người bán không tồn tại"));
 
-            // 2. Cộng tiền cho seller
-            seller.setBalance(seller.getBalance().add(order.getTotalAmount()));
-            userRepository.save(seller);
+            // 2. Lấy phí sàn từ config (FEE)
+            BigDecimal platformFeePercent = BigDecimal.ZERO;
+            Configuration feeConfig = configurationRepository.findByConfigKey("FEE").orElse(null);
+            if (feeConfig != null && feeConfig.getConfigValue() != null) {
+                try {
+                    platformFeePercent = new BigDecimal(feeConfig.getConfigValue());
+                } catch (NumberFormatException e) {
+                    System.err.println(" [Order " + orderId + "] Lỗi parse FEE config: " + feeConfig.getConfigValue() + ". Sử dụng 0%.");
+                }
+            } else {
+                System.out.println(" [Order " + orderId + "] Không tìm thấy config FEE. Sử dụng 0%.");
+            }
 
-            // 3. Cập nhật order status thành COMPLETED
+            // 3. Tính phí sàn và số tiền chia
+            BigDecimal totalAmount = order.getTotalAmount();
+            BigDecimal platformFee = totalAmount.multiply(platformFeePercent).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+            BigDecimal sellerAmount = totalAmount.subtract(platformFee);
+
+            System.out.println("========================================");
+            System.out.println(" [Order " + orderId + "] PHÂN CHIA TIỀN:");
+            System.out.println("   Tổng tiền: " + totalAmount + " VND");
+            System.out.println("   Phí sàn (" + platformFeePercent + "%): " + platformFee + " VND");
+            System.out.println("   Seller nhận: " + sellerAmount + " VND");
+            System.out.println("========================================");
+
+            // 4. Cộng tiền cho seller (95% hoặc 100% nếu không có phí)
+            seller.setBalance(seller.getBalance().add(sellerAmount));
+            userRepository.save(seller);
+            System.out.println(" [Order " + orderId + "] Đã chuyển " + sellerAmount + " VND cho seller: " + seller.getUsername() + " (Balance: " + seller.getBalance() + " VND)");
+
+            // 5. Cộng phí sàn cho admin (nếu có)
+            if (platformFee.compareTo(BigDecimal.ZERO) > 0) {
+                User admin = userRepository.findFirstAdminUser()
+                        .orElseThrow(() -> new IllegalStateException("Không tìm thấy admin user để nhận phí sàn"));
+                
+                admin.setBalance(admin.getBalance().add(platformFee));
+                userRepository.save(admin);
+                System.out.println(" [Order " + orderId + "] Đã chuyển " + platformFee + " VND phí sàn cho admin: " + admin.getUsername() + " (Balance: " + admin.getBalance() + " VND)");
+            }
+
+            // 6. Cập nhật order status thành COMPLETED
             order.setStatus("COMPLETED");
             order.setUpdateAt(LocalDate.now());
             orderRepository.save(order);
 
-            // 4. Product và serials đã được mark BLOCKED trong createOrder, không cần xóa
+            // 7. Product và serials đã được mark BLOCKED trong createOrder, không cần xóa
             // Chỉ cần đảm bảo stock được cập nhật đúng
             Product product = order.getProduct();
             if (product != null) {
@@ -335,7 +372,7 @@ public class OrderServiceImpl implements OrderService {
                 productRepository.save(product);
             }
 
-            System.out.println(" Order " + orderId + " đã được xử lý thành công. Tiền đã chuyển cho seller.");
+            System.out.println(" [Order " + orderId + "] Đã được xử lý thành công. Tiền đã được chia cho seller và admin.");
         } catch (Exception e) {
             System.err.println(" Error transferring to seller for order " + orderId + ": " + e.getMessage());
             e.printStackTrace();
