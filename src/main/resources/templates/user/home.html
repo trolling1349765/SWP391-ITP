@@ -205,11 +205,6 @@
                     <div class="row g-4" th:if="${featuredProducts != null and !featuredProducts.isEmpty()}">
                         <div class="col-6 col-md-3" th:each="p : ${featuredProducts}">
                             <div class="card featured-product-card shadow-sm">
-                                <img th:if="${p.image != null and !#strings.isEmpty(p.image)}"
-                                     th:src="${'/itp' + p.image}"
-                                     class="card-img-top"
-                                     alt="Product Image"
-                                     onerror="this.onerror=null; this.src='https://picsum.photos/seed/placeholder/400/300';">
                                 <img th:if="${p.image == null or #strings.isEmpty(p.image)}"
                                      src="https://picsum.photos/seed/placeholder/400/300"
                                      class="card-img-top"
