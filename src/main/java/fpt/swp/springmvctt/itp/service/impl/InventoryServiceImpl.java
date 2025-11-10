@@ -1,9 +1,11 @@
 package fpt.swp.springmvctt.itp.service.impl;
 
 import fpt.swp.springmvctt.itp.dto.request.StockForm;
+import fpt.swp.springmvctt.itp.entity.OrderItem;
 import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.ProductStore;
 import fpt.swp.springmvctt.itp.entity.enums.ProductStatus;
+import fpt.swp.springmvctt.itp.repository.OrderItemRepository;
 import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.repository.ProductStoreRepository;
 import fpt.swp.springmvctt.itp.service.InventoryService;
@@ -22,6 +24,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     private final ProductRepository productRepository;
     private final ProductStoreRepository productStoreRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Override
     public Product addOrUpdateStock(StockForm form) {
@@ -133,9 +136,33 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public void deleteByProductId(Long productId) {
-        // Xóa tất cả serials (ProductStore)
+        // Chỉ xóa ProductStore chưa được bán (chưa có OrderItem reference)
+        // Không xóa ProductStore đã được bán vì có foreign key constraint từ order_items
         List<ProductStore> serials = productStoreRepository.findByProductIdOrderByIdDesc(productId);
-        productStoreRepository.deleteAll(serials);
-        System.out.println("Deleted " + serials.size() + " serials for product ID: " + productId);
+        int deletedCount = 0;
+        int skippedCount = 0;
+        
+        for (ProductStore ps : serials) {
+            // Kiểm tra xem ProductStore có OrderItem reference không
+            List<OrderItem> orderItems = 
+                orderItemRepository.findByProductStoreId(ps.getId());
+            
+            if (orderItems.isEmpty()) {
+                // Chưa có OrderItem reference → có thể xóa
+                productStoreRepository.delete(ps);
+                deletedCount++;
+            } else {
+                // Đã có OrderItem reference → không xóa (đã bán)
+                skippedCount++;
+                System.out.println("  Skipped ProductStore ID=" + ps.getId() + 
+                    " (Serial: " + ps.getSerialCode() + ") - Already sold (" + 
+                    orderItems.size() + " order items)");
+            }
+        }
+        
+        System.out.println("Deleted " + deletedCount + " serials for product ID: " + productId);
+        if (skippedCount > 0) {
+            System.out.println("Skipped " + skippedCount + " serials (already sold) for product ID: " + productId);
+        }
     }
 }
