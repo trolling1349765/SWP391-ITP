@@ -7,6 +7,7 @@ import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
 import fpt.swp.springmvctt.itp.service.FavoriteProductService;
 import fpt.swp.springmvctt.itp.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -100,7 +101,7 @@ public class ProductController {
      * Xem chi tiết sản phẩm (Customer)
      */
     @GetMapping("/product/{id}")
-    public String viewProductDetail(@PathVariable Long id, Model model, HttpSession session) {
+    public String viewProductDetail(@PathVariable Long id, Model model, HttpSession session, HttpServletRequest request) {
         Product product = productService.getProductById(id);
 
         if (product == null) {
@@ -110,6 +111,8 @@ public class ProductController {
         // ✅ cũng truyền sessionUser vào trang chi tiết (nếu cần tim ở đó sau này)
         model.addAttribute("product", product);
         model.addAttribute("sessionUser", session.getAttribute("user"));
+
+        model.addAttribute("requestURI", request.getRequestURI());
 
         // ✅ THÊM MỚI: Lấy danh sách sản phẩm yêu thích của user (nếu có)
         Object userObj = session.getAttribute("user");
