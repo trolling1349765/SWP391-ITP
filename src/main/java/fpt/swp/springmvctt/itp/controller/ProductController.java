@@ -1,8 +1,11 @@
 package fpt.swp.springmvctt.itp.controller;
 
+import fpt.swp.springmvctt.itp.dto.FavoriteProductDTO;
 import fpt.swp.springmvctt.itp.entity.Category;
 import fpt.swp.springmvctt.itp.entity.Product;
+import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
+import fpt.swp.springmvctt.itp.service.FavoriteProductService;
 import fpt.swp.springmvctt.itp.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -23,6 +27,9 @@ public class ProductController {
 
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
+
+    // ✅ chỉ thêm dòng này
+    private final FavoriteProductService favoriteService;
 
     @GetMapping("/products")
     public String showAllProducts(
@@ -58,6 +65,15 @@ public class ProductController {
         // ✅ Truyền thêm user session vào model để Thymeleaf check
         Object user = session.getAttribute("user");
         model.addAttribute("sessionUser", user);
+
+        // ✅ chỉ thêm khối này (không đụng dòng nào khác)
+        if (user instanceof User u) {
+            List<FavoriteProductDTO> favorites = favoriteService.getFavorites(u.getEmail());
+            Set<Long> favoriteProductIds = favorites.stream()
+                    .map(FavoriteProductDTO::getProductId)
+                    .collect(Collectors.toSet());
+            model.addAttribute("favoriteProductIds", favoriteProductIds);
+        }
 
         model.addAttribute("products", products);
         model.addAttribute("currentPage", safePage);

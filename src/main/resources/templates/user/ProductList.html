@@ -94,14 +94,27 @@
         <div class="col-md-3" th:each="product : ${products}">
             <div class="product-card">
 
-                <!-- ❤️ Nút thêm vào yêu thích (hiện khi đăng nhập) -->
+                <!-- ❤️ Hiển thị nút yêu thích hoặc xóa khỏi yêu thích -->
                 <div th:if="${sessionUser != null}">
-                    <form th:action="@{'/favorites/add/' + ${product.id}}" method="post">
+                    <!-- Nếu sản phẩm ĐÃ yêu thích -->
+                    <form th:if="${favoriteProductIds != null and favoriteProductIds.contains(product.id)}"
+                          th:action="@{'/favorites/remove/' + ${product.id}}"
+                          method="post">
+                        <button type="submit" class="favorite-btn" title="Xóa khỏi yêu thích">
+                            <i class="fa-solid fa-heart-crack"></i>
+                        </button>
+                    </form>
+
+                    <!-- Nếu sản phẩm CHƯA yêu thích -->
+                    <form th:if="${favoriteProductIds == null or !favoriteProductIds.contains(product.id)}"
+                          th:action="@{'/favorites/add/' + ${product.id}}"
+                          method="post">
                         <button type="submit" class="favorite-btn" title="Thêm vào yêu thích">
                             <i class="fa-regular fa-heart"></i>
                         </button>
                     </form>
                 </div>
+
 
 
                 <!-- Ảnh sản phẩm -->
