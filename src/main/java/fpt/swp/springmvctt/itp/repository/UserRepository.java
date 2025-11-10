@@ -46,7 +46,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
       AND (:deleteBy IS NULL OR u.deleteBy LIKE CONCAT('%', :deleteBy,'%'))
       AND (:email IS NULL OR u.email LIKE CONCAT('%', :email, '%'))
       AND (:role IS NULL OR u.role.name = :role)
-      ORDER BY u.id DESC
+    ORDER BY u.id DESC
     """)
     Page<User> findByFilter(@Param("username") String username,
                             @Param("email") String email,
@@ -59,4 +59,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
                             @Param("status") String status,
                             @Param("role") String role,
                             Pageable pageable);
+
+    /**
+     * Tìm admin user đầu tiên (có role ADMIN và chưa bị xóa)
+     */
+    @Query("""
+        SELECT u
+        FROM User u
+        JOIN u.role r
+        WHERE r.name = 'ADMIN'
+          AND u.isDeleted = false
+        ORDER BY u.id ASC
+        """)
+    Optional<User> findFirstAdminUser();
 }
