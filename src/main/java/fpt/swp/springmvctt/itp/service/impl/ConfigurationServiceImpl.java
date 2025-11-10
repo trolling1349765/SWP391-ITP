@@ -30,22 +30,28 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     }
 
     @Override
-    public void save(String configKey, String configValue) {
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
-        Configuration configuration = new Configuration();
-        configuration.setConfigKey(configKey.toUpperCase());
-        configuration.setConfigValue(configValue);
-        configuration.setCreateAt(LocalDate.now());
-        configuration.setCreateBy(user.getUsername());
-        configurationRepository.save(configuration);
+    public boolean save(String configKey, String configValue) {
+        Configuration configuration = configurationRepository.findByConfigKey(configKey);
+        if (configuration == null) {
+            configuration = new Configuration();
+            HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("user");
+            configuration.setConfigKey(configKey.toUpperCase());
+            configuration.setConfigValue(configValue);
+            configuration.setCreateAt(LocalDate.now());
+            configuration.setCreateBy(user.getUsername());
+            configurationRepository.save(configuration);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void delete(Long id) {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
-        configurationRepository.findById(id).ifPresent((configuration) ->{
+        configurationRepository.findById(id).ifPresent((configuration) -> {
             if (configuration.getIsDeleted()) return;
             configuration.setDeleteBy(user.getUsername());
             configuration.setUpdateAt(LocalDate.now());
@@ -61,17 +67,17 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
     @Override
     public void update(Long id, String configKey, String configValue) {
-        configurationRepository.findById(id).ifPresent((configuration) ->{
-           configuration.setConfigKey(configKey);
-           configuration.setConfigValue(configValue);
-           configuration.setUpdateAt(LocalDate.now());
-           configurationRepository.save(configuration);
+        configurationRepository.findById(id).ifPresent((configuration) -> {
+            configuration.setConfigKey(configKey);
+            configuration.setConfigValue(configValue);
+            configuration.setUpdateAt(LocalDate.now());
+            configurationRepository.save(configuration);
         });
     }
 
     @Override
     public void reborn(Long id) {
-        configurationRepository.findById(id).ifPresent((configuration) ->{
+        configurationRepository.findById(id).ifPresent((configuration) -> {
             if (!configuration.getIsDeleted()) return;
             configuration.setIsDeleted(false);
             configuration.setUpdateAt(LocalDate.now());
@@ -83,8 +89,10 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     @Override
     public Page<Configuration> findByFilter(String configKey, LocalDate toDate, LocalDate fromDate, Boolean delete, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        if (configKey.isEmpty() || configKey.equals("")) { configKey = null; }
-        if(!configurationRepository.findByFilter(configKey, toDate, fromDate, delete, pageable).isEmpty())
+        if (configKey.isEmpty() || configKey.equals("")) {
+            configKey = null;
+        }
+        if (!configurationRepository.findByFilter(configKey, toDate, fromDate, delete, pageable).isEmpty())
             return configurationRepository.findByFilter(configKey, toDate, fromDate, delete, pageable);
         else return Page.empty();
     }

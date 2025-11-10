@@ -54,8 +54,9 @@ public class UserController {
                 role,
                 page,
                 size);
-        if (userpage.isEmpty() || page >= userpage.getTotalPages()) {
-            page = userpage.getTotalPages() - 1;
+        if (page >= userpage.getTotalPages()) {
+            model.addAttribute("errorMessage", "Page number too big.");
+            page = Math.max(0, Math.min(page, userpage.getTotalPages() - 1));
             userpage = userService.findByFilter(
                     username,
                     email,

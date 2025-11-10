@@ -34,8 +34,8 @@ public class ConfigSettingController {
         Boolean delete = deleted.isEmpty() ? null : deleted.equals("true");
 
         Page<Configuration> configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
-        if (!configs.isEmpty() || page >= configs.getTotalPages()) {
-            page = configs.getTotalPages() - 1;
+        if (page >= configs.getTotalPages()) {
+            page = Math.max(0, Math.min(page, configs.getTotalPages() - 1));
             configs = configurationService.findByFilter(configKey, toDate, fromDate, delete, page, size);
         }
 
@@ -61,10 +61,15 @@ public class ConfigSettingController {
     @PostMapping("/configs/new")
     public String saveConfig(
             @RequestParam("configKey") String configKey,
-            @RequestParam("configValue") String configValue
-    ) {
-        configurationService.save(configKey, configValue);
-        return "redirect:/admin/configs";
+            @RequestParam("configValue") String configValue,
+            Model model) {
+        if (configurationService.save(configKey, configValue)) return "redirect:/admin/configs";
+        else {
+            model.addAttribute("errorMessage", "Configuration key already exists.");
+            model.addAttribute("configKey", configKey);
+            model.addAttribute("configValue", configValue);
+            return "admin/new-config";
+        }
     }
 
     @DeleteMapping("/configs/delete/{id}")

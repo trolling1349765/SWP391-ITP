@@ -27,4 +27,6 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, Lo
             @Param("endDate") LocalDate fromDate,
             @Param("isDelete") Boolean delete,
             Pageable pageable);
+
+    Configuration findByConfigKey(String configKey);
 }

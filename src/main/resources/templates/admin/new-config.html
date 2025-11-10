@@ -21,17 +21,20 @@
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h5 class="mb-0">Thêm cấu hình mới</h5>
+                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                        <span th:text="${errorMessage}"></span>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <form th:action="@{/admin/configs/new}" th:object="${config}" method="post">
+                    <form th:action="@{/admin/configs/new}" method="post">
                         <input type="hidden" name="_method" value="post"/>
                         <div class="mb-3">
                             <label for="configKey" class="form-label">Key</label>
-                            <input th:text="${config?.configKey}" type="text" class="form-control" name="configKey" id="configKey" placeholder="Ex:EMAIL " required>
+                            <input th:value="${configKey}" type="text" class="form-control" name="configKey" id="configKey" placeholder="Ex:EMAIL " required>
                         </div>
                         <div class="mb-3">
                             <label for="configValue" class="form-label">Value</label>
-                            <input th:text="${config?.configValue}" placeholder="Value" type="text" name="configValue" class="form-control" id="configValue" required>
+                            <input th:value="${configValue}" placeholder="Value" type="text" name="configValue" class="form-control" id="configValue" required>
                         </div>
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary">Submit</button>
