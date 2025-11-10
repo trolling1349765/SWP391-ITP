@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
         // ============================================================
         // QUEUE MECHANISM: Xếp hàng theo productId
         // ============================================================
-        // Khi có 5 người cùng mua product_id=1:
+        // Xem bao nhiêu  người cùng mua product_id={1}:
         // - Request 1: acquire lock → process → commit → release lock
         // - Request 2-5: đợi lock → khi lock release, request tiếp theo sẽ acquire
         // => Xử lý tuần tự, đảm bảo thứ tự (FIFO)
@@ -65,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
             // Khi request đầu tiên lock, các request khác sẽ không thấy được
             // product cho đến khi lock được release (sau khi commit)
             // ============================================================
-            // 1. Lấy product với lock để tránh race condition
+            // 1. Lấy product với đã có lock key
             Product product = entityManager.find(Product.class, productId, LockModeType.PESSIMISTIC_WRITE);
             if (product == null) {
                 throw new IllegalArgumentException("Sản phẩm không tồn tại");

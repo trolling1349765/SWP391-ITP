@@ -204,11 +204,6 @@
                     <!-- Có dữ liệu -->
                     <div class="row g-4" th:if="${featuredProducts != null and !featuredProducts.isEmpty()}">
                         <div class="col-6 col-md-3" th:each="p : ${featuredProducts}">
-                            <div class="card featured-product-card shadow-sm">
-                                <img th:if="${p.image == null or #strings.isEmpty(p.image)}"
-                                     src="https://picsum.photos/seed/placeholder/400/300"
-                                     class="card-img-top"
-                                     alt="Product Image">
                             <div class="card h-100 shadow-sm position-relative">
 
                                 <!-- ❤️ Yêu thích -->
@@ -230,8 +225,15 @@
                                     </form>
                                 </div>
 
-                                <img th:src="${p.image != null ? p.image : 'https://picsum.photos/seed/placeholder/400/300'}"
-                                     class="card-img-top" alt="Product Image">
+                                <a th:href="@{/product/{id}(id=${p.id})}" style="display: block; position: relative; overflow: hidden;">
+                                    <img th:src="${p.image != null and !#strings.isEmpty(p.image)} ? 
+                                                ('/itp' + ${p.image}) : 
+                                                'https://picsum.photos/seed/placeholder/400/300'"
+                                         class="card-img-top" 
+                                         style="height: 200px; object-fit: cover;"
+                                         th:alt="${p.productName}"
+                                         onerror="this.src='https://picsum.photos/seed/placeholder/400/300';" />
+                                </a>
                                 <div class="card-body">
                                     <h6 th:text="${p.productName}" class="card-title mb-2">Tên sản phẩm</h6>
                                     <p class="card-text fw-bold text-primary mb-3"
