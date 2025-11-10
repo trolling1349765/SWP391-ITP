@@ -111,6 +111,17 @@ public class ProductController {
         model.addAttribute("product", product);
         model.addAttribute("sessionUser", session.getAttribute("user"));
 
+        // ✅ THÊM MỚI: Lấy danh sách sản phẩm yêu thích của user (nếu có)
+        Object userObj = session.getAttribute("user");
+        if (userObj instanceof User user) {
+            List<FavoriteProductDTO> favorites = favoriteService.getFavorites(user.getEmail());
+            Set<Long> favoriteProductIds = favorites.stream()
+                    .map(FavoriteProductDTO::getProductId)
+                    .collect(Collectors.toSet());
+            model.addAttribute("favoriteProductIds", favoriteProductIds);
+        }
+
         return "user/product-detail";
     }
+
 }

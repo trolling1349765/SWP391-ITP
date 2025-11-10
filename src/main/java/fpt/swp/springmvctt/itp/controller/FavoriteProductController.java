@@ -116,6 +116,7 @@ public class FavoriteProductController {
     @PostMapping("/add/{productId}")
     public String addFavorite(
             @PathVariable Long productId,
+            @RequestParam(required = false) String redirect, // ✅ chỉ thêm
             HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
@@ -132,6 +133,11 @@ public class FavoriteProductController {
             redirectAttributes.addFlashAttribute("error", "Không thể thêm sản phẩm yêu thích: " + e.getMessage());
         }
 
+        // ✅ chỉ thêm, không sửa dòng cũ
+        if (redirect != null && !redirect.isBlank()) {
+            return "redirect:" + redirect;
+        }
+
         return "redirect:/products";
     }
 
@@ -139,6 +145,7 @@ public class FavoriteProductController {
     @PostMapping("/remove/{productId}")
     public String removeFavorite(
             @PathVariable Long productId,
+            @RequestParam(required = false) String redirect, // ✅ chỉ thêm
             HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
@@ -153,6 +160,11 @@ public class FavoriteProductController {
             redirectAttributes.addFlashAttribute("success", "Đã xóa sản phẩm khỏi danh sách yêu thích!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể xóa sản phẩm yêu thích: " + e.getMessage());
+        }
+
+        // ✅ chỉ thêm, không sửa dòng cũ
+        if (redirect != null && !redirect.isBlank()) {
+            return "redirect:" + redirect;
         }
 
         return "redirect:/favorites";
