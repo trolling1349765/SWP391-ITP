@@ -15,6 +15,9 @@ public class AdminDashboardResponse {
     private long totalShops;
     private long totalOrders;
 
+    // ✅ Thêm field mới
+    private long totalProducts;
+
     // phân bố role → số lượng
     private List<RoleCountResponse> roleStats;
 

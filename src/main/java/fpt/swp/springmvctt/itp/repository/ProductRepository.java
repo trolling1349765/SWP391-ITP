@@ -28,4 +28,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Eager load shop và category khi lấy product detail
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.shop LEFT JOIN FETCH p.category WHERE p.id = :id")
     Optional<Product> findByIdWithShop(@Param("id") Long id);
+
+    @Query("SELECT COUNT(p) FROM Product p")
+    long countAllProducts();
+
 }
