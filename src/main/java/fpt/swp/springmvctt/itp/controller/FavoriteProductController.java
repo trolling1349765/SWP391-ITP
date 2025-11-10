@@ -30,7 +30,7 @@ public class FavoriteProductController {
     private final CategoryRepository categoryRepository;
     private final ShopRepository shopRepository; // ✅ thêm để lấy danh sách shop
 
-    /** ✅ HIỂN THỊ DANH SÁCH YÊU THÍCH */
+    /** ✅ HIỂN THỊ DANH SÁCH YÊU THÍCH (Kết hợp cũ + mới: giữ logic cũ, phân trang mới) */
     @GetMapping
     public String getFavorites(
             @RequestParam(defaultValue = "1") int page,
@@ -80,7 +80,7 @@ public class FavoriteProductController {
                     .collect(Collectors.toList());
         }
 
-        // ✅ Sắp xếp
+        // ✅ Sắp xếp (giữ logic cũ)
         switch (sort) {
             case "priceAsc" -> allFavorites.sort(
                     Comparator.comparing(FavoriteProductDTO::getPrice, Comparator.nullsLast(BigDecimal::compareTo))
@@ -93,9 +93,9 @@ public class FavoriteProductController {
             );
         }
 
-        // ✅ Phân trang
+        // ✅ Phân trang (lấy code mới)
         int safePage = Math.max(page, 1);
-        int safeSize = Math.min(Math.max(size, 1), 48); // Cho phép tối đa 48 items/trang
+        int safeSize = Math.min(Math.max(size, 1), 16);
         int start = (safePage - 1) * safeSize;
         int end = Math.min(start + safeSize, allFavorites.size());
         List<FavoriteProductDTO> favoritesPage = allFavorites.subList(start, end);
@@ -115,6 +115,7 @@ public class FavoriteProductController {
         // ✅ Shop list cho dropdown
         List<Shop> shopList = shopRepository.findAll();
 
+        // ✅ Truyền dữ liệu cho view
         model.addAttribute("favorites", favoritesPage);
         model.addAttribute("categories", categories);
         model.addAttribute("categoryNameMap", categoryNameMap);
@@ -126,12 +127,67 @@ public class FavoriteProductController {
         model.addAttribute("size", safeSize);
         model.addAttribute("currentPage", safePage);
         model.addAttribute("totalPages", totalPages);
-        model.addAttribute("totalProducts", allFavorites.size()); // Tổng số sản phẩm yêu thích
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
 
         return "user/favProduct";
     }
 
-    // (giữ nguyên các method add/remove)
+    /** ✅ THÊM SẢN PHẨM YÊU THÍCH (logic cũ, fix redirect an toàn) */
+    @PostMapping("/add/{productId}")
+    public String addFavorite(
+            @PathVariable Long productId,
+            @RequestParam(required = false) String redirect,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để thêm sản phẩm yêu thích!");
+            return "redirect:/login";
+        }
+
+        try {
+            favoriteService.addFavorite(user.getEmail(), productId);
+            redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào danh sách yêu thích!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Không thể thêm sản phẩm yêu thích: " + e.getMessage());
+        }
+
+        // ✅ Redirect fix chuẩn
+        if (redirect != null && !redirect.isBlank()) {
+            if (!redirect.startsWith("/")) redirect = "/" + redirect;
+            return "redirect:" + redirect;
+        }
+        return "redirect:/products";
+    }
+
+    /** ✅ XÓA SẢN PHẨM YÊU THÍCH (logic cũ, fix redirect an toàn) */
+    @PostMapping("/remove/{productId}")
+    public String removeFavorite(
+            @PathVariable Long productId,
+            @RequestParam(required = false) String redirect,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để xóa sản phẩm yêu thích!");
+            return "redirect:/login";
+        }
+
+        try {
+            favoriteService.removeFavorite(user.getEmail(), productId);
+            redirectAttributes.addFlashAttribute("success", "Đã xóa sản phẩm khỏi danh sách yêu thích!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Không thể xóa sản phẩm yêu thích: " + e.getMessage());
+        }
+
+        // ✅ Redirect fix chuẩn
+        if (redirect != null && !redirect.isBlank()) {
+            if (!redirect.startsWith("/")) redirect = "/" + redirect;
+            return "redirect:" + redirect;
+        }
+        return "redirect:/favorites";
+    }
 }
