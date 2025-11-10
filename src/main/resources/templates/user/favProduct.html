@@ -173,7 +173,9 @@
 
                 <!-- ❤️ Nút xóa khỏi yêu thích -->
                 <form th:action="@{'/favorites/remove/' + ${f.productId}}" method="post">
-                    <input type="hidden" name="redirect" th:value="${requestURI}" />
+                    <!-- ✅ Truyền tất cả params hiện tại để giữ lại trang, filter, sort -->
+                    <input type="hidden" name="redirect" 
+                           th:value="@{'/favorites'(page=${currentPage}, size=${size}, categoryId=${selectedCategoryId}, search=${search}, sort=${sort}, shopId=${selectedShopId})}" />
                     <button type="submit" class="favorite-remove-btn" title="Xóa khỏi yêu thích">
                         <i class="fa-solid fa-heart-crack"></i>
                     </button>
