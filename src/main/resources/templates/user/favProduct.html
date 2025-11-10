@@ -141,7 +141,7 @@
 
 
                 <!-- Ảnh sản phẩm -->
-                <a th:href="@{'/products/' + ${f.productId}}" style="display: block; position: relative; overflow: hidden;">
+                <a th:href="@{'/product/' + ${f.productId}}" style="display: block; position: relative; overflow: hidden;">
                     <img class="product-image"
                          th:src="${f.productImage != null and !#strings.isEmpty(f.productImage)} ? 
                                  ('/itp' + ${f.productImage}) : 
@@ -151,7 +151,13 @@
                 </a>
 
                 <div class="product-body">
-                    <h6 class="fw-bold mb-1" th:text="${f.productName}">Tên sản phẩm</h6>
+                    <h6 class="fw-bold mb-1">
+                        <a th:href="@{'/product/' + ${f.productId}}" 
+                           class="text-decoration-none text-dark" 
+                           style="cursor: pointer;">
+                            <span th:text="${f.productName}">Tên sản phẩm</span>
+                        </a>
+                    </h6>
 
                     <!-- Tên danh mục -->
                     <div class="mb-1 text-muted small"
