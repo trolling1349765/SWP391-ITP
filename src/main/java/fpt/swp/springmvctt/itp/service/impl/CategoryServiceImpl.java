@@ -3,9 +3,13 @@ package fpt.swp.springmvctt.itp.service.impl;
 import fpt.swp.springmvctt.itp.entity.Category;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
 import fpt.swp.springmvctt.itp.service.CategoryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,32 @@ public class CategoryServiceImpl implements CategoryService {
         } catch (Exception e) {
             return List.of();
         }
+    }
+
+    // ======= Thêm mới cho CRUD + search/pagination =======
+    @Override
+    public Page<Category> search(String q, int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+        String keyword = (q == null) ? "" : q.trim();
+        if (keyword.isEmpty()) {
+            return categoryRepository.findAll(pageable);
+        }
+        return categoryRepository.findByCategoryNameContainingIgnoreCase(keyword, pageable);
+    }
+
+    @Override
+    public Optional<Category> findById(Long id) {
+        return (id == null) ? Optional.empty() : categoryRepository.findById(id);
+    }
+
+    @Override
+    public Category save(Category c) {
+        return categoryRepository.save(c);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        if (id != null) categoryRepository.deleteById(id);
     }
     
     private void initializeDefaultCategories() {

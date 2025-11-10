@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import java.util.Optional;
 
@@ -57,4 +58,5 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
                             @Param("status") String status,
                             Pageable pageable);
 
+    List<Shop> findTop10ByOrderByIdDesc();
 }

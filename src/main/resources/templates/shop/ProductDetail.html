@@ -25,7 +25,21 @@
                    class="btn btn-success btn-sm">
                     Thêm mã sản phẩm
                 </a>
-                <button th:onclick="'deleteProduct(' + ${product.id} + ')'" class="btn btn-sm btn-outline-danger">Xóa</button>
+                <!-- Đổi trạng thái: ACTIVE/HIDDEN/BLOCKED -->
+                <form th:action="@{|/shop/products/${product.id}/status|}" method="post" class="d-inline-flex align-items-center ms-1">
+                    <select class="form-select form-select-sm fw-bold" name="status" 
+                            th:style="${product.status.name()=='ACTIVE'} ? 'border-color:#28a745;color:#28a745;' : 
+                                       (${product.status.name()=='HIDDEN'} ? 'border-color:#6c757d;color:#6c757d;' : 'border-color:#dc3545;color:#dc3545;')">
+                        <option value="ACTIVE" th:selected="${product.status.name()=='ACTIVE'}" style="color:#28a745;">✓ ACTIVE</option>
+                        <option value="HIDDEN" th:selected="${product.status.name()=='HIDDEN'}" style="color:#6c757d;">⊝ HIDDEN</option>
+                        <option value="BLOCKED" th:selected="${product.status.name()=='BLOCKED'}" style="color:#dc3545;">✕ BLOCKED</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm ms-2"
+                            th:classappend="${product.status.name()=='ACTIVE'} ? 'btn-success' : 
+                                             (${product.status.name()=='HIDDEN'} ? 'btn-secondary' : 'btn-danger')">
+                        <i class="fas fa-sync-alt"></i> Đổi
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -191,104 +205,7 @@
     </div>
 </div>
 
-<!-- Modal xác nhận xóa sản phẩm -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa sản phẩm</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa sản phẩm <strong th:text="${product.productName}">Tên sản phẩm</strong> không?</p>
-                <p class="text-danger">Hành động này không thể hoàn tác!</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xóa sản phẩm</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-let productIdToDelete = null;
-
-function deleteProduct(id) {
-    console.log('Delete request for product ID:', id);
-    productIdToDelete = id;
-    
-    // Hiển thị modal
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    modal.show();
-}
-
-// Xử lý khi nhấn nút xác nhận xóa
-document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-    if (productIdToDelete) {
-        confirmDelete(productIdToDelete);
-    }
-});
-
-function confirmDelete(productId) {
-    console.log('Confirming delete for product ID:', productId);
-    
-    fetch(`/itp/shop/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        return response.json();
-    })
-    .then(data => {
-        console.log('Response data:', data);
-        
-        if (data.success) {
-            showAlert('success', data.message);
-            
-            // Đóng modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-            modal.hide();
-            
-            // Redirect về dashboard sau 1.5 giây后就
-            setTimeout(() => {
-                window.location.href = '/itp/shop/dashboard';
-            }, 1500);
-        } else {
-            showAlert('danger', data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('danger', 'Có lỗi xảy ra khi xóa sản phẩm');
-    });
-}
-
-function showAlert(type, message) {
-    // Tạo alert element
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    // Thêm vào đầu trang
-    const container = document.querySelector('.container-fluid .col-md-9');
-    container.insertBefore(alertDiv, container.firstChild);
-    
-    // Tự động ẩn sau 5 giây
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
-        }
-    }, 5000);
-}
-</script>
 
 <script th:src="@{/assets/js/shop/shop-common.js}"></script>
 

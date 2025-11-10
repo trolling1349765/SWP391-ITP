@@ -79,7 +79,7 @@
 
         <!-- Inventory Summary Cards -->
         <div class="row mb-4">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="card text-center border-primary">
                     <div class="card-body">
                         <h5 class="text-primary">Tổng sản phẩm</h5>
@@ -87,7 +87,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="card text-center border-success">
                     <div class="card-body">
                         <h5 class="text-success">Đang kích hoạt</h5>
@@ -95,7 +95,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="card text-center border-warning">
                     <div class="card-body">
                         <h5 class="text-warning">Sắp hết hàng</h5>
@@ -103,7 +103,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="card text-center border-danger">
                     <div class="card-body">
                         <h5 class="text-danger">Hết hàng</h5>
@@ -111,13 +111,35 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="card text-center border-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div class="card-body">
+                        <h5 class="mb-2" style="color: white;">Số dư tài khoản</h5>
+                        <h3 class="mb-0 fw-bold" style="color: white;" th:text="${userBalance != null ? #numbers.formatDecimal(userBalance, 0, 'COMMA', 0, 'POINT') + ' ₫' : '0 ₫'}">0 ₫</h3>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Products & stock table -->
+       <!-- Products & stock table -->
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>Sản phẩm & Tồn kho</span>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 align-items-center">
+                    <!-- Page size selector -->
+                    <div class="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded border shadow-sm">
+                        <i class="fas fa-list text-muted"></i>
+                        <label class="mb-0 text-muted small fw-bold">Hiển thị:</label>
+                        <select class="form-select form-select-sm fw-bold" style="width:70px;border-color:#1abc9c;" 
+                                onchange="window.location.href='/itp/shop/inventory?page=1&size=' + this.value">
+                            <option value="5" th:selected="${pageSize == 5}">5</option>
+                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                            <option value="20" th:selected="${pageSize == 20}">20</option>
+                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                            <option value="100" th:selected="${pageSize == 100}">100</option>
+                        </select>
+                        <span class="text-muted small">/ trang</span>
+                    </div>
                     <a th:href="@{/shop/addProduct}" class="btn btn-primary btn-sm">Thêm sản phẩm</a>
                     <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary btn-sm">Dashboard</a>
                 </div>
@@ -127,6 +149,7 @@
                     <thead>
                     <tr>
                         <th width="60" class="text-center">STT</th>
+                        <th width="100" class="text-center">Ảnh sản phẩm</th>
                         <th>Tên sản phẩm</th>
                         <th>Giá</th>
                         <th class="text-center">Tồn kho</th>
@@ -140,7 +163,18 @@
                         th:data-face-value="${p.price.intValue()}"
                         th:data-stock="${stockMap[p.id]}"
                         th:data-product-name="${p.productName.toLowerCase()}">
-                        <td class="text-center" th:text="${iterStat.index + 1}">1</td>
+                        <td class="text-center" th:text="${(currentPage - 1) * pageSize + iterStat.index + 1}">1</td>
+                        <td class="text-center">
+                            <div th:if="${p.image}">
+                                <img th:src="@{${p.image}}"
+                                     th:attr="data-original-path=${p.image},data-product-id=${p.id}"
+                                     class="img-thumbnail" 
+                                     style="width:56px;height:56px;object-fit:cover;"
+                                     onerror="console.error(' Product #' + this.getAttribute('data-product-id') + ' image failed. DB path:', this.getAttribute('data-original-path'), 'Full URL:', this.src); this.parentElement.innerHTML='<span class=\'badge bg-danger\' title=\'' + this.getAttribute('data-original-path') + '\'>Lỗi ảnh</span>';"
+                                     onload="console.log(' Product #' + this.getAttribute('data-product-id') + ' loaded:', this.getAttribute('data-original-path'));"/>
+                            </div>
+                            <span th:unless="${p.image}" class="badge bg-secondary">Chưa có ảnh</span>
+                        </td>
                         <td>
                             <strong th:text="${p.productName}">Tên</strong>
                             <br>
@@ -163,14 +197,85 @@
                             <div class="btn-group" role="group">
                                 <a th:href="@{|/shop/products/${p.id}|}" class="btn btn-sm btn-outline-info">Chi tiết</a>
                                 <a th:href="@{|/shop/updateProduct/${p.id}|}" class="btn btn-sm btn-outline-primary">Sửa</a>
-                                <button class="btn btn-sm btn-outline-danger delete-product-btn" th:data-product-id="${p.id}">Xóa</button>
                             </div>
+                            <!-- Đổi trạng thái: ACTIVE/HIDDEN/BLOCKED -->
+                            <form th:action="@{|/shop/products/${p.id}/status|}" method="post" class="d-inline-flex align-items-center ms-1">
+                                <select class="form-select form-select-sm fw-bold" name="status" 
+                                        th:style="${p.status.name()=='ACTIVE'} ? 'border-color:#28a745;color:#28a745;' : 
+                                                   (${p.status.name()=='HIDDEN'} ? 'border-color:#6c757d;color:#6c757d;' : 'border-color:#dc3545;color:#dc3545;')">
+                                    <option value="ACTIVE" th:selected="${p.status.name()=='ACTIVE'}" style="color:#28a745;">✓ ACTIVE</option>
+                                    <option value="HIDDEN" th:selected="${p.status.name()=='HIDDEN'}" style="color:#6c757d;">⊝ HIDDEN</option>
+                                    <option value="BLOCKED" th:selected="${p.status.name()=='BLOCKED'}" style="color:#dc3545;">✕ BLOCKED</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm ms-2"
+                                        th:classappend="${p.status.name()=='ACTIVE'} ? 'btn-success' : 
+                                                         (${p.status.name()=='HIDDEN'} ? 'btn-secondary' : 'btn-danger')">
+                                    <i class="fas fa-sync-alt"></i> Đổi
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
-            <!-- Pagination will be inserted here by JavaScript -->
+            
+            <!-- Pagination -->
+            <div th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3 p-3">
+                <!-- Pagination info -->
+                <div class="text-muted small">
+                    Hiển thị <strong th:text="${products.size()}">10</strong> / <strong th:text="${totalProducts}">100</strong> sản phẩm
+                </div>
+
+                <!-- Pagination controls -->
+                <nav aria-label="Product pagination">
+                    <ul class="pagination mb-0">
+                        <!-- Previous -->
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/shop/inventory(page=${currentPage - 1}, size=${pageSize})}" tabindex="-1">
+                                &laquo;
+                            </a>
+                        </li>
+
+                        <!-- Luôn hiển thị trang 1 -->
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'active'">
+                            <a class="page-link" th:href="@{/shop/inventory(page=1, size=${pageSize})}">1</a>
+                        </li>
+
+                        <!-- Dấu ... nếu currentPage > 3 -->
+                        <li class="page-item disabled" th:if="${currentPage > 3}">
+                            <span class="page-link">...</span>
+                        </li>
+
+                        <!-- Các trang xung quanh currentPage (giới hạn 2-9) -->
+                        <th:block th:if="${totalPages > 2}">
+                            <th:block th:each="i : ${#numbers.sequence(2, totalPages - 1)}">
+                                <li class="page-item" 
+                                    th:if="${i >= currentPage - 1 && i <= currentPage + 1 && i != 1 && i != totalPages}"
+                                    th:classappend="${i == currentPage} ? 'active'">
+                                    <a class="page-link" th:href="@{/shop/inventory(page=${i}, size=${pageSize})}" th:text="${i}">2</a>
+                                </li>
+                            </th:block>
+                        </th:block>
+
+                        <!-- Dấu ... nếu currentPage < totalPages - 2 -->
+                        <li class="page-item disabled" th:if="${currentPage < totalPages - 2 && totalPages > 2}">
+                            <span class="page-link">...</span>
+                        </li>
+
+                        <!-- Luôn hiển thị trang cuối (nếu totalPages > 1) -->
+                        <li class="page-item" th:if="${totalPages > 1}" th:classappend="${currentPage == totalPages} ? 'active'">
+                            <a class="page-link" th:href="@{/shop/inventory(page=${totalPages}, size=${pageSize})}" th:text="${totalPages}">10</a>
+                        </li>
+
+                        <!-- Next -->
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/shop/inventory(page=${currentPage + 1}, size=${pageSize})}">
+                                &raquo;
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
 
     </div>
@@ -179,109 +284,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    function deleteProduct(productId) {
-        if (typeof bootstrap === 'undefined') {
-            alert('Lỗi: Bootstrap chưa được tải. Vui lòng reload trang.');
-            return;
-        }
-        
-        const modalHtml = `
-            <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title">Xác nhận xóa sản phẩm</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>#${productId}</strong> không?</p>
-                            <p class="text-danger mb-0"><strong>Hành động này không thể hoàn tác!</strong></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="button" class="btn btn-danger" onclick="confirmDelete(${productId})">Xóa</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        const existingModal = document.getElementById('deleteConfirmModal');
-        if (existingModal) existingModal.remove();
-        
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-        modal.show();
-    }
-    
-    function confirmDelete(productId) {
-        const modalElement = document.getElementById('deleteConfirmModal');
-        const modal = bootstrap.Modal.getInstance(modalElement);
-        if (modal) modal.hide();
-        
-        showAlert('info', 'Đang xóa sản phẩm...');
-        
-        fetch(`/itp/shop/products/${productId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (response.ok || response.status === 200) {
-                return response.json().catch(() => ({ success: true }));
-            } else {
-                throw new Error(`Server trả về lỗi ${response.status}`);
-            }
-        })
-        .then(() => {
-            showAlert('success', 'Đã xóa sản phẩm thành công!');
-            setTimeout(() => location.reload(), 1000);
-        })
-        .catch(error => {
-            showAlert('danger', 'Lỗi: ' + error.message);
-        });
-    }
-    
-    function showAlert(type, message) {
-        // Remove existing alerts
-        const existingAlerts = document.querySelectorAll('.alert.custom-alert');
-        existingAlerts.forEach(alert => alert.remove());
-        
-        // Create alert element
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
-        alertDiv.setAttribute('role', 'alert');
-        alertDiv.style.cssText = `
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 99999;
-            min-width: 400px;
-            max-width: 600px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            font-size: 16px;
-            font-weight: 500;
-        `;
-        
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(alertDiv);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            if (alertDiv && alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 3000);
-    }
-    
     // Filtering Functions
     function filterInventory() {
         const categoryFilter = document.getElementById('categoryFilter').value;
@@ -385,26 +387,9 @@
     }
     
     
-    // Function to attach delete button listeners
-    function attachDeleteListeners() {
-        document.querySelectorAll('.delete-product-btn').forEach(btn => {
-            btn.removeEventListener('click', handleDelete); // Remove old listener
-            btn.addEventListener('click', handleDelete);
-        });
-    }
-    
-    function handleDelete(event) {
-        const productId = this.getAttribute('data-product-id');
-        deleteProduct(productId);
-    }
-    
-    // Make it global so pagination can call it
-    window.attachDeleteListeners = attachDeleteListeners;
-    
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         updateVisibleCount(document.querySelectorAll('tbody tr').length, document.querySelectorAll('tbody tr').length);
-        attachDeleteListeners();
     });
     
 </script>

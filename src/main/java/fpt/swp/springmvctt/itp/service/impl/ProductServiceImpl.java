@@ -95,7 +95,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductById(Long id) {
-        return productRepository.findById(id).orElse(null);
+        // Sử dụng findByIdWithShop để eager load shop information
+        return productRepository.findByIdWithShop(id).orElse(null);
     }
 
     @Override
@@ -139,17 +140,17 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByStatus(ProductStatus.ACTIVE, topN).getContent();
     }
 
-    // CŨ (giữ lại): mặc định newest -> gọi sang hàm mới
+    // "Xóa" sản phẩm = Ẩn sản phẩm (status = HIDDEN) để customer không thấy
+    // Shop vẫn thấy để có thể bật lại bán tiếp
     @Override
     public void delete(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
 
-                // Xóa tất cả serials (product_stores) trước khi xóa sản phẩm
-                inventoryService.deleteByProductId(id);
-
-                //xóa sản phẩm
-                productRepository.delete(product);
+        // Chỉ cần đổi status thành HIDDEN để ẩn với customer
+        product.setStatus(ProductStatus.HIDDEN);
+        productRepository.save(product);
+        System.out.println("Product ID: " + id + " đã được ẩn (status = HIDDEN)");
     }
 
     @Override

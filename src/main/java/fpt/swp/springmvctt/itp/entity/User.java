@@ -29,8 +29,8 @@ public class User extends BaseEntity {
     @NotBlank(message = "Email không được để trống")
     private String email;
 
-    @Column(length = 10)
-    @Pattern(regexp = "^(\\+84|0)[0-9]{9,10}$", message = "Số điện thoại không hợp lệ")
+    @Column(length = 10, unique = true)
+    @Pattern(regexp = "^(\\+84|0)[0-9]{9,10}$", message = "Số điện thoại không hợp lệ" )
     private String phone;
 
     @Column(nullable = false, length = 255)
@@ -58,7 +58,7 @@ public class User extends BaseEntity {
     private String image;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id") // FK role_id
+    @JoinColumn(name = "role_id")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Role role;
@@ -100,5 +100,10 @@ public class User extends BaseEntity {
 
     @Column(name = "oauth_provider")
     private String oauthProvider;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<FavoriteProduct> favoriteProducts;
 
 }

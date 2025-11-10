@@ -6,7 +6,7 @@ public record ProductListItemDTO(
         Long id,
         String productName,
         BigDecimal price,
-        String img,
+        String image,
         Long shopId,
         String shopName
 ) {}

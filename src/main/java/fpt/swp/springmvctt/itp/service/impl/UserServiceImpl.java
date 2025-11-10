@@ -44,8 +44,6 @@ public class UserServiceImpl implements UserService {
                 );
     }
 
-
-
     @Override
     public User update(Long id, User updated) {
         User user = userRepository.findById(id)
@@ -140,16 +138,15 @@ public class UserServiceImpl implements UserService {
         user.setStatus("ACTIVE");
         user.setProvider("local");
         
-        // ✅ SET DEFAULT ROLE = CUSTOMER (role_id = 3) cho user đăng ký mới
+        // SET DEFAULT ROLE = CUSTOMER (role_id = 3) cho user đăng ký mới
         if (user.getRole() == null) {
             Role customerRole = roleRepository.findById(3L)
                 .orElseThrow(() -> new RuntimeException("Role CUSTOMER (id=3) không tồn tại trong database!"));
             user.setRole(customerRole);
         }
-        
+
         userRepository.save(user);
     }
-
     @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
@@ -186,7 +183,6 @@ public class UserServiceImpl implements UserService {
                 counter++;
             }
             user.setUsername(username);
-
             user.setPassword(BCrypt.hashpw(UUID.randomUUID().toString(), BCrypt.gensalt()));
             user.setOauthProvider("google");
             user.setProvider("google");
@@ -195,11 +191,10 @@ public class UserServiceImpl implements UserService {
             user.setCreateBy("oauth_google");
             user.setIsDeleted(false);
             
-            // ✅ SET DEFAULT ROLE = CUSTOMER (role_id = 3) cho user OAuth
+            // SET DEFAULT ROLE = CUSTOMER (role_id = 3) cho user OAuth
             Role customerRole = roleRepository.findById(3L)
                 .orElseThrow(() -> new RuntimeException("Role CUSTOMER (id=3) không tồn tại trong database!"));
             user.setRole(customerRole);
-
             userRepository.save(user);
         } else {
             if (user.getOauthProvider() == null) {
@@ -224,7 +219,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void sendPasswordResetEmail(String email) {
         String token = generatePasswordResetToken(email);
-        String resetLink = "http://localhost:8080/reset-password?token=" + token;
+        String resetLink = "http://localhost:8080/itp/reset-password?token=" + token;
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();

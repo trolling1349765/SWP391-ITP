@@ -4,20 +4,102 @@
     <meta charset="UTF-8"/>
     <title th:text="${product.productName}">Product Detail</title>
     <style>
-        :root{--bg:#0b1220;--card:#0f172a;--line:#1f2937;--text:#e5e7eb;--muted:#9ca3af;--primary:#2563eb;}
-        body{background:var(--bg);color:var(--text);font:14px/1.5 ui-sans-serif,system-ui;margin:0}
-        .container{max-width:900px;margin:24px auto;padding:0 16px}
-        .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
-        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-        .btn{display:inline-block;padding:10px 16px;border-radius:10px;background:var(--primary);color:#fff;text-decoration:none;border:0;cursor:pointer}
-        .btn-secondary{background:#475569}
-        .grid{display:grid;grid-template-columns:1fr 2fr;gap:20px}
-        .img-preview{width:100%;max-width:400px;height:auto;border-radius:12px;border:1px solid var(--line)}
-        .info-row{display:grid;grid-template-columns:140px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-        .info-label{color:var(--muted);font-weight:500}
-        .badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600}
-        .badge-active{background:#064e3b;color:#86efac}
-        .badge-hidden{background:#1e293b;color:#94a3af}
+        :root {
+            --bg: #0b1220;
+            --card: #0f172a;
+            --line: #1f2937;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --primary: #2563eb;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font: 14px/1.5 ui-sans-serif, system-ui;
+            margin: 0
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 0 16px
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            text-decoration: none;
+            border: 0;
+            cursor: pointer
+        }
+
+        .btn-secondary {
+            background: #475569
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:1fr 2fr;
+            gap: 20px
+        }
+
+        .img-preview {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 12px;
+            border: 1px solid var(--line)
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns:140px 1fr;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .info-label {
+            color: var(--muted);
+            font-weight: 500
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .badge-active {
+            background: #064e3b;
+            color: #86efac
+        }
+
+        .badge-hidden {
+            background: #1e293b;
+            color: #94a3af
+        }
     </style>
 </head>
 <body>
@@ -32,8 +114,8 @@
             <!-- Ảnh sản phẩm -->
             <div>
                 <img class="img-preview"
-                     th:src="${product.img != null && !#strings.isEmpty(product.img)} ?
-                             @{/assets/img/{f}(f=${product.img})} :
+                     th:src="${product.image != null && !#strings.isEmpty(product.image)} ?
+                             @{${product.image}} :
                              @{/assets/img/products/default.jpg}"
                      th:alt="${product.productName}">
             </div>
@@ -49,7 +131,9 @@
 
                 <div class="info-row">
                     <div class="info-label">Giá</div>
-                    <div th:text="${product.price != null ? #numbers.formatDecimal(product.price,1,'COMMA',2,'POINT') + ' VND' : 'N/A'}">0 VND</div>
+                    <div th:text="${product.price != null ? #numbers.formatDecimal(product.price,1,'COMMA',2,'POINT') + ' VND' : 'N/A'}">
+                        0 VND
+                    </div>
                 </div>
 
                 <div class="info-row">
@@ -78,7 +162,9 @@
 
                 <div class="info-row" style="border-bottom:0">
                     <div class="info-label">Mô tả</div>
-                    <div th:text="${product.description != null ? product.description : 'Chưa có mô tả'}">No description</div>
+                    <div th:text="${product.description != null ? product.description : 'Chưa có mô tả'}">No
+                        description
+                    </div>
                 </div>
 
                 <!-- Actions -->

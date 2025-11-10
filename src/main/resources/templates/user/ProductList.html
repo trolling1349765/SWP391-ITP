@@ -5,18 +5,69 @@
     <title>Tất cả sản phẩm | ITP System</title>
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .product-card { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: #fff; transition: all 0.2s ease; }
+        .product-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: #fff;
+            transition: all 0.2s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .product-img { width: 100%; height: 200px; object-fit: cover; }
-        .product-body { padding: 1rem; }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            object-position: center;
+            flex-shrink: 0;
+        }
+        .product-body {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-body .btn {
+            margin-top: auto;
+        }
         .product-price { font-weight: 700; color: #0ea5e9; }
         .product-footer { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; }
         .cat-filter .btn { margin-right: .5rem; margin-bottom: .5rem; }
+
+        /* ❤️ style icon tim */
+        .favorite-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            transition: all 0.2s ease-in-out;
+        }
+        .favorite-btn:hover {
+            background: #fee2e2;
+            transform: scale(1.1);
+        }
+        .favorite-btn i {
+            color: #dc3545;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
+
 <!-- Header -->
 <div th:replace="~{/Included/Header :: header}"></div>
 
@@ -29,13 +80,11 @@
         </ol>
     </nav>
 
-    <!-- Tiêu đề + Sort theo giá -->
+    <!-- Tiêu đề + Sort -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-bold">Tất cả sản phẩm</h2>
 
-        <!-- Form sort: chỉ có Giá tăng dần / Giá giảm dần -->
         <form class="d-flex align-items-center" method="get" th:action="@{/products}">
-            <!-- giữ state trang & filter -->
             <input type="hidden" name="page" th:value="${currentPage}" />
             <input type="hidden" name="size" th:value="${size}" />
             <input type="hidden" name="categoryId" th:value="${selectedCategoryId}" />
@@ -47,16 +96,14 @@
         </form>
     </div>
 
-    <!-- Bộ lọc Category nạp từ DB -->
+    <!-- Bộ lọc Category -->
     <div class="mb-4 cat-filter">
-        <!-- Nút "Tất cả" (xóa lọc) -->
         <a class="btn btn-sm"
            th:classappend="${selectedCategoryId} == null ? 'btn-primary' : 'btn-outline-secondary'"
            th:href="@{'/products'(page=1, size=${size}, sort=${sort})}">
             Tất cả
         </a>
 
-        <!-- Render các category -->
         <a class="btn btn-sm"
            th:each="c : ${categories}"
            th:text="${c.categoryName}"
@@ -65,27 +112,61 @@
         </a>
     </div>
 
-    <!-- Grid (có dữ liệu) -->
+    <!-- Grid sản phẩm -->
     <div class="row g-4" th:if="${products != null and !#lists.isEmpty(products)}">
         <div class="col-md-3" th:each="product : ${products}">
-            <div class="product-card position-relative">
+            <div class="product-card">
 
-                <!-- Ảnh: fallback khi null/empty -->
-                <img th:src="${product.img} ?: 'https://picsum.photos/seed/placeholder/400/300'"
-                     alt="Ảnh sản phẩm" class="product-img"/>
+                <!-- ❤️ Hiển thị nút yêu thích hoặc xóa khỏi yêu thích -->
+                <div th:if="${sessionUser != null}">
+                    <!-- Nếu sản phẩm ĐÃ yêu thích -->
+                    <form th:if="${favoriteProductIds != null and favoriteProductIds.contains(product.id)}"
+                          th:action="@{'/favorites/remove/' + ${product.id}}"
+                          method="post">
+                        <button type="submit" class="favorite-btn" title="Xóa khỏi yêu thích">
+                            <i class="fa-solid fa-heart-crack"></i>
+                        </button>
+                    </form>
+
+                    <!-- Nếu sản phẩm CHƯA yêu thích -->
+                    <form th:if="${favoriteProductIds == null or !favoriteProductIds.contains(product.id)}"
+                          th:action="@{'/favorites/add/' + ${product.id}}"
+                          method="post">
+                        <button type="submit" class="favorite-btn" title="Thêm vào yêu thích">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </form>
+                </div>
+
+
+
+                <!-- Ảnh sản phẩm -->
+                <img class="product-image"
+                     th:if="${product.image != null and !#strings.isEmpty(product.image)}"
+                     th:src="${'/itp' + product.image}"
+                     alt="Ảnh sản phẩm"
+                     onerror="this.onerror=null; this.src='https://picsum.photos/seed/placeholder/400/300';">
+                <img class="product-image"
+                     th:if="${product.image == null or #strings.isEmpty(product.image)}"
+                     src="https://picsum.photos/seed/placeholder/400/300"
+                     alt="Ảnh sản phẩm"/>
 
                 <div class="product-body">
                     <h6 class="fw-bold mb-1" th:text="${product.productName}">Tên sản phẩm</h6>
 
-                    <!-- Hiển thị category của sản phẩm nếu có -->
-                    <div class="mb-1 text-muted small" th:if="${product.category != null}">
-                        <span class="badge text-bg-light" th:text="${product.category.categoryName}">Danh mục</span>
+                    <!-- Tên danh mục (Main branch feature - quan trọng của team) -->
+                    <div class="mb-1 text-muted small"
+                         th:if="${product.categoryId != null and categoryNameMap[product.categoryId] != null}">
+                        <span class="badge text-bg-light"
+                              th:text="${categoryNameMap[product.categoryId]}">Danh mục</span>
                     </div>
 
+                    <!-- Giá -->
                     <div class="product-price mb-1">
-                        <span th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + '₫'">0₫</span>
+                        <span th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</span>
                     </div>
 
+                    <!-- Shop -->
                     <div class="product-footer">
                         <span>Shop: </span>
                         <a th:if="${product.shop != null}"
@@ -95,6 +176,7 @@
                         <span th:if="${product.shop == null}">ITP Marketplace</span>
                     </div>
 
+                    <!-- Nút xem chi tiết -->
                     <a th:href="@{'/product/' + ${product.id}}"
                        class="btn btn-sm btn-outline-primary mt-2 w-100">
                         Xem chi tiết
@@ -104,7 +186,7 @@
         </div>
     </div>
 
-    <!-- Trạng thái rỗng (khi lọc không có kết quả) -->
+    <!-- Khi rỗng -->
     <div class="text-center py-5 text-muted"
          th:if="${products == null or #lists.isEmpty(products)}">
         <h5 class="mb-3">Không có sản phẩm trong danh mục đã chọn.</h5>
@@ -114,21 +196,17 @@
         </a>
     </div>
 
-    <!-- Pagination (3-number window, chỉ hiện khi có dữ liệu) -->
+    <!-- Pagination -->
     <nav aria-label="Page navigation" class="mt-5"
          th:if="${products != null and !#lists.isEmpty(products) and totalPages > 1}">
         <ul class="pagination justify-content-center">
-
-            <!-- Prev -->
             <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
                 <a class="page-link"
-                   th:href="@{'/products'(page=${currentPage - 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}"
-                   aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
+                   th:href="@{'/products'(page=${currentPage - 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">
+                    &laquo;
                 </a>
             </li>
 
-            <!-- Ellipsis trước -->
             <li class="page-item" th:if="${startPage > 1}">
                 <a class="page-link"
                    th:href="@{'/products'(page=${1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
@@ -137,7 +215,6 @@
                 <span class="page-link">…</span>
             </li>
 
-            <!-- Window 3 số -->
             <li class="page-item"
                 th:each="i : ${#numbers.sequence(startPage, endPage)}"
                 th:classappend="${i == currentPage} ? ' active'">
@@ -146,7 +223,6 @@
                    th:href="@{'/products'(page=${i}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">1</a>
             </li>
 
-            <!-- Ellipsis sau -->
             <li class="page-item disabled" th:if="${endPage < totalPages - 1}">
                 <span class="page-link">…</span>
             </li>
@@ -156,15 +232,12 @@
                    th:href="@{'/products'(page=${totalPages}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">0</a>
             </li>
 
-            <!-- Next -->
             <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
                 <a class="page-link"
-                   th:href="@{'/products'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}"
-                   aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
+                   th:href="@{'/products'(page=${currentPage + 1}, size=${size}, categoryId=${selectedCategoryId}, sort=${sort})}">
+                    &raquo;
                 </a>
             </li>
-
         </ul>
     </nav>
 </div>

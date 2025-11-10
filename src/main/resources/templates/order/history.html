@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Lịch sử mua hàng | ITP System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        .history-container { max-width: 1400px; margin: 0 auto; padding: 20px; flex: 1; }
+        .order-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        .pagination .page-item.active .page-link {
+            background-color: #22c55e;
+            border-color: #22c55e;
+            color: white;
+        }
+        .pagination .page-link {
+            color: #22c55e;
+        }
+        .pagination .page-link:hover {
+            background-color: #f0f0f0;
+            color: #22c55e;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="~{/Included/Header :: header}"></div>
+
+<div class="history-container">
+    <h2 class="mb-4">Đơn hàng đã mua</h2>
+
+    <!-- Success/Error Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Search/Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" th:action="@{/orders/history}" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nhập mã đơn hàng</label>
+                    <input type="text" name="orderCode" class="form-control" placeholder="Nhập mã đơn hàng">
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">
+                        Tìm đơn hàng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Important Notes -->
+    <div class="alert alert-warning">
+        <h6 class="alert-heading">Xin lưu ý</h6>
+        <ul class="mb-0">
+            <li class="text-danger">Bấm vào <strong>MÃ ĐƠN HÀNG</strong> để xem chi tiết sản phẩm đã mua!</li>
+            <li>Những tính năng và chất lượng sản phẩm chúng tôi không thể nào rõ bằng người bán hàng, nếu có bất cứ thắc mắc gì về mặt hàng, xin liên hệ chủ shop để được giải quyết hoặc bảo hành.</li>
+            <li>Trong trường hợp chủ shop không giải quyết hoặc giải quyết không thỏa đáng, hãy bấm vào "Khiếu nại đơn hàng", để bên mình có thể giữ tiền đơn hàng đó (lâu hơn 3 ngày) trong lúc bạn đợi phản hồi từ người bán.</li>
+            <li>Bên mình chỉ giữ tiền 3 ngày, trong trường hợp đơn hàng không có khiếu nại gì, tiền sẽ được chuyển cho người bán, vì vậy xin hãy <strong>KIỂM TRA KỸ SẢN PHẨM</strong> sau khi mua.</li>
+        </ul>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Thao tác</th>
+                            <th>Mã đơn hàng</th>
+                            <th>Ngày mua</th>
+                            <th>Gian hàng</th>
+                            <th>Mặt hàng</th>
+                            <th>Người bán</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${orders == null or orders.isEmpty()}">
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <p>Bạn chưa có đơn hàng nào</p>
+                                <a th:href="@{/products}" class="btn btn-primary">Mua sắm ngay</a>
+                            </td>
+                        </tr>
+                        <tr th:each="order : ${orders}" th:attr="data-order-id=${order.id}">
+                            <td>
+                                <a th:href="@{'/orders/detail/' + ${order.id}}" class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                    Xem
+                                </a>
+                            </td>
+                            <td>
+                                <a th:href="@{'/orders/detail/' + ${order.id}}" 
+                                   class="text-decoration-none fw-bold" 
+                                   th:text="${order.orderCode}">ORD123456</a>
+                            </td>
+                            <td>
+                                <div th:text="${order.createAt != null ? #temporals.format(order.createAt, 'dd/MM/yyyy') : 'N/A'}">03/11/2025</div>
+                                <small class="text-muted" th:if="${order.createAt != null}" 
+                                       th:text="${#temporals.format(order.createAt, 'HH:mm')}">16:58</small>
+                            </td>
+                            <td>
+                                <span th:if="${order.product != null and order.product.shop != null}" 
+                                      th:text="${order.product.shop.shopName}">Shop Name</span>
+                                <span th:if="${order.product == null or order.product.shop == null}">N/A</span>
+                            </td>
+                            <td>
+                                <span th:if="${order.product != null}" th:text="${order.product.productName}">Product Name</span>
+                                <span th:if="${order.product == null}" class="text-muted">Đã xóa</span>
+                            </td>
+                            <td>
+                                <span th:if="${order.product != null and order.product.shop != null}" 
+                                      th:text="${order.product.shop.shopName}">Shop Name</span>
+                                <span th:if="${order.product == null or order.product.shop == null}" class="text-muted">N/A</span>
+                            </td>
+                            <td th:text="${order.quantity}">1</td>
+                            <td th:text="${#numbers.formatDecimal(order.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">60.000 ₫</td>
+                            <td class="fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">60.000 ₫</td>
+                            <td>
+                                <span th:if="${order.status == 'PENDING'}" 
+                                      class="status-badge status-pending">Đang giữ tiền</span>
+                                <span th:if="${order.status == 'COMPLETED'}" 
+                                      class="status-badge status-completed">Đã thanh toán</span>
+                                <span th:if="${order.status == 'FAILED'}" 
+                                      class="status-badge status-failed">Thất bại</span>
+                                <span th:if="${order.status != 'PENDING' and order.status != 'COMPLETED' and order.status != 'FAILED'}" 
+                                      class="status-badge status-pending" th:text="${order.status}">Status</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="mt-4"
+         th:if="${totalPages != null and totalPages > 1}">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="text-muted small">
+                Hiển thị <strong th:text="${orders.size()}">10</strong> / <strong th:text="${totalOrders}">100</strong> đơn hàng
+            </div>
+        </div>
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
+                <a class="page-link"
+                   th:href="@{'/orders/history'(page=${currentPage - 1}, size=${size})}">
+                    &laquo;
+                </a>
+            </li>
+
+            <li class="page-item" th:if="${startPage > 1}">
+                <a class="page-link"
+                   th:href="@{'/orders/history'(page=${1}, size=${size})}">1</a>
+            </li>
+            <li class="page-item disabled" th:if="${startPage > 2}">
+                <span class="page-link">…</span>
+            </li>
+
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                th:classappend="${i == currentPage} ? ' active'">
+                <a class="page-link"
+                   th:text="${i}"
+                   th:href="@{'/orders/history'(page=${i}, size=${size})}">1</a>
+            </li>
+
+            <li class="page-item disabled" th:if="${endPage < totalPages - 1}">
+                <span class="page-link">…</span>
+            </li>
+            <li class="page-item" th:if="${endPage < totalPages}">
+                <a class="page-link"
+                   th:href="@{'/orders/history'(page=${totalPages}, size=${size})}"
+                   th:text="${totalPages}">1</a>
+            </li>
+
+            <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
+                <a class="page-link"
+                   th:href="@{'/orders/history'(page=${currentPage + 1}, size=${size})}">
+                    &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Footer -->
+<div th:replace="~{/Included/Footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Polling để cập nhật trạng thái real-time
+    // Order sẽ chuyển từ PENDING → COMPLETED sau 35 giây (15s xử lý + 20s hold tiền)
+    let hasPendingOrders = false;
+    const pendingOrderRows = [];
+    
+    // Tìm tất cả các đơn hàng có status PENDING
+    document.querySelectorAll('tbody tr[data-order-id]').forEach(function(row) {
+        const orderId = row.getAttribute('data-order-id');
+        if (orderId) {
+            // Tìm status cell - có thể là .status-pending hoặc bất kỳ status badge nào
+            const statusCell = row.querySelector('td:last-child .status-badge');
+            if (statusCell) {
+                const statusText = statusCell.textContent.trim();
+                // Kiểm tra nếu là PENDING status
+                if (statusText.includes('Đang giữ tiền') || statusText.includes('Đang hold tiền') || statusCell.classList.contains('status-pending')) {
+                    hasPendingOrders = true;
+                    pendingOrderRows.push({
+                        row: row,
+                        orderId: orderId,
+                        statusCell: statusCell,
+                        statusText: statusText
+                    });
+                    console.log('✅ Phát hiện đơn hàng PENDING: Order ID = ' + orderId);
+                }
+            }
+        }
+    });
+    
+    if (hasPendingOrders) {
+        console.log(' Phát hiện ' + pendingOrderRows.length + ' đơn hàng đang hold tiền. Bắt đầu polling để cập nhật trạng thái real-time...');
+        console.log('⏱ Thời gian xử lý: 15s (queue, DB) + 20s (hold tiền) = 35s tổng cộng');
+        
+        // Polling mỗi 2 giây để kiểm tra trạng thái
+        let pollCount = 0;
+        const maxPolls = 20; // 20 lần * 2 giây = 40 giây (đủ thời gian cho 35s + buffer)
+        const startTime = Date.now();
+        
+        const pollInterval = setInterval(function() {
+            pollCount++;
+            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+            console.log('📡 Polling lần ' + pollCount + ' (đã qua ' + elapsedSeconds + 's) - Kiểm tra trạng thái đơn hàng...');
+            
+            // Gửi request để lấy trạng thái mới nhất
+            fetch('/itp/orders/api/status', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin' // Đảm bảo gửi session cookie
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(' Response từ API:', data);
+                if (data && data.success && data.orders) {
+                    let allCompleted = true;
+                    let updatedCount = 0;
+                    
+                    pendingOrderRows.forEach(function(item) {
+                        const orderStatus = data.orders[item.orderId];
+                        console.log('  - Order ' + item.orderId + ': status = ' + orderStatus);
+                        
+                        if (orderStatus) {
+                            if (orderStatus === 'COMPLETED') {
+                                // Cập nhật trạng thái trong UI
+                                item.statusCell.className = 'status-badge status-completed';
+                                item.statusCell.textContent = 'Đã thanh toán';
+                                console.log(' Order ' + item.orderId + ' đã chuyển sang trạng thái: Đã thanh toán');
+                                updatedCount++;
+                            } else if (orderStatus === 'PENDING') {
+                                // Vẫn đang xử lý
+                                allCompleted = false;
+                                console.log(' Order ' + item.orderId + ' vẫn đang xử lý (PENDING)...');
+                            } else {
+                                // Status khác (FAILED, etc.)
+                                allCompleted = false;
+                                console.log('️ Order ' + item.orderId + ' có status: ' + orderStatus);
+                            }
+                        } else {
+                            allCompleted = false;
+                            console.log(' Không tìm thấy status cho Order ' + item.orderId);
+                        }
+                    });
+                    
+                    if (updatedCount > 0) {
+                        console.log(' Đã cập nhật ' + updatedCount + ' đơn hàng sang trạng thái COMPLETED');
+                    }
+                    
+                    // Nếu tất cả đã hoàn thành, dừng polling
+                    if (allCompleted) {
+                        console.log(' Tất cả đơn hàng đã hoàn thành. Dừng polling.');
+                        clearInterval(pollInterval);
+                    }
+                } else {
+                    console.warn('⚠ API response không hợp lệ:', data);
+                }
+            })
+            .catch(error => {
+                console.error(' Lỗi khi polling trạng thái:', error);
+            });
+            
+            // Dừng polling sau maxPolls lần
+            if (pollCount >= maxPolls) {
+                console.log(' Đã polling đủ số lần (' + maxPolls + '). Reload trang để cập nhật trạng thái cuối cùng...');
+                clearInterval(pollInterval);
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1000);
+            }
+        }, 2000); // Poll mỗi 2 giây
+        
+        // Fallback: Auto-refresh sau 40 giây để đảm bảo cập nhật
+        setTimeout(function() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            console.log(' Auto-refresh trang sau 40 giây để cập nhật trạng thái cuối cùng...');
+            window.location.reload();
+        }, 40000); // 40 giây (35s + 5s buffer)
+    } else {
+        console.log(' Không có đơn hàng nào đang ở trạng thái PENDING. Không cần polling.');
+    }
+</script>
+</body>
+</html>
+

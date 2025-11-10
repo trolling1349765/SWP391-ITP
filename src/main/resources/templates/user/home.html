@@ -3,12 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tạp Hóa MMO | Item Trading Platform</title>
+    <title>ITP | Item Trading Platform</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .main-content { background-color: #fff; min-height: 100vh; }
         body { margin: 0; overflow-x: hidden; }
+        .img-fluid { width: 50%; height: auto;}
+        /* ❤️ style tim yêu thích */
+        .favorite-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #dc3545;
+            font-size: 1.2rem;
+            transition: all 0.2s ease-in-out;
+            z-index: 10;
+        }
+        .favorite-btn:hover {
+            background: #fee2e2;
+            transform: scale(1.1);
+        }
+
+        .featured-product-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .featured-product-card .card-img-top {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            object-position: center;
+        }
+        .featured-product-card .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .featured-product-card .card-body .btn {
+            margin-top: auto;
+        }
     </style>
 </head>
 
@@ -53,23 +96,23 @@
                 <div class="container">
                     <div class="row align-items-center">
                         <div class="col-md-6 text-start">
-                            <h1 class="fw-bold mb-3">Tạp Hóa MMO</h1>
+                            <h1 class="fw-bold mb-3">ITP</h1>
                             <p class="lead mb-4">
                                 Chuyên cung cấp các dịch vụ và sản phẩm MMO chất lượng cao với giá cả phải chăng.
                                 Uy tín – Chất lượng – Bảo hành.
                             </p>
                             <a th:href="@{/products}" class="btn btn-dark btn-lg">Khám phá ngay</a>
-                            
-                            <!-- Nút Shop Dashboard cho SELLER -->
-                            <a th:href="@{/shop/dashboard}" 
-                               th:if="${session.user != null and session.user.role.name == 'SELLER'}"
+
+                            <!-- Nút Shop Dashboard cho SELLER (Main branch logic) -->
+                            <a th:href="@{/shop/dashboard}"
+                               th:if="${session.user != null and session.role == 'SELLER'}"
                                class="btn btn-outline-primary btn-lg ms-2">
                                 <i class="fas fa-store me-2"></i>Shop Dashboard
                             </a>
-                            
-                            <!-- Nút Đăng ký Shop cho CUSTOMER -->
-                            <a th:href="@{/shop/register}" 
-                               th:if="${session.user != null and session.user.role.name == 'CUSTOMER'}"
+
+                            <!-- Nút Đăng ký Shop cho CUSTOMER (Main branch logic) -->
+                            <a th:href="@{/shop/register}"
+                               th:if="${session.user != null and session.role == 'CUSTOMER'}"
                                class="btn btn-success btn-lg ms-2">
                                 <i class="fas fa-shop me-2"></i>Đăng ký Shop
                             </a>
@@ -127,9 +170,8 @@
                 </div>
             </section>
 
-
             <!-- Seller Section -->
-            <section class="py-5" th:if="${session.user != null and session.user.role.name == 'SELLER'}">
+            <section class="py-5" th:if="${session.user != null and session.role == 'SELLER'}">
                 <div class="container">
                     <div class="row">
                         <div class="col-12">
@@ -162,7 +204,32 @@
                     <!-- Có dữ liệu -->
                     <div class="row g-4" th:if="${featuredProducts != null and !featuredProducts.isEmpty()}">
                         <div class="col-6 col-md-3" th:each="p : ${featuredProducts}">
-                            <div class="card h-100 shadow-sm">
+                            <div class="card featured-product-card shadow-sm">
+                                <img th:if="${p.image == null or #strings.isEmpty(p.image)}"
+                                     src="https://picsum.photos/seed/placeholder/400/300"
+                                     class="card-img-top"
+                                     alt="Product Image">
+                            <div class="card h-100 shadow-sm position-relative">
+
+                                <!-- ❤️ Yêu thích -->
+                                <div th:if="${user != null}">
+                                    <!-- Nếu đã yêu thích -->
+                                    <form th:if="${favoriteProductIds != null and favoriteProductIds.contains(p.id)}"
+                                          th:action="@{'/favorites/remove/' + ${p.id}}" method="post">
+                                        <button type="submit" class="favorite-btn" title="Xóa khỏi yêu thích">
+                                            <i class="fa-solid fa-heart-crack"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Nếu chưa yêu thích -->
+                                    <form th:if="${favoriteProductIds == null or !favoriteProductIds.contains(p.id)}"
+                                          th:action="@{'/favorites/add/' + ${p.id}}" method="post">
+                                        <button type="submit" class="favorite-btn" title="Thêm vào yêu thích">
+                                            <i class="fa-regular fa-heart"></i>
+                                        </button>
+                                    </form>
+                                </div>
+
                                 <img th:src="${p.image != null ? p.image : 'https://picsum.photos/seed/placeholder/400/300'}"
                                      class="card-img-top" alt="Product Image">
                                 <div class="card-body">
@@ -187,10 +254,10 @@
                 </div>
             </section>
 
-
         </div>
     </div>
 </div>
+
 <!-- Footer -->
 <div th:replace="~{/Included/Footer :: footer}"></div>
 
