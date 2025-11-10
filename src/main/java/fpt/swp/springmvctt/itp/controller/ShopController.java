@@ -384,23 +384,30 @@ public class    ShopController {
         }
 
         // Tạo stockMap, batchMap cho products đã phân trang
+        // ⚠️ QUAN TRỌNG: Rebuild stock từ database để đảm bảo chỉ đếm ACTIVE items (không đếm BLOCKED/đã bán)
         Map<Long, Integer> stockMap = new LinkedHashMap<>();
         Map<Long, Map<java.math.BigDecimal, Long>> batchMap = new LinkedHashMap<>();
 
         for (Product p : products) {
-            int stock = p.getAvailableStock();
+            // Rebuild stock from database to ensure accuracy (count only ACTIVE items)
+            Product updated = inventoryService.rebuildProductQuantity(p.getId());
+            int stock = updated.getAvailableStock(); // Chỉ đếm ACTIVE serials
             stockMap.put(p.getId(), stock);
-            // Get stock by batches (grouped by price)
+            // Get stock by batches (grouped by price) - chỉ đếm ACTIVE items
             batchMap.put(p.getId(), inventoryService.getStockByBatches(p.getId()));
         }
         
         // Tính toán thống kê từ toàn bộ sản phẩm (allProducts)
+        // ⚠️ QUAN TRỌNG: Rebuild stock cho tất cả products để tính thống kê chính xác
         int totalActiveProducts = 0;
         int lowStockProducts = 0;
         int outOfStockProducts = 0;
         
         for (Product p : allProducts) {
-            int stock = p.getAvailableStock();
+            // Rebuild stock from database to ensure accuracy (count only ACTIVE items)
+            Product updated = inventoryService.rebuildProductQuantity(p.getId());
+            int stock = updated.getAvailableStock(); // Chỉ đếm ACTIVE serials
+            
             // Calculate statistics
             if (p.getStatus().name().equals("ACTIVE")) {
                 totalActiveProducts++;
