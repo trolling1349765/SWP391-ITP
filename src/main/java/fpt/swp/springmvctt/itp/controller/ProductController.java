@@ -42,7 +42,8 @@ public class ProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "newest") String sort,
             Model model,
-            HttpSession session // ✅ thêm session vào để lấy thông tin user đăng nhập
+            HttpSession session, // ✅ thêm session vào để lấy thông tin user đăng nhập
+            HttpServletRequest request
     ) {
 
         int safePage = Math.max(page, 1);
@@ -69,6 +70,13 @@ public class ProductController {
         // ✅ Truyền thêm user session vào model để Thymeleaf check
         Object user = session.getAttribute("user");
         model.addAttribute("sessionUser", user);
+
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath(); // "/itp"
+        if (requestURI.startsWith(contextPath)) {
+            requestURI = requestURI.substring(contextPath.length());
+        }
+        model.addAttribute("requestURI", requestURI);
 
         // ✅ chỉ thêm khối này (không đụng dòng nào khác)
         if (user instanceof User u) {
@@ -117,7 +125,13 @@ public class ProductController {
         model.addAttribute("product", product);
         model.addAttribute("sessionUser", session.getAttribute("user"));
 
-        model.addAttribute("requestURI", request.getRequestURI());
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath(); // "/itp"
+        if (requestURI.startsWith(contextPath)) {
+            requestURI = requestURI.substring(contextPath.length());
+        }
+        model.addAttribute("requestURI", requestURI);
+
 
         // ✅ THÊM MỚI: Lấy danh sách sản phẩm yêu thích của user (nếu có)
         Object userObj = session.getAttribute("user");

@@ -5,6 +5,7 @@ import fpt.swp.springmvctt.itp.entity.Product;
 import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.service.FavoriteProductService;
 import fpt.swp.springmvctt.itp.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,7 +28,7 @@ public class HomeController {
     private final FavoriteProductService favoriteService;
 
     @GetMapping()
-    public String home(@ModelAttribute("success") String successMessage, Model model, HttpSession session) {
+    public String home(@ModelAttribute("success") String successMessage, Model model, HttpSession session, HttpServletRequest request) {
         System.out.println("Thông báo: " + successMessage);
         List<Product> featured = productService.getFeaturedProducts(8);
         model.addAttribute("featuredProducts", featured);
@@ -35,6 +36,14 @@ public class HomeController {
         // ✅ chỉ thêm đoạn này
         User user = (User) session.getAttribute("user");
         model.addAttribute("user", user);
+
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath(); // "/itp"
+        if (requestURI.startsWith(contextPath)) {
+            requestURI = requestURI.substring(contextPath.length());
+        }
+        model.addAttribute("requestURI", requestURI);
+
 
         if (user != null) {
             List<FavoriteProductDTO> favorites = favoriteService.getFavorites(user.getEmail());

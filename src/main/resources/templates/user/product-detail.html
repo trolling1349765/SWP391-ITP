@@ -225,7 +225,7 @@
                         <!-- Nếu đã yêu thích -->
                         <form th:if="${favoriteProductIds != null and favoriteProductIds.contains(product.id)}"
                               th:action="@{'/favorites/remove/' + ${product.id}}" method="post" class="w-100">
-<!--                            <input type="hidden" name="redirect" th:value="${requestURI}" />-->
+                            <input type="hidden" name="redirect" th:value="${requestURI}" />
                             <button type="submit" class="btn btn-outline-danger w-100">
                                 <i class="fa-solid fa-heart-crack me-2"></i>Xóa khỏi yêu thích
                             </button>
@@ -235,7 +235,7 @@
                         <form th:if="${favoriteProductIds == null or !favoriteProductIds.contains(product.id)}"
                               th:action="@{'/favorites/add/' + ${product.id}}"
                               method="post" class="w-100">
-<!--                            <input type="hidden" name="redirect" th:value="${requestURI}" />-->
+                            <input type="hidden" name="redirect" th:value="${requestURI}" />
                             <button type="submit" class="btn btn-outline-secondary w-100">
                                 <i class="fa-regular fa-heart me-2"></i>Thêm vào yêu thích
                             </button>
