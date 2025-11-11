@@ -167,7 +167,6 @@ public class OrderServiceImpl implements OrderService {
             order.setSellerUserId(seller.getId());
             order.setCreateAt(LocalDate.now());
             order.setCreateBy(buyerWithLock.getUsername());
-            
             order = orderRepository.save(order);
 
             // 11. Tạo OrderItem cho mỗi serial code và mark ProductStore as BLOCKED (đã bán)
