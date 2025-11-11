@@ -127,6 +127,7 @@ public class FavoriteProductController {
         model.addAttribute("size", safeSize);
         model.addAttribute("currentPage", safePage);
         model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalProducts", allFavorites.size()); // ✅ Tổng số sản phẩm sau khi filter
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
 
@@ -162,11 +163,16 @@ public class FavoriteProductController {
         return "redirect:/products";
     }
 
-    /** ✅ XÓA SẢN PHẨM YÊU THÍCH (logic cũ, fix redirect an toàn) */
+    /** ✅ XÓA SẢN PHẨM YÊU THÍCH (giữ lại trang + filters) */
     @PostMapping("/remove/{productId}")
     public String removeFavorite(
             @PathVariable Long productId,
-            @RequestParam(required = false) String redirect,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "12") int size,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "default") String sort,
+            @RequestParam(required = false) Long shopId,
             HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
@@ -183,11 +189,13 @@ public class FavoriteProductController {
             redirectAttributes.addFlashAttribute("error", "Không thể xóa sản phẩm yêu thích: " + e.getMessage());
         }
 
-        // ✅ Redirect fix chuẩn
-        if (redirect != null && !redirect.isBlank()) {
-            if (!redirect.startsWith("/")) redirect = "/" + redirect;
-            return "redirect:" + redirect;
-        }
-        return "redirect:/favorites";
+        // ✅ Build lại URL với tất cả params để giữ lại trang, filter, sort
+        StringBuilder url = new StringBuilder("/favorites?page=" + page + "&size=" + size);
+        if (categoryId != null) url.append("&categoryId=").append(categoryId);
+        if (search != null && !search.isBlank()) url.append("&search=").append(search);
+        if (sort != null && !sort.equals("default")) url.append("&sort=").append(sort);
+        if (shopId != null) url.append("&shopId=").append(shopId);
+        
+        return "redirect:" + url;
     }
 }
