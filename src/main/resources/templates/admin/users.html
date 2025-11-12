@@ -111,7 +111,7 @@
                                 <td th:text="${user.isDeleted} ? 'Yes' : 'No'"></td>
                                 <td th:text="${user.isDeleted} ? ${user.deleteBy} : ''"></td>
                                 <td th:text="${user.updateAt} ? ${user.updateAt} : ''"></td>
-                                <td>
+                                <td th:if="${!'ADMIN'.equalsIgnoreCase(user.role.name)}">
                                     <a th:href="@{'/admin/users/' + ${user.id}}" class="btn btn-success btn-sm">
                                         <i class="bi bi-plus-circle"></i> Details
                                     </a>

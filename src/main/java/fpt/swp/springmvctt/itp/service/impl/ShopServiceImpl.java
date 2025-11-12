@@ -180,6 +180,7 @@ public class ShopServiceImpl implements ShopService {
                 User user = shop.getUser();
                 // Xóa relationship từ user
                 user.setShop(null);
+                user.setRole(roleRepository.findById(Long.parseLong("3")).get());
                 userRepository.save(user);
                 
                 // Xóa relationship từ shop (set user_id = null)

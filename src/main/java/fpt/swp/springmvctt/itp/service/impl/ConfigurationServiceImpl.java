@@ -68,6 +68,13 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     @Override
     public void update(Long id, String configKey, String configValue) {
         configurationRepository.findById(id).ifPresent((configuration) -> {
+            try {
+                int value = Integer.parseInt(configValue);
+                if (value < 0) {
+                    return;
+                }
+            } catch (NumberFormatException e) {
+            }
             configuration.setConfigKey(configKey);
             configuration.setConfigValue(configValue);
             configuration.setUpdateAt(LocalDate.now());
@@ -96,5 +103,4 @@ public class ConfigurationServiceImpl implements ConfigurationService {
             return configurationRepository.findByFilter(configKey, toDate, fromDate, delete, pageable);
         else return Page.empty();
     }
-
 }

@@ -182,9 +182,6 @@ public class ShopAdminController {
                 delete = false; // Chỉ hiển thị shop chưa bị xóa
             }
             // Nếu deleted = "" hoặc giá trị khác, delete = null (hiển thị tất cả)
-        } else {
-            // Mặc định: chỉ hiển thị shop chưa bị xóa
-            delete = false;
         }
 
         Page<Shop> shops = shopService.findByFilter(
@@ -314,6 +311,6 @@ public class ShopAdminController {
             redirectAttributes.addFlashAttribute("error", 
                 "Chỉ có thể unlock shop đã bị từ chối (isDeleted = true).");
         }
-        return "redirect:/admin/shops?deleted=true";
+        return "redirect:/admin/shops";
     }
 }

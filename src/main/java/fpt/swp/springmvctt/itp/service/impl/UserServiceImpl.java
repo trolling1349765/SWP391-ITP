@@ -276,7 +276,7 @@ public class UserServiceImpl implements UserService {
         User user = (User) session.getAttribute("user");
         String username = user.getUsername();
          user = userRepository.findById(id).orElse(null);
-        if (user != null) {
+        if (user != null && !user.getRole().getName().equals("ADMIN")) {
             user.setIsDeleted(true);
             user.setDeleteBy(username);
             user.setUpdateAt(LocalDate.now());
