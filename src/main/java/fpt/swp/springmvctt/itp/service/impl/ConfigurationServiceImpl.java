@@ -31,7 +31,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
     @Override
     public boolean save(String configKey, String configValue) {
-        Configuration configuration = configurationRepository.findByConfigKey(configKey);
+        Configuration configuration = configurationRepository.findByConfigKey(configKey).get();
         if (configuration == null) {
             configuration = new Configuration();
             HttpSession session = request.getSession();
