@@ -296,7 +296,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    public UserServiceImpl(){}
+    public UserServiceImpl(){}// test hàm băm password
     public static void main(String[] args) {
         System.out.println(BCrypt.hashpw("123456", BCrypt.gensalt()));
     }

@@ -31,7 +31,7 @@ public class ProductController {
     private final CategoryRepository categoryRepository;
     private final InventoryService inventoryService;
 
-    // ✅ chỉ thêm dòng này
+    //  chỉ thêm dòng này
     private final FavoriteProductService favoriteService;
 
     /**
@@ -123,11 +123,11 @@ public class ProductController {
             throw new RuntimeException("Sản phẩm không tồn tại!");
         }
 
-        // ⚠️ QUAN TRỌNG: Rebuild stock từ database để đảm bảo chỉ đếm ACTIVE items (không đếm BLOCKED/đã bán)
+        //   Rebuild stock từ database để đảm bảo chỉ đếm ACTIVE items (không đếm BLOCKED/đã bán)
         Product updated = inventoryService.rebuildProductQuantity(product.getId());
         model.addAttribute("product", updated); // Sử dụng product đã được rebuild stock
 
-        // ✅ cũng truyền sessionUser vào trang chi tiết (nếu cần tim ở đó sau này)
+        // cũng truyền sessionUser vào trang chi tiết (nếu cần tim ở đó sau này)
         model.addAttribute("sessionUser", session.getAttribute("user"));
 
         String requestURI = request.getRequestURI();
@@ -138,7 +138,7 @@ public class ProductController {
         model.addAttribute("requestURI", requestURI);
 
 
-        // ✅ THÊM MỚI: Lấy danh sách sản phẩm yêu thích của user (nếu có)
+        //  THÊM MỚI: Lấy danh sách sản phẩm yêu thích của user (nếu có)
         Object userObj = session.getAttribute("user");
         if (userObj instanceof User user) {
             List<FavoriteProductDTO> favorites = favoriteService.getFavorites(user.getEmail());
@@ -148,7 +148,14 @@ public class ProductController {
             model.addAttribute("favoriteProductIds", favoriteProductIds);
         }
 
+        //Lấy link chia sẻ sản phẩm từ chi tiết sản phẩm(URL)
+        String fullUrl = request.getRequestURL().toString();
+        String query = request.getQueryString();
+        if (query != null) {
+            fullUrl += "?" + query;
+        }
+        model.addAttribute("shareLink", fullUrl);
         return "user/product-detail";
     }
+    }
 
-}

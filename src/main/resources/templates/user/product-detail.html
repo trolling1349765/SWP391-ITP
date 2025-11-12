@@ -248,19 +248,35 @@
                             <i class="far fa-heart me-2"></i>Đăng nhập để yêu thích
                         </button>
                     </div>
-
-
-
                 </div>
-
                 <!-- Share Buttons -->
                 <div class="mt-3 text-center">
                     <small class="text-muted me-2">Chia sẻ:</small>
-                    <a href="#" class="btn btn-sm btn-outline-primary me-1"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="fab fa-whatsapp"></i></a>
-                    <a href="#" class="btn btn-sm btn-outline-secondary"><i class="fas fa-link"></i></a>
+                    <!-- Facebook -->
+                    <a th:href="'https://www.facebook.com/sharer/sharer.php?u=' + ${shareLink}"
+                       class="btn btn-sm btn-outline-primary me-1" target="_blank" title="Chia sẻ Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <!-- Twitter -->
+                    <a th:href="'https://twitter.com/intent/tweet?url=' + ${shareLink}"
+                       class="btn btn-sm btn-outline-info me-1" target="_blank" title="Chia sẻ Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <!-- WhatsApp -->
+                    <a th:href="'https://api.whatsapp.com/send?text=' + ${shareLink}"
+                       class="btn btn-sm btn-outline-success me-1" target="_blank" title="Chia sẻ WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <!-- Copy link -->
+                    <a href="javascript:void(0)"
+                       th:attr="data-link=${shareLink}"
+                       onclick="copyShareLink(this)"
+                       class="btn btn-sm btn-outline-secondary"
+                       title="Sao chép liên kết">
+                        <i class="fas fa-link"></i>
+                    </a>
                 </div>
+               <script th:src="@{/assets/js/common/copyLink.js}"></script>
             </div>
         </div>
     </div>
