@@ -20,7 +20,7 @@
                 <a th:href="@{/shop/dashboard}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
                 <a th:href="@{|/shop/updateProduct/${product.id}|}" class="btn btn-primary btn-sm">Sửa</a>
                 <!-- Nút thêm mã sản phẩm nếu chưa có serial -->
-                <a th:if="${serials == null || serials.empty}"
+                <a th:if="${serials == null || serials.isEmpty()}"
                    th:href="@{|/shop/updateProduct/${product.id}|}" 
                    class="btn btn-success btn-sm">
                     Thêm mã sản phẩm
@@ -85,9 +85,9 @@
                         
                         <!-- Tổng số serial -->
                         <div class="mb-3"><strong>Tổng số serial:</strong> 
-                            <span th:if="${serials != null && !serials.empty}" class="badge bg-success" th:text="${serialCount}">0</span>
-                            <span th:if="${serials == null || serials.empty}" class="badge bg-warning">Chưa có serial</span>
-                            <span th:if="${serials == null || serials.empty}" class="ms-2">
+                            <span th:if="${serials != null && !serials.isEmpty()}" class="badge bg-success" th:text="${serialCount}">0</span>
+                            <span th:if="${serials == null || serials.isEmpty()}" class="badge bg-warning">Chưa có serial</span>
+                            <span th:if="${serials == null || serials.isEmpty()}" class="ms-2">
                                 <a th:href="@{|/shop/updateProduct/${product.id}|}" class="btn btn-sm btn-success">
                                     Thêm mã sản phẩm từ Excel
                                 </a>
@@ -99,7 +99,7 @@
         </div>
 
         <!-- Danh sách Serial Codes từ Excel -->
-        <div th:if="${serials != null && !serials.empty}" class="card mb-3">
+        <div th:if="${serials != null && !serials.isEmpty()}" class="card mb-3">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">Danh sách Sản phẩm</h5>
                 <small>Tổng cộng: <span th:text="${serialCount}">0</span> sản phẩm</small>
@@ -190,7 +190,7 @@
         </div>
 
         <!-- Thông báo khi chưa có serial -->
-        <div th:if="${serials == null || serials.empty}" class="card mb-3">
+        <div th:if="${serials == null || serials.isEmpty()}" class="card mb-3">
             <div class="card-body text-center">
                 <div class="text-muted">
                     <h5>Chưa có serial codes</h5>

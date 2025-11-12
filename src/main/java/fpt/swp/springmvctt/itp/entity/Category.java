@@ -17,4 +17,7 @@ public class Category extends BaseEntity {
 
     @Column(columnDefinition="TEXT")
     private String description;
+
+    @Column(name = "update_by")
+    private String updateBy;
 }

@@ -102,9 +102,8 @@ public class ShopAdminController {
         // Gọi service để lấy các shop có status "inactive" + điều kiện lọc
         Page<Shop> shops = shopService.filterInactiveShops(shopName, username, fromDate, toDate, page, size);
 
-
-        if(!shops.isEmpty() && page >= shops.getTotalPages()){
-            page = shops.getTotalPages() - 1;
+        if (page >= shops.getTotalPages()) {
+            page = Math.max(0, Math.min(page, shops.getTotalPages() - 1));
             model.addAttribute("errorMessage", "Page number too big.");
             shops = shopService.filterInactiveShops(shopName, username, fromDate, toDate, page, size);
         }
@@ -183,9 +182,6 @@ public class ShopAdminController {
                 delete = false; // Chỉ hiển thị shop chưa bị xóa
             }
             // Nếu deleted = "" hoặc giá trị khác, delete = null (hiển thị tất cả)
-        } else {
-            // Mặc định: chỉ hiển thị shop chưa bị xóa
-            delete = false;
         }
 
         Page<Shop> shops = shopService.findByFilter(
@@ -202,8 +198,8 @@ public class ShopAdminController {
                 size
         );
 
-        if (!shops.isEmpty() && page >= shops.getTotalPages()) {
-            page = shops.getTotalPages() - 1;
+        if (page >= shops.getTotalPages()) {
+            page = Math.max(0, Math.min(page, shops.getTotalPages() - 1));
             shops = shopService.findByFilter(
                     shopName,
                     createBy,
@@ -315,6 +311,6 @@ public class ShopAdminController {
             redirectAttributes.addFlashAttribute("error", 
                 "Chỉ có thể unlock shop đã bị từ chối (isDeleted = true).");
         }
-        return "redirect:/admin/shops?deleted=true";
+        return "redirect:/admin/shops";
     }
 }

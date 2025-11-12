@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public interface ConfigurationService {
     Page<Configuration> findAll(int page, int size);
 
-    void save(String configKey, String configValue);
+    boolean save(String configKey, String configValue);
 
     void delete(Long id);
 

@@ -44,7 +44,7 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
       AND (:toUpdateDate IS NULL OR u.updateAt <= :toUpdateDate)
       AND (:isDelete IS NULL OR u.isDeleted = :isDelete)
       AND (:deleteBy IS NULL OR u.deleteBy LIKE CONCAT('%', :deleteBy, '%'))
-      AND (:status IS NULL OR u.status LIKE CONCAT('%', :status, '%'))
+      AND (:status IS NULL OR u.status = :status)
       ORDER BY u.id DESC
     """)
     Page<Shop> findByFilter(@Param("shopName") String shopName,

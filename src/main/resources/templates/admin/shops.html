@@ -34,7 +34,7 @@
             <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
                 <span th:text="${errorMessage}"></span>
             </div>
-            
+
             <!-- Success Message -->
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle me-2"></i>
@@ -44,7 +44,7 @@
 
                         <form th:action="@{/admin/shops}" method="get">
                             <table class="table table-hover align-middle mb-0">
-                                <thead>
+                                <thead class="table-dark">
                                 <tr>
                                     <th>ID</th>
                                     <th>Shop Name</th>
@@ -85,8 +85,8 @@
                                     <!-- User Name Filter -->
                                     <td>
                                         <label>
-                                            <input type="text" name="username" class="form-control"
-                                                   th:value="${username}">
+                                            <input type="text" name="createBy" class="form-control"
+                                                   th:value="${createBy}">
                                         </label>
                                     </td>
 
@@ -141,20 +141,20 @@
                                         <div class="d-flex gap-2 flex-wrap">
                                         <a th:href="@{'/admin/shops/shopDetail/' + ${shop.id}}"
                                            class="btn btn-success btn-sm">Details</a>
-                                        
+
                                         <!-- Soft Delete button (chỉ hiện khi shop chưa bị xóa) -->
                                         <form th:if="${shop.isDeleted == null or !shop.isDeleted}"
-                                              th:action="@{/admin/shops/delete/{id}(id=${shop.id})}" 
+                                              th:action="@{/admin/shops/delete/{id}(id=${shop.id})}"
                                               method="post"
                                               onsubmit="return confirm('Bạn có chắc chắn muốn xóa shop này?');"
                                               style="display: inline;">
                                             <input type="hidden" name="_method" value="delete">
                                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                         </form>
-                                        
+
                                         <!-- Allow Re-registration button (chỉ hiện khi shop đã bị xóa) -->
                                         <form th:if="${shop.isDeleted != null and shop.isDeleted}"
-                                              th:action="@{/admin/shops/allowReRegistration/{id}(id=${shop.id})}" 
+                                              th:action="@{/admin/shops/allowReRegistration/{id}(id=${shop.id})}"
                                               method="post"
                                               onsubmit="return confirm('Bạn có chắc chắn muốn mở khóa user này? User sẽ có thể đăng ký shop mới. Shop cũ vẫn được giữ lại làm bằng chứng.');"
                                               style="display: inline;">
