@@ -28,5 +28,16 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, Lo
             @Param("isDelete") Boolean delete,
             Pageable pageable);
 
-    Configuration findByConfigKey(String configKey);
+    /**
+     * Tìm configuration theo key (không phân biệt hoa thường)
+     * Chỉ lấy config chưa bị xóa (isDeleted = false)
+     */
+    @Query("""
+    SELECT c 
+    FROM Configuration c
+    WHERE UPPER(c.configKey) = UPPER(:configKey)
+      AND c.isDeleted = false
+    ORDER BY c.id DESC
+    """)
+    java.util.Optional<Configuration> findByConfigKey(@Param("configKey") String configKey);
 }

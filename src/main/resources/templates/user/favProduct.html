@@ -27,19 +27,39 @@
         .product-footer { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; }
         .cat-filter .btn { margin-right: .5rem; margin-bottom: .5rem; }
 
-        /* ❤️ style icon tim */
+        /* ❤️ style icon tim - IMPROVED */
         .favorite-remove-btn {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(255,255,255,0.95);
-            border: none; border-radius: 50%;
-            width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
-            color: #dc3545; font-size: 1.2rem;
-            transition: all 0.2s ease-in-out;
+            position: absolute; 
+            top: 10px; 
+            right: 10px;
+            background: rgba(255,255,255,0.98);
+            border: 2px solid #dc3545; 
+            border-radius: 50%;
+            width: 40px; 
+            height: 40px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            color: #dc3545; 
+            font-size: 1.3rem;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+            z-index: 10;
+            cursor: pointer;
         }
         .favorite-remove-btn:hover {
-            background: #fee2e2;
-            transform: scale(1.1);
+            background: #dc3545;
+            color: white;
+            transform: scale(1.15) rotate(-10deg);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.5);
+        }
+        .favorite-remove-btn i {
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            10%, 30% { transform: scale(0.9); }
+            20%, 40% { transform: scale(1.1); }
         }
     </style>
 </head>
@@ -66,13 +86,13 @@
             <div class="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded border shadow-sm">
                 <i class="fas fa-list text-muted"></i>
                 <label class="mb-0 text-muted small fw-bold">Hiển thị:</label>
-                <select class="form-select form-select-sm fw-bold" style="width:70px;border-color:#1abc9c;" 
+                <select class="form-select form-select-sm fw-bold" style="width:70px;border-color:#1abc9c;"
                         id="pageSizeSelect"
                         onchange="changePageSize(this.value)">
-                    <option value="6" th:selected="${size == 6}">6</option>
+                    <option value="4"  th:selected="${size == 4}">4</option>
+                    <option value="8"  th:selected="${size == 8}">8</option>
                     <option value="12" th:selected="${size == 12}">12</option>
-                    <option value="24" th:selected="${size == 24}">24</option>
-                    <option value="48" th:selected="${size == 48}">48</option>
+                    <option value="16" th:selected="${size == 16}">16</option>
                 </select>
                 <span class="text-muted small">/ trang</span>
             </div>
@@ -107,6 +127,25 @@
                     <option th:value="'newest'" th:selected="${sort == 'newest'}">Mới nhất</option>
                 </select>
             </form>
+
+            <!-- Lọc theo Shop -->
+            <form class="d-flex align-items-center" method="get" th:action="@{/favorites}">
+                <input type="hidden" name="page" th:value="${currentPage}" />
+                <input type="hidden" name="size" th:value="${size}" />
+                <input type="hidden" name="categoryId" th:value="${selectedCategoryId}" />
+                <input type="hidden" name="sort" th:value="${sort}" />
+                <input type="hidden" name="search" th:value="${search}" />
+
+                <select class="form-select w-auto" name="shopId" onchange="this.form.submit()">
+                    <option th:value="${null}">Tất cả shop</option>
+                    <option th:each="shop : ${shopList}"
+                            th:value="${shop.id}"
+                            th:text="${shop.shopName}"
+                            th:selected="${selectedShopId == shop.id}">
+                    </option>
+                </select>
+            </form>
+
         </div>
     </div>
 
@@ -133,11 +172,13 @@
             <div class="product-card">
 
                 <!-- ❤️ Nút xóa khỏi yêu thích -->
-                <form th:action="@{'/favorites/remove/' + ${f.productId}}" method="post" style="display:inline;">
+                <form th:action="@{'/favorites/remove/' + ${f.productId}}" method="post">
+                    <input type="hidden" name="redirect" th:value="${requestURI}" />
                     <button type="submit" class="favorite-remove-btn" title="Xóa khỏi yêu thích">
                         <i class="fa-solid fa-heart-crack"></i>
                     </button>
                 </form>
+
 
 
                 <!-- Ảnh sản phẩm -->

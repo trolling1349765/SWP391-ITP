@@ -7,6 +7,7 @@ import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.repository.CategoryRepository;
 import fpt.swp.springmvctt.itp.service.FavoriteProductService;
 import fpt.swp.springmvctt.itp.service.ProductService;
+import fpt.swp.springmvctt.itp.service.InventoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
+    private final InventoryService inventoryService;
 
     // ✅ chỉ thêm dòng này
     private final FavoriteProductService favoriteService;
@@ -42,7 +44,8 @@ public class ProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "newest") String sort,
             Model model,
-            HttpSession session // ✅ thêm session vào để lấy thông tin user đăng nhập
+            HttpSession session, // ✅ thêm session vào để lấy thông tin user đăng nhập
+            HttpServletRequest request
     ) {
 
         int safePage = Math.max(page, 1);
@@ -69,6 +72,13 @@ public class ProductController {
         // ✅ Truyền thêm user session vào model để Thymeleaf check
         Object user = session.getAttribute("user");
         model.addAttribute("sessionUser", user);
+
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath(); // "/itp"
+        if (requestURI.startsWith(contextPath)) {
+            requestURI = requestURI.substring(contextPath.length());
+        }
+        model.addAttribute("requestURI", requestURI);
 
         // ✅ chỉ thêm khối này (không đụng dòng nào khác)
         if (user instanceof User u) {
@@ -113,11 +123,20 @@ public class ProductController {
             throw new RuntimeException("Sản phẩm không tồn tại!");
         }
 
+        // ⚠️ QUAN TRỌNG: Rebuild stock từ database để đảm bảo chỉ đếm ACTIVE items (không đếm BLOCKED/đã bán)
+        Product updated = inventoryService.rebuildProductQuantity(product.getId());
+        model.addAttribute("product", updated); // Sử dụng product đã được rebuild stock
+
         // ✅ cũng truyền sessionUser vào trang chi tiết (nếu cần tim ở đó sau này)
-        model.addAttribute("product", product);
         model.addAttribute("sessionUser", session.getAttribute("user"));
 
-        model.addAttribute("requestURI", request.getRequestURI());
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath(); // "/itp"
+        if (requestURI.startsWith(contextPath)) {
+            requestURI = requestURI.substring(contextPath.length());
+        }
+        model.addAttribute("requestURI", requestURI);
+
 
         // ✅ THÊM MỚI: Lấy danh sách sản phẩm yêu thích của user (nếu có)
         Object userObj = session.getAttribute("user");

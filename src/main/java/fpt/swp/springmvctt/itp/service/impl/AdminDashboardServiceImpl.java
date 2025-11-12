@@ -8,6 +8,7 @@ import fpt.swp.springmvctt.itp.entity.User;
 import fpt.swp.springmvctt.itp.repository.OrderRepository;
 import fpt.swp.springmvctt.itp.repository.ShopRepository;
 import fpt.swp.springmvctt.itp.repository.UserRepository;
+import fpt.swp.springmvctt.itp.repository.ProductRepository;
 import fpt.swp.springmvctt.itp.service.AdminDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository; // ✅ thêm vào
 
     @Override
     public AdminDashboardResponse getDashboardData(AdminDashboardRequest request) {
@@ -35,12 +37,13 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         long totalUsers = userRepository.count();
         long totalShops = shopRepository.count();
         long totalOrders = orderRepository.count();
+        long totalProducts = productRepository.countAllProducts(); // ✅ thêm logic đếm sản phẩm
 
-        // 1. thống kê role
+        // ===== 1. thống kê role =====
         List<Object[]> rawRoleCounts = userRepository.countUsersByRole();
         List<RoleCountResponse> roleStats = new ArrayList<>();
         for (Object[] row : rawRoleCounts) {
-            String roleName = (String) row[0];   // <-- bây giờ là String
+            String roleName = (String) row[0];
             Long cnt = (Long) row[1];
             roleStats.add(new RoleCountResponse(
                     roleName != null ? roleName : "KHÔNG RÕ",
@@ -52,8 +55,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         List<User> recentUserEntities = userRepository.findTop10ByOrderByIdDesc();
         List<UserSimpleResponse> recentUsers = new ArrayList<>();
         for (User u : recentUserEntities) {
-            // convert LocalDate -> LocalDateTime
-            LocalDate createDate = u.getCreateAt(); // từ BaseEntity
+            LocalDate createDate = u.getCreateAt();
             LocalDateTime createdAt = (createDate != null)
                     ? createDate.atStartOfDay()
                     : null;
@@ -79,7 +81,6 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                     ? shopCreateDate.atStartOfDay()
                     : null;
 
-            // chú ý: ShopSimpleResponse của bạn KHÔNG có phone -> đừng truyền phone
             recentShops.add(new ShopSimpleResponse(
                     s.getId(),
                     s.getShopName(),
@@ -97,12 +98,12 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 new ComplaintSummaryResponse("Khiếu nại đang xử lý", processing, "PROCESSING")
         );
 
-
-
+        // ===== 5. trả về kết quả =====
         return AdminDashboardResponse.builder()
                 .totalUsers(totalUsers)
                 .totalShops(totalShops)
                 .totalOrders(totalOrders)
+                .totalProducts(totalProducts) // ✅ thêm dòng này
                 .roleStats(roleStats)
                 .totalComplaints(pending + processing)
                 .pendingComplaints(pending)
