@@ -7,7 +7,7 @@ function copyShareLink(el) {
 
     navigator.clipboard.writeText(link)
         .then(() => {
-            showToast(" Đã sao chép liên kết!", "success");
+            showToast(" ✅ Đã sao chép liên kết!", "success");
         })
         .catch(err => {
             showToast(" Sao chép thất bại!", "error");
@@ -36,7 +36,7 @@ function showToast(message, type = "info") {
         document.body.appendChild(container);
     }
 
-    // ✅ Giới hạn chỉ 1 toast tại 1 thời điểm
+    //  Giới hạn chỉ 1 toast tại 1 thời điểm
     while (container.children.length > 0) {
         container.removeChild(container.firstChild);
     }

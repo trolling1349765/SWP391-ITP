@@ -98,7 +98,8 @@
 
                 <div class="col-md-12">
                     <label class="form-label">Ảnh sản phẩm</label>
-                    <input type="file" class="form-control" accept="image/*" id="imageFile" onchange="uploadImageNow(this)"/>
+                    <input type="file" class="form-control" accept="image/*"
+                           id="imageFile" onchange="uploadImageNow(event, this)"/>
                     <input type="hidden" th:field="*{img}" id="imagePathInput"/>
                     <small class="text-muted">
                         <span id="uploadStatus"></span>
@@ -366,47 +367,49 @@ function updatePriceFromFaceValue() {
     }
 }
 
-// Upload ảnh ngay lập tức khi chọn file - NHANH
-function uploadImageNow(input) {
+function uploadImageNow(event, input) {
+    event.preventDefault(); // 🚫 Ngăn reload form
+
     const file = input.files[0];
     if (!file) return;
-    
+
     const statusEl = document.getElementById('uploadStatus');
     const previewBox = document.getElementById('imagePreviewBox');
     const previewImg = document.getElementById('imagePreviewImg');
     const imagePathInput = document.getElementById('imagePathInput');
-    
-    // Hiển thị đang upload
-    statusEl.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> Đang upload ảnh...';
-    previewBox.style.display = 'none';
-    
-    // Upload bằng AJAX
+
+    // ✅ Hiển thị trước khi upload (giống Shop Profile)
+    const reader = new FileReader();
+    reader.onload = e => {
+        previewImg.src = e.target.result;
+        previewBox.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+
+    // ✅ Upload song song
     const formData = new FormData();
     formData.append('file', file);
-    
-    fetch('/itp/shop/uploadImage', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Upload thành công
-            const imagePath = data.imagePath;
-            imagePathInput.value = imagePath; // Lưu path vào hidden input
-            previewImg.src = imagePath; // Hiển thị preview
-            previewBox.style.display = 'block';
-            statusEl.innerHTML = '<i class="fas fa-check-circle text-success"></i> Upload thành công!';
-            console.log(' Image uploaded:', imagePath);
-        } else {
-            statusEl.innerHTML = '<i class="fas fa-times-circle text-danger"></i> ' + data.message;
-        }
-    })
-    .catch(error => {
-        console.error('Upload error:', error);
-        statusEl.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Lỗi upload ảnh';
-    });
+
+    statusEl.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> Đang upload...';
+    fetch('/itp/shop/uploadImage', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                imagePathInput.value = data.imagePath;
+                previewImg.src = '/itp' + data.imagePath; // giống Shop Profile
+                statusEl.innerHTML = '<i class="fas fa-check-circle text-success"></i> Upload thành công!';
+                console.log('✅ Uploaded:', data.imagePath);
+            } else {
+                statusEl.innerHTML = '<i class="fas fa-times-circle text-danger"></i> ' + data.message;
+            }
+        })
+        .catch(err => {
+            console.error('Upload error:', err);
+            statusEl.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Lỗi upload ảnh';
+        });
 }
+
+
 
 // Xóa ảnh
 function removeImage() {

@@ -163,10 +163,9 @@
 
                 <!-- Short Description -->
                 <div class="info-card" th:if="${product.description != null and !#strings.isEmpty(product.description)}">
-                    <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Mô tả ngắn</h5>
+                    <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Mô tả sản phẩm</h5>
                     <p class="mb-0" th:text="${product.description}">Product description</p>
                 </div>
-
                 <!-- Product Info -->
                 <div class="info-card">
                     <h5 class="mb-3"><i class="fas fa-list text-primary me-2"></i>Thông tin sản phẩm</h5>

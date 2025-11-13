@@ -16,8 +16,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String projectPath = System.getProperty("user.dir");
+        // ✅ Đường dẫn local thật — phải có dấu "/" cuối
+        registry.addResourceHandler("/assets/img/shop/**")
+                .addResourceLocations("file:" + projectPath + "/src/main/resources/assets/img/shop/");
         registry.addResourceHandler("/assets/img/**")
                 .addResourceLocations("classpath:/assets/img/");
+        registry.addResourceHandler("/assets/img/shop/**")
+                .addResourceLocations("classpath:/assets/img/shop/");
 
         registry.addResourceHandler("/assets/ajax/**")
                 .addResourceLocations("classpath:/assets/ajax/");
