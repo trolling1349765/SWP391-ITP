@@ -20,6 +20,11 @@ public interface OrderService {
     List<Order> getOrdersByUserId(Long userId);
     
     /**
+     * Lấy danh sách đơn hàng đã bán của shop (theo sellerUserId)
+     */
+    List<Order> getOrdersBySellerUserId(Long sellerUserId);
+    
+    /**
      * Lấy đơn hàng theo ID
      */
     Order getOrderById(Long orderId);

@@ -26,6 +26,8 @@ import fpt.swp.springmvctt.itp.service.CategoryService;
 import fpt.swp.springmvctt.itp.service.InventoryService;
 import fpt.swp.springmvctt.itp.service.ProductService;
 import fpt.swp.springmvctt.itp.service.ExcelImportService;
+import fpt.swp.springmvctt.itp.service.OrderService;
+import fpt.swp.springmvctt.itp.entity.Order;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -53,7 +55,7 @@ import java.time.LocalDate;
 @Controller
 @RequestMapping("/shop")
 @RequiredArgsConstructor
-public class    ShopController {
+public class ShopController {
 
     private final ProductService productService;
     private final InventoryService inventoryService;
@@ -66,6 +68,7 @@ public class    ShopController {
     private final StorageService storageService;
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
+    private final OrderService orderService;
 
 
     private Long getShopIdFromSession(HttpSession session) {
@@ -1086,6 +1089,96 @@ public class    ShopController {
             System.err.println("Error updating shop profile: " + e.getMessage());
             ra.addFlashAttribute("error", "Lỗi khi cập nhật shop: " + e.getMessage());
             return "redirect:/shop/profile";
+        }
+    }
+    
+    /**
+     * Đơn hàng đã bán của shop
+     */
+    @GetMapping("/orders")
+    public String shopOrders(@RequestParam(defaultValue = "1") int page,
+                             @RequestParam(defaultValue = "10") int size,
+                             @RequestParam(required = false) String orderCode,
+                             @RequestParam(required = false) String status,
+                             Model model,
+                             HttpSession session,
+                             HttpServletRequest request,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            User user = (User) session.getAttribute("user");
+            if (user == null) {
+                redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập");
+                return "redirect:/login";
+            }
+            
+            Long shopId = getShopIdFromSession(session);
+            Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalStateException("Shop không tồn tại"));
+            
+            // Lấy tất cả đơn hàng đã bán (theo sellerUserId)
+            List<Order> allOrders = orderService.getOrdersBySellerUserId(user.getId());
+            
+            // Lọc theo orderCode nếu có
+            if (orderCode != null && !orderCode.trim().isEmpty()) {
+                allOrders = allOrders.stream()
+                    .filter(o -> o.getOrderCode() != null && 
+                                o.getOrderCode().toLowerCase().contains(orderCode.toLowerCase().trim()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            // Lọc theo status nếu có
+            if (status != null && !status.trim().isEmpty() && !status.equals("ALL")) {
+                allOrders = allOrders.stream()
+                    .filter(o -> o.getStatus() != null && o.getStatus().equals(status))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            // Pagination
+            int totalOrders = allOrders.size();
+            int totalPages = Math.max(1, (int) Math.ceil((double) totalOrders / size));
+            page = Math.max(1, Math.min(page, totalPages));
+            
+            int startIndex = (page - 1) * size;
+            int endIndex = Math.min(startIndex + size, totalOrders);
+            
+            List<Order> orders;
+            if (startIndex >= totalOrders) {
+                orders = new java.util.ArrayList<>();
+            } else {
+                orders = allOrders.subList(startIndex, endIndex);
+            }
+            
+            // Calculate pagination window
+            int window = 3;
+            int startPage = Math.max(1, page - 1);
+            int endPage = Math.min(totalPages, startPage + window - 1);
+            startPage = Math.max(1, endPage - window + 1);
+            
+            // Tính tổng doanh thu
+            java.math.BigDecimal totalRevenue = allOrders.stream()
+                .filter(o -> "COMPLETED".equals(o.getStatus()))
+                .map(Order::getTotalAmount)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+            
+            model.addAttribute("orders", orders);
+            model.addAttribute("shop", shop);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("startPage", startPage);
+            model.addAttribute("endPage", endPage);
+            model.addAttribute("size", size);
+            model.addAttribute("totalOrders", totalOrders);
+            model.addAttribute("totalRevenue", totalRevenue);
+            model.addAttribute("orderCode", orderCode);
+            model.addAttribute("selectedStatus", status != null ? status : "ALL");
+            
+            addShopToModel(model, session);
+            putCurrentPath(model, request);
+            
+            return "shop/orders";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            return "redirect:/shop/dashboard";
         }
     }
 }

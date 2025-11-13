@@ -24,7 +24,7 @@
 <div class="detail-container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Chi tiết đơn hàng</h2>
-        <a th:href="@{/orders/history}" class="btn btn-outline-secondary">
+        <a th:href="${backUrl != null ? backUrl : '/orders/history'}" class="btn btn-outline-secondary">
             Quay lại
         </a>
     </div>
@@ -65,6 +65,16 @@
                 <div th:if="${order.product != null and order.product.shop != null}" th:text="${order.product.shop.shopName}">Shop Name</div>
                 <div th:if="${order.product == null or order.product.shop == null}" class="text-muted">N/A</div>
             </div>
+            <!-- Thông tin người mua (chỉ hiển thị khi shop xem) -->
+            <div class="col-md-6" th:if="${isSeller == true}">
+                <strong>Người mua:</strong>
+                <div th:if="${order.user != null}">
+                    <div><strong>Tên:</strong> <span th:text="${order.user.fullName != null ? order.user.fullName : order.user.username}">Username</span></div>
+                    <div><strong>Email:</strong> <span th:text="${order.user.email}">email@example.com</span></div>
+                    <div th:if="${order.user.phone != null}"><strong>SĐT:</strong> <span th:text="${order.user.phone}">0123456789</span></div>
+                </div>
+                <div th:if="${order.user == null}" class="text-muted">N/A</div>
+            </div>
             <div class="col-md-6">
                 <strong>Sản phẩm:</strong>
                 <div th:if="${order.product != null}" th:text="${order.product.productName}">Product Name</div>
@@ -92,7 +102,7 @@
     <!-- Serial Codes -->
     <div class="info-card" th:if="${orderItems != null and !orderItems.isEmpty()}">
         <h5 class="mb-3">Mã sản phẩm đã mua</h5>
-        <div class="alert alert-info">
+        <div class="alert alert-info" th:if="${isSeller != true}">
             Bạn đã mua <strong th:text="${order.quantity}">1</strong> sản phẩm. Dưới đây là các mã sản phẩm:
         </div>
         <div class="table-responsive">

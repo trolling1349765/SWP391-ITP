@@ -20,6 +20,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.product p LEFT JOIN FETCH p.shop WHERE o.user.id = :userId ORDER BY o.createAt DESC")
     List<Order> findOrdersByUserId(@Param("userId") Long userId);
     
+    // Lấy đơn hàng theo sellerUserId (shop owner)
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.product p LEFT JOIN FETCH p.shop LEFT JOIN FETCH o.user WHERE o.sellerUserId = :sellerUserId ORDER BY o.createAt DESC")
+    List<Order> findOrdersBySellerUserId(@Param("sellerUserId") Long sellerUserId);
+    
     // ========== MAIN: Revenue Analytics (Team Feature) ==========
     // Tính doanh thu theo tháng trong 1 năm
     @Query("""

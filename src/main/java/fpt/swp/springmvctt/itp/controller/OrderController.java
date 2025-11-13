@@ -169,6 +169,8 @@ public class OrderController {
     @GetMapping("/history")
     public String orderHistory(@RequestParam(defaultValue = "1") int page,
                                @RequestParam(defaultValue = "10") int size,
+                               @RequestParam(required = false) String orderCode,
+                               @RequestParam(required = false) String status,
                                Model model, 
                                HttpSession session, 
                                RedirectAttributes redirectAttributes) {
@@ -189,6 +191,25 @@ public class OrderController {
             
             // Lấy tất cả orders
             List<Order> allOrders = orderService.getOrdersByUserId(user.getId());
+            
+            // ============================================================
+            // FIX: Lọc theo orderCode nếu có
+            // ============================================================
+            if (orderCode != null && !orderCode.trim().isEmpty()) {
+                allOrders = allOrders.stream()
+                    .filter(o -> o.getOrderCode() != null && 
+                                o.getOrderCode().toLowerCase().contains(orderCode.toLowerCase().trim()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            // ============================================================
+            // FIX: Lọc theo status nếu có
+            // ============================================================
+            if (status != null && !status.trim().isEmpty() && !status.equals("ALL")) {
+                allOrders = allOrders.stream()
+                    .filter(o -> o.getStatus() != null && o.getStatus().equals(status))
+                    .collect(java.util.stream.Collectors.toList());
+            }
             
             // Pagination
             int totalOrders = allOrders.size();
@@ -219,6 +240,8 @@ public class OrderController {
             model.addAttribute("endPage", endPage);
             model.addAttribute("size", size);
             model.addAttribute("totalOrders", totalOrders);
+            model.addAttribute("orderCode", orderCode); // Giữ lại giá trị search
+            model.addAttribute("selectedStatus", status != null ? status : "ALL"); // Giữ lại giá trị filter
             
             return "order/history";
         } catch (Exception e) {
@@ -281,8 +304,11 @@ public class OrderController {
         try {
             Order order = orderService.getOrderById(orderId);
             
-            // Kiểm tra quyền truy cập
-            if (!order.getUser().getId().equals(user.getId())) {
+            // Kiểm tra quyền truy cập: cho phép buyer hoặc seller (shop owner) xem
+            boolean isBuyer = order.getUser().getId().equals(user.getId());
+            boolean isSeller = order.getSellerUserId() != null && order.getSellerUserId().equals(user.getId());
+            
+            if (!isBuyer && !isSeller) {
                 redirectAttributes.addFlashAttribute("error", "Bạn không có quyền xem đơn hàng này");
                 return "redirect:/orders/history";
             }
@@ -291,6 +317,16 @@ public class OrderController {
             List<fpt.swp.springmvctt.itp.entity.OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
             model.addAttribute("order", order);
             model.addAttribute("orderItems", orderItems);
+            model.addAttribute("isSeller", isSeller); // Để template biết là shop đang xem
+            model.addAttribute("isBuyer", isBuyer); // Để template biết là buyer đang xem
+            
+            // Nếu là seller, redirect về shop orders; nếu là buyer, redirect về order history
+            if (isSeller) {
+                model.addAttribute("backUrl", "/shop/orders");
+            } else {
+                model.addAttribute("backUrl", "/orders/history");
+            }
+            
             return "order/detail";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn hàng");

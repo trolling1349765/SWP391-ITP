@@ -420,6 +420,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Order> getOrdersBySellerUserId(Long sellerUserId) {
+        return orderRepository.findOrdersBySellerUserId(sellerUserId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Đơn hàng không tồn tại"));
