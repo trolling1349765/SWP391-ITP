@@ -55,9 +55,17 @@ public class ShopRegisterController {
                     "Shop của bạn đã bị từ chối. Vui lòng liên hệ admin để được hỗ trợ.");
                 return "redirect:/";
             }
-            // Nếu shop chưa bị xóa, redirect về dashboard
-            redirectAttributes.addFlashAttribute("error", "Bạn đã có shop rồi!");
-            return "redirect:/shop/dashboard";
+            // Nếu shop chưa bị xóa, kiểm tra role trước khi redirect
+            String userRole = (String) session.getAttribute("role");
+            if (userRole != null && userRole.equalsIgnoreCase("SELLER")) {
+                redirectAttributes.addFlashAttribute("error", "Bạn đã có shop rồi!");
+                return "redirect:/shop/dashboard";
+            } else {
+                // Nếu user chưa có role SELLER (shop chưa được approve), chỉ thông báo
+                redirectAttributes.addFlashAttribute("error", 
+                    "Bạn đã đăng ký shop. Vui lòng đợi admin duyệt.");
+                return "redirect:/";
+            }
         }
 
         // Lấy danh sách categories
@@ -98,9 +106,17 @@ public class ShopRegisterController {
                     "Shop của bạn đã bị từ chối. Vui lòng liên hệ admin để được hỗ trợ.");
                 return "redirect:/";
             }
-            // Nếu shop chưa bị xóa, không cho tạo shop mới
-            redirectAttributes.addFlashAttribute("error", "Bạn đã có shop rồi!");
-            return "redirect:/shop/dashboard";
+            // Nếu shop chưa bị xóa, kiểm tra role trước khi redirect
+            String userRole = (String) session.getAttribute("role");
+            if (userRole != null && userRole.equalsIgnoreCase("SELLER")) {
+                redirectAttributes.addFlashAttribute("error", "Bạn đã có shop rồi!");
+                return "redirect:/shop/dashboard";
+            } else {
+                // Nếu user chưa có role SELLER (shop chưa được approve), chỉ thông báo
+                redirectAttributes.addFlashAttribute("error", 
+                    "Bạn đã đăng ký shop. Vui lòng đợi admin duyệt.");
+                return "redirect:/";
+            }
         }
 
         // Kiểm tra validation

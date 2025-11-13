@@ -217,8 +217,7 @@
                                        id="logoImage" 
                                        name="logoImage" 
                                        accept="image/*" 
-                                       style="display: none;"
-                                       onchange="previewImage(this, 'logoPreview', 'logoPreviewContainer')">
+                                       style="display: none;">
                             </div>
 
                             <!-- Banner Shop -->
@@ -236,8 +235,7 @@
                                        id="bannerImage" 
                                        name="bannerImage" 
                                        accept="image/*" 
-                                       style="display: none;"
-                                       onchange="previewImage(this, 'bannerPreview', 'bannerPreviewContainer')">
+                                       style="display: none;">
                             </div>
                         </div>
                     </div>
@@ -268,7 +266,7 @@
 
                     <!-- Buttons -->
                     <div class="d-flex gap-3">
-                        <button type="submit" class="btn btn-primary btn-register flex-grow-1">
+                        <button type="submit" class="btn btn-primary btn-register flex-grow-1" onclick="return validateFormBeforeSubmit(event)">
                             <i class="fas fa-paper-plane me-2"></i>Đăng ký Shop
                         </button>
                         <a th:href="@{/shop/register/cancel}" class="btn btn-outline-secondary px-4">
@@ -285,23 +283,89 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Preview image function
-    function previewImage(input, imgId, containerId) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById(imgId);
-                const container = document.getElementById(containerId);
+    // Validate file size and preview image function
+    function validateAndPreviewImage(input, imgId, containerId, maxSizeMB) {
+        console.log('validateAndPreviewImage called', input, imgId, containerId, maxSizeMB);
+        
+        if (!input || !input.files || !input.files[0]) {
+            console.log('No file selected');
+            return;
+        }
+        
+        const file = input.files[0];
+        const maxSizeBytes = maxSizeMB * 1024 * 1024; // Convert MB to bytes
+        const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+        
+        console.log('File size:', fileSizeMB, 'MB, Max allowed:', maxSizeMB, 'MB');
+        
+        // Validate file size
+        if (file.size > maxSizeBytes) {
+            const errorMsg = `File quá lớn! Kích thước tối đa cho phép là ${maxSizeMB}MB. File của bạn: ${fileSizeMB}MB`;
+            console.error(errorMsg);
+            alert(errorMsg);
+            input.value = ''; // Clear the input
+            
+            // Reset preview
+            const img = document.getElementById(imgId);
+            const container = document.getElementById(containerId);
+            if (img) img.style.display = 'none';
+            if (container) {
+                const textCenter = container.querySelector('.text-center');
+                if (textCenter) textCenter.style.display = 'block';
+            }
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type || !file.type.startsWith('image/')) {
+            const errorMsg = 'Vui lòng chọn file ảnh (PNG, JPG, JPEG, etc.)';
+            console.error(errorMsg);
+            alert(errorMsg);
+            input.value = ''; // Clear the input
+            
+            // Reset preview
+            const img = document.getElementById(imgId);
+            const container = document.getElementById(containerId);
+            if (img) img.style.display = 'none';
+            if (container) {
+                const textCenter = container.querySelector('.text-center');
+                if (textCenter) textCenter.style.display = 'block';
+            }
+            return;
+        }
+        
+        console.log('File validation passed, showing preview');
+        
+        // Preview image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById(imgId);
+            const container = document.getElementById(containerId);
+            if (img && container) {
                 img.src = e.target.result;
                 img.style.display = 'block';
-                container.querySelector('.text-center').style.display = 'none';
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+                const textCenter = container.querySelector('.text-center');
+                if (textCenter) {
+                    textCenter.style.display = 'none';
+                }
+            }
+        };
+        reader.onerror = function() {
+            console.error('Error reading file');
+            alert('Lỗi khi đọc file. Vui lòng thử lại.');
+            input.value = '';
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // Old function for backward compatibility
+    function previewImage(input, imgId, containerId) {
+        validateAndPreviewImage(input, imgId, containerId, 5);
     }
 
-    // Handle category checkboxes
+    // Handle category checkboxes and file inputs
     document.addEventListener('DOMContentLoaded', function() {
+        // Category checkboxes
         const checkboxes = document.querySelectorAll('.category-checkbox');
         const hiddenInput = document.getElementById('categories');
         
@@ -313,8 +377,49 @@
                 hiddenInput.value = selected.join(', ');
             });
         });
+        
+        // Logo image input
+        const logoInput = document.getElementById('logoImage');
+        if (logoInput) {
+            logoInput.addEventListener('change', function() {
+                validateAndPreviewImage(this, 'logoPreview', 'logoPreviewContainer', 5);
+            });
+        }
+        // Banner image input
+        const bannerInput = document.getElementById('bannerImage');
+        if (bannerInput) {
+            bannerInput.addEventListener('change', function() {
+                validateAndPreviewImage(this, 'bannerPreview', 'bannerPreviewContainer', 5);
+            });
+        }
     });
+    
+    // Validate form before submit
+    function validateFormBeforeSubmit(event) {
+        const logoInput = document.getElementById('logoImage');
+        const bannerInput = document.getElementById('bannerImage');
+        const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+        
+        // Check logo size
+        if (logoInput.files && logoInput.files[0]) {
+            if (logoInput.files[0].size > maxSizeBytes) {
+                event.preventDefault();
+                alert('Logo quá lớn! Kích thước tối đa cho phép là 5MB.');
+                return false;
+            }
+        }
+        
+        // Check banner size
+        if (bannerInput.files && bannerInput.files[0]) {
+            if (bannerInput.files[0].size > maxSizeBytes) {
+                event.preventDefault();
+                alert('Banner quá lớn! Kích thước tối đa cho phép là 5MB.');
+                return false;
+            }
+        }
+        
+        return true;
+    }
 </script>
-
 </body>
 </html>

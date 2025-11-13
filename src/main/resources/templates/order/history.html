@@ -137,7 +137,8 @@
                             <td>
                                 <div th:text="${order.createAt != null ? #temporals.format(order.createAt, 'dd/MM/yyyy') : 'N/A'}">03/11/2025</div>
                                 <small class="text-muted" th:if="${order.createAt != null}" 
-                                       th:text="${#temporals.format(order.createAt, 'HH:mm')}">16:58</small>
+                                       ></small>
+                                <!--th:text="${#temporals.format(order.createAt, 'HH:mm')}" -->
                             </td>
                             <td>
                                 <span th:if="${order.product != null and order.product.shop != null}" 
@@ -154,8 +155,8 @@
                                 <span th:if="${order.product == null or order.product.shop == null}" class="text-muted">N/A</span>
                             </td>
                             <td th:text="${order.quantity}">1</td>
-                            <td th:text="${#numbers.formatDecimal(order.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">60.000 ₫</td>
-                            <td class="fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">60.000 ₫</td>
+                            <td th:text="${#numbers.formatDecimal(order.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">N/A</td>
+                            <td class="fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">N/A</td>
                             <td>
                                 <span th:if="${order.status == 'PENDING'}" 
                                       class="status-badge status-pending">Đang giữ tiền</span>
@@ -181,6 +182,16 @@
                 Hiển thị <strong th:text="${orders.size()}">10</strong> / <strong th:text="${totalOrders}">100</strong> đơn hàng
             </div>
         </div>
+<!--        <div class="col-md-3">-->
+<!--            <label class="form-label">Sắp xếp theo</label>-->
+<!--            <select id="sortFilter" class="form-select" onchange="filterOrders()">-->
+<!--                <option value="">Mặc định</option>-->
+<!--                <option value="total-desc">Tổng tiền: Cao → Thấp</option>-->
+<!--                <option value="total-asc">Tổng tiền: Thấp → Cao</option>-->
+<!--                <option value="date-desc">Ngày mua: Mới nhất</option>-->
+<!--                <option value="date-asc">Ngày mua: Cũ nhất</option>-->
+<!--            </select>-->
+<!--        </div>-->
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
                 <a class="page-link"
@@ -356,6 +367,133 @@
         console.log(' Không có đơn hàng nào đang ở trạng thái PENDING. Không cần polling.');
     }
 </script>
+
+<script>
+
+    function filterInventory() {
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        const faceValueFilter = document.getElementById('faceValueFilter').value;
+        const stockStatusFilter = document.getElementById('stockStatusFilter').value;
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+        const rows = document.querySelectorAll('tbody tr');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const categoryId = row.getAttribute('data-category-id');
+            const faceValue = row.getAttribute('data-face-value');
+            const stock = parseInt(row.getAttribute('data-stock'));
+            const productName = row.getAttribute('data-product-name');
+
+            let showRow = true;
+
+            // Filter by category
+            if (categoryFilter && categoryId !== categoryFilter) {
+                showRow = false;
+            }
+
+            // Filter by face value
+            if (faceValueFilter && faceValue !== faceValueFilter) {
+                showRow = false;
+            }
+
+            // Filter by stock status
+            if (stockStatusFilter) {
+                if (stockStatusFilter === 'in-stock' && stock <= 10) {
+                    showRow = false;
+                } else if (stockStatusFilter === 'low-stock' && (stock <= 0 || stock > 10)) {
+                    showRow = false;
+                } else if (stockStatusFilter === 'out-of-stock' && stock > 0) {
+                    showRow = false;
+                }
+            }
+
+            // Filter by search
+            if (searchInput && !productName.includes(searchInput)) {
+                showRow = false;
+            }
+
+            if (showRow) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update counter and refresh pagination
+        updateVisibleCount(visibleCount, rows.length);
+
+        // Refresh pagination after filtering (wait for display updates)
+        setTimeout(() => {
+            if (typeof refreshPagination === 'function') {
+                refreshPagination();
+            }
+        }, 50);
+    }
+
+
+    function filterOrders() {
+        const sortValue = document.getElementById("sortFilter").value;
+        const rows = Array.from(document.querySelectorAll("tbody tr[data-order-id]"));
+
+        // 🔹 Lấy dữ liệu từ row
+        const orders = rows.map(row => {
+            return {
+                row: row,
+                total: parseInt(
+                    row.querySelector("td:nth-child(9)").textContent.replace(/[^\d]/g, "")
+                ) || 0,
+                date: row.querySelector("td:nth-child(3)").textContent.trim(),
+            };
+        });
+
+        // 🔹 Convert ngày: dd/MM/yyyy → yyyy-MM-dd
+        orders.forEach(o => {
+            if (o.date.includes("/")) {
+                let [d, m, y] = o.date.split("/");
+                o.dateValue = new Date(`${y}-${m}-${d}`).getTime();
+            } else {
+                o.dateValue = 0;
+            }
+        });
+
+        // ==========================
+        // 🔥 Thực hiện SORT
+        // ==========================
+        switch (sortValue) {
+
+            case "total-desc":
+                orders.sort((a, b) => b.total - a.total);
+                break;
+
+            case "total-asc":
+                orders.sort((a, b) => a.total - b.total);
+                break;
+
+            case "date-desc": // mới nhất
+                orders.sort((a, b) => b.dateValue - a.dateValue);
+                break;
+
+            case "date-asc": // cũ nhất
+                orders.sort((a, b) => a.dateValue - b.dateValue);
+                break;
+
+            default:
+                // Không sort (mặc định theo server), hoặc bạn có thể reset theo id
+                orders.sort((a, b) => parseInt(a.row.dataset.orderId) - parseInt(b.row.dataset.orderId));
+                break;
+        }
+
+        // 🔹 Render lại thứ tự row trong bảng
+        const tbody = document.querySelector("tbody");
+        tbody.innerHTML = "";
+        orders.forEach(o => tbody.appendChild(o.row));
+    }
+
+</script>
+
+
 </body>
 </html>
 

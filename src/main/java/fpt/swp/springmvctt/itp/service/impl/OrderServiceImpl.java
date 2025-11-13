@@ -46,9 +46,6 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(isolation = Isolation.SERIALIZABLE) // Highest isolation để tránh race condition
     public Order createOrder(CheckoutForm form, User buyer) {
         Long productId = form.getProductId();
-        // ============================================================
-        // QUEUE MECHANISM: Xếp hàng theo productId
-        // ============================================================
         // Xem bao nhiêu  người cùng mua product_id={1}:
         // - Request 1: acquire lock → process → commit → release lock
         // - Request 2-5: đợi lock → khi lock release, request tiếp theo sẽ acquire
@@ -60,9 +57,6 @@ public class OrderServiceImpl implements OrderService {
         productLock.lock(); // Blocking wait - đợi đến lượt
         System.out.println(" [Product " + productId + "] User " + buyer.getUsername() + " đã acquire lock");
         try {
-            // ============================================================
-            // CLOSE DATABASE: Lock product ngay từ đầu
-            // ============================================================
             // Khi request đầu tiên lock, các request khác sẽ không thấy được
             // product cho đến khi lock được release (sau khi commit)
             // ============================================================
@@ -114,9 +108,7 @@ public class OrderServiceImpl implements OrderService {
             if (shop.getUser() == null) {
                 throw new IllegalStateException("Shop không có người sở hữu");
             }
-            
             User seller = shop.getUser();
-
             // 7. Lấy serial codes với lock TRƯỚC KHI trừ tiền để tránh trừ tiền rồi mới phát hiện hết hàng
             // Query: Lấy các serial codes khác nhau từ product_stores có cùng product_id
             // Ví dụ: product_id = 1, quantity = 2 → Lấy 2 serial codes khác nhau (SERIAL001, SERIAL002)
